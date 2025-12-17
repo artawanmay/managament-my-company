@@ -88,7 +88,7 @@ export function parseDockerCompose(content: string): DockerComposeConfig {
   // Helper to get indentation level (number of leading spaces)
   const getIndent = (line: string): number => {
     const match = line.match(/^(\s*)/);
-    return match ? match[1].length : 0;
+    return match?.[1]?.length ?? 0;
   };
 
   for (let i = 0; i < lines.length; i++) {
