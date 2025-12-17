@@ -1,7 +1,7 @@
 /**
  * Client feature types
  */
-import { type Client, type ClientStatus } from '@/lib/db/schema';
+import { type Client, type ClientStatus } from "@/lib/db/schema";
 
 export type { Client, ClientStatus };
 
@@ -19,8 +19,8 @@ export interface ClientWithProjects extends Client {
 export interface ClientListParams {
   search?: string;
   status?: ClientStatus;
-  sortBy?: 'name' | 'status' | 'createdAt' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "status" | "createdAt" | "updatedAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }

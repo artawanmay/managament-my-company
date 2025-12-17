@@ -2,19 +2,25 @@
  * AvatarUpload Component
  * Upload and manage user avatar
  */
-import * as React from 'react';
-import { Camera, Trash2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
-import { useProfile, useUploadAvatar, useDeleteAvatar } from '../hooks';
+import * as React from "react";
+import { Camera, Trash2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { useProfile, useUploadAvatar, useDeleteAvatar } from "../hooks";
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -31,12 +37,12 @@ export function AvatarUpload() {
     if (!file) return;
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       toast({
-        title: 'Invalid file type',
-        description: 'Please upload a JPEG, PNG, GIF, or WebP image.',
-        variant: 'destructive',
+        title: "Invalid file type",
+        description: "Please upload a JPEG, PNG, GIF, or WebP image.",
+        variant: "destructive",
       });
       return;
     }
@@ -44,9 +50,9 @@ export function AvatarUpload() {
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: 'File too large',
-        description: 'Please upload an image smaller than 5MB.',
-        variant: 'destructive',
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB.",
+        variant: "destructive",
       });
       return;
     }
@@ -54,20 +60,21 @@ export function AvatarUpload() {
     try {
       await uploadAvatar.mutateAsync(file);
       toast({
-        title: 'Avatar updated',
-        description: 'Your avatar has been updated successfully.',
+        title: "Avatar updated",
+        description: "Your avatar has been updated successfully.",
       });
     } catch (error) {
       toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload avatar',
-        variant: 'destructive',
+        title: "Upload failed",
+        description:
+          error instanceof Error ? error.message : "Failed to upload avatar",
+        variant: "destructive",
       });
     }
 
     // Reset input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -75,14 +82,15 @@ export function AvatarUpload() {
     try {
       await deleteAvatar.mutateAsync();
       toast({
-        title: 'Avatar removed',
-        description: 'Your avatar has been removed.',
+        title: "Avatar removed",
+        description: "Your avatar has been removed.",
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to remove avatar',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to remove avatar",
+        variant: "destructive",
       });
     }
   };
@@ -109,9 +117,12 @@ export function AvatarUpload() {
       <CardContent className="flex flex-col items-center gap-4">
         <div className="relative">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={profile?.avatarUrl || undefined} alt={profile?.name} />
+            <AvatarImage
+              src={profile?.avatarUrl || undefined}
+              alt={profile?.name}
+            />
             <AvatarFallback className="text-2xl">
-              {profile?.name ? getInitials(profile.name) : '?'}
+              {profile?.name ? getInitials(profile.name) : "?"}
             </AvatarFallback>
           </Avatar>
           {isPending && (
@@ -137,7 +148,7 @@ export function AvatarUpload() {
             disabled={isPending}
           >
             <Camera className="mr-2 h-4 w-4" />
-            {profile?.avatarUrl ? 'Change' : 'Upload'}
+            {profile?.avatarUrl ? "Change" : "Upload"}
           </Button>
           {profile?.avatarUrl && (
             <Button

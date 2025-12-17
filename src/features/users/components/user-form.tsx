@@ -2,20 +2,20 @@
  * UserForm component for create/edit user
  * Requirements: 2.2, 2.3
  */
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -23,28 +23,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { FormError } from '@/components/ui/form-error';
-import type { User, Role, CreateUserInput, UpdateUserInput } from '../types';
-import { roleValues } from '@/lib/db/schema/users';
+} from "@/components/ui/dialog";
+import { FormError } from "@/components/ui/form-error";
+import type { User, Role, CreateUserInput, UpdateUserInput } from "../types";
+import { roleValues } from "@/lib/db/schema/users";
 
 // Schema for creating a user
 const createUserSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  name: z.string().min(1, "Name is required").max(100, "Name is too long"),
   role: z.enum(roleValues),
 });
 
 // Schema for updating a user (no password required)
 const updateUserSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+  email: z.string().email("Invalid email address"),
+  name: z.string().min(1, "Name is required").max(100, "Name is too long"),
 });
 
 type CreateFormData = z.infer<typeof createUserSchema>;
@@ -76,17 +76,17 @@ export function CreateUserForm({
   // Get available roles based on current user's role
   // Only SUPER_ADMIN can manage users (ADMIN role removed)
   const availableRoles = roleValues.filter(() => {
-    if (currentUserRole === 'SUPER_ADMIN') return true;
+    if (currentUserRole === "SUPER_ADMIN") return true;
     return false;
   });
 
   const form = useForm<CreateFormData>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
-      email: '',
-      password: '',
-      name: '',
-      role: 'MEMBER',
+      email: "",
+      password: "",
+      name: "",
+      role: "MEMBER",
     },
   });
 
@@ -117,7 +117,7 @@ export function CreateUserForm({
             <Input
               id="name"
               placeholder="John Doe"
-              {...form.register('name')}
+              {...form.register("name")}
             />
             {form.formState.errors.name && (
               <FormError message={form.formState.errors.name.message} />
@@ -130,7 +130,7 @@ export function CreateUserForm({
               id="email"
               type="email"
               placeholder="john@example.com"
-              {...form.register('email')}
+              {...form.register("email")}
             />
             {form.formState.errors.email && (
               <FormError message={form.formState.errors.email.message} />
@@ -143,21 +143,22 @@ export function CreateUserForm({
               id="password"
               type="password"
               placeholder="••••••••"
-              {...form.register('password')}
+              {...form.register("password")}
             />
             {form.formState.errors.password && (
               <FormError message={form.formState.errors.password.message} />
             )}
             <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters with uppercase, lowercase, and number
+              Must be at least 8 characters with uppercase, lowercase, and
+              number
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <Select
-              value={form.watch('role')}
-              onValueChange={(value) => form.setValue('role', value as Role)}
+              value={form.watch("role")}
+              onValueChange={(value) => form.setValue("role", value as Role)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
@@ -165,7 +166,7 @@ export function CreateUserForm({
               <SelectContent>
                 {availableRoles.map((role) => (
                   <SelectItem key={role} value={role}>
-                    {role.replace('_', ' ')}
+                    {role.replace("_", " ")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -185,7 +186,7 @@ export function CreateUserForm({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create'}
+              {isLoading ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
         </form>
@@ -246,7 +247,7 @@ export function EditUserForm({
             <Input
               id="edit-name"
               placeholder="John Doe"
-              {...form.register('name')}
+              {...form.register("name")}
             />
             {form.formState.errors.name && (
               <FormError message={form.formState.errors.name.message} />
@@ -259,7 +260,7 @@ export function EditUserForm({
               id="edit-email"
               type="email"
               placeholder="john@example.com"
-              {...form.register('email')}
+              {...form.register("email")}
             />
             {form.formState.errors.email && (
               <FormError message={form.formState.errors.email.message} />
@@ -276,7 +277,7 @@ export function EditUserForm({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Updating...' : 'Update'}
+              {isLoading ? "Updating..." : "Update"}
             </Button>
           </DialogFooter>
         </form>

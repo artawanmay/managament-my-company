@@ -2,11 +2,11 @@
  * Project detail page (overview)
  * Requirements: 4.3, 4.4, 4.5
  */
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   ProjectDetail,
   ProjectForm,
@@ -16,15 +16,13 @@ import {
   useRemoveProjectMember,
   type ProjectMemberRole,
   type UpdateProjectInput,
-} from '@/features/projects';
-import { useClients } from '@/features/clients';
-import { useUsers } from '@/features/users';
+} from "@/features/projects";
+import { useClients } from "@/features/clients";
+import { useUsers } from "@/features/users";
 
-export const Route = createFileRoute('/app/projects/$projectId/')({
+export const Route = createFileRoute("/app/projects/$projectId/")({
   component: ProjectDetailPage,
 });
-
-
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
@@ -39,21 +37,24 @@ function ProjectDetailPage() {
 
   // Get real users from database
   const { data: usersData } = useUsers();
-  const users = usersData?.data?.map((u) => ({ id: u.id, name: u.name, email: u.email })) || [];
+  const users =
+    usersData?.data?.map((u) => ({ id: u.id, name: u.name, email: u.email })) ||
+    [];
 
   const handleEditSubmit = async (formData: UpdateProjectInput) => {
     try {
       await updateMutation.mutateAsync(formData);
       toast({
-        title: 'Project updated',
-        description: 'The project has been updated successfully.',
+        title: "Project updated",
+        description: "The project has been updated successfully.",
       });
       setIsEditFormOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -62,14 +63,15 @@ function ProjectDetailPage() {
     try {
       await addMemberMutation.mutateAsync({ userId, role });
       toast({
-        title: 'Member added',
-        description: 'The member has been added to the project.',
+        title: "Member added",
+        description: "The member has been added to the project.",
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
       throw error;
     }
@@ -79,14 +81,15 @@ function ProjectDetailPage() {
     try {
       await removeMemberMutation.mutateAsync(userId);
       toast({
-        title: 'Member removed',
-        description: 'The member has been removed from the project.',
+        title: "Member removed",
+        description: "The member has been removed from the project.",
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
       throw error;
     }
@@ -95,13 +98,16 @@ function ProjectDetailPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-destructive">Error loading project: {error.message}</p>
+        <p className="text-destructive">
+          Error loading project: {error.message}
+        </p>
       </div>
     );
   }
 
   const project = data?.data || null;
-  const clients = clientsData?.data?.map((c) => ({ id: c.id, name: c.name })) || [];
+  const clients =
+    clientsData?.data?.map((c) => ({ id: c.id, name: c.name })) || [];
 
   // Convert project to ProjectListItem format for the form
   const projectForForm = project

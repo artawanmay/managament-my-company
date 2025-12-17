@@ -1,6 +1,6 @@
 /**
  * Database Schema Index
- * 
+ *
  * This file exports all SQLite schema definitions for use with Drizzle ORM.
  * SQLite is used for development, PostgreSQL schemas can be added for production.
  */
@@ -14,13 +14,13 @@ export {
   type ThemePreference,
   type User,
   type NewUser,
-} from './users';
+} from "./users";
 
 export {
   sessionsSqlite as sessions,
   type Session,
   type NewSession,
-} from './sessions';
+} from "./sessions";
 
 export {
   clientsSqlite as clients,
@@ -28,7 +28,7 @@ export {
   type ClientStatus,
   type Client,
   type NewClient,
-} from './clients';
+} from "./clients";
 
 export {
   projectsSqlite as projects,
@@ -38,7 +38,7 @@ export {
   type Priority,
   type Project,
   type NewProject,
-} from './projects';
+} from "./projects";
 
 export {
   projectMembersSqlite as projectMembers,
@@ -46,7 +46,7 @@ export {
   type ProjectMemberRole,
   type ProjectMember,
   type NewProjectMember,
-} from './project-members';
+} from "./project-members";
 
 export {
   tasksSqlite as tasks,
@@ -54,7 +54,7 @@ export {
   type TaskStatus,
   type Task,
   type NewTask,
-} from './tasks';
+} from "./tasks";
 
 export {
   notesSqlite as notes,
@@ -62,7 +62,7 @@ export {
   type NoteType,
   type Note,
   type NewNote,
-} from './notes';
+} from "./notes";
 
 export {
   noteAccessLogsSqlite as noteAccessLogs,
@@ -70,13 +70,13 @@ export {
   type NoteAccessAction,
   type NoteAccessLog,
   type NewNoteAccessLog,
-} from './note-access-logs';
+} from "./note-access-logs";
 
 export {
   commentsSqlite as comments,
   type Comment,
   type NewComment,
-} from './comments';
+} from "./comments";
 
 export {
   notificationsSqlite as notifications,
@@ -84,7 +84,7 @@ export {
   type NotificationType,
   type Notification,
   type NewNotification,
-} from './notifications';
+} from "./notifications";
 
 export {
   activityLogsSqlite as activityLogs,
@@ -94,19 +94,11 @@ export {
   type Action,
   type ActivityLog,
   type NewActivityLog,
-} from './activity-logs';
+} from "./activity-logs";
 
-export {
-  filesSqlite as files,
-  type File,
-  type NewFile,
-} from './files';
+export { filesSqlite as files, type File, type NewFile } from "./files";
 
-export {
-  tagsSqlite as tags,
-  type Tag,
-  type NewTag,
-} from './tags';
+export { tagsSqlite as tags, type Tag, type NewTag } from "./tags";
 
 export {
   taggablesSqlite as taggables,
@@ -114,4 +106,4 @@ export {
   type TaggableType,
   type Taggable,
   type NewTaggable,
-} from './taggables';
+} from "./taggables";

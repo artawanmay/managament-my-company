@@ -31,6 +31,7 @@ import { Route as ApiProjectsIndexRouteImport } from './routes/api/projects/inde
 import { Route as ApiProfileIndexRouteImport } from './routes/api/profile/index'
 import { Route as ApiNotificationsIndexRouteImport } from './routes/api/notifications/index'
 import { Route as ApiNotesIndexRouteImport } from './routes/api/notes/index'
+import { Route as ApiHealthIndexRouteImport } from './routes/api/health/index'
 import { Route as ApiDashboardIndexRouteImport } from './routes/api/dashboard/index'
 import { Route as ApiClientsIndexRouteImport } from './routes/api/clients/index'
 import { Route as ApiActivityIndexRouteImport } from './routes/api/activity/index'
@@ -183,6 +184,11 @@ const ApiNotificationsIndexRoute = ApiNotificationsIndexRouteImport.update({
 const ApiNotesIndexRoute = ApiNotesIndexRouteImport.update({
   id: '/api/notes/',
   path: '/api/notes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthIndexRoute = ApiHealthIndexRouteImport.update({
+  id: '/api/health/',
+  path: '/api/health/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDashboardIndexRoute = ApiDashboardIndexRouteImport.update({
@@ -449,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/api/activity': typeof ApiActivityIndexRoute
   '/api/clients': typeof ApiClientsIndexRoute
   '/api/dashboard': typeof ApiDashboardIndexRoute
+  '/api/health': typeof ApiHealthIndexRoute
   '/api/notes': typeof ApiNotesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/profile': typeof ApiProfileIndexRoute
@@ -513,6 +520,7 @@ export interface FileRoutesByTo {
   '/api/activity': typeof ApiActivityIndexRoute
   '/api/clients': typeof ApiClientsIndexRoute
   '/api/dashboard': typeof ApiDashboardIndexRoute
+  '/api/health': typeof ApiHealthIndexRoute
   '/api/notes': typeof ApiNotesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/profile': typeof ApiProfileIndexRoute
@@ -581,6 +589,7 @@ export interface FileRoutesById {
   '/api/activity/': typeof ApiActivityIndexRoute
   '/api/clients/': typeof ApiClientsIndexRoute
   '/api/dashboard/': typeof ApiDashboardIndexRoute
+  '/api/health/': typeof ApiHealthIndexRoute
   '/api/notes/': typeof ApiNotesIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
   '/api/profile/': typeof ApiProfileIndexRoute
@@ -650,6 +659,7 @@ export interface FileRouteTypes {
     | '/api/activity'
     | '/api/clients'
     | '/api/dashboard'
+    | '/api/health'
     | '/api/notes'
     | '/api/notifications'
     | '/api/profile'
@@ -714,6 +724,7 @@ export interface FileRouteTypes {
     | '/api/activity'
     | '/api/clients'
     | '/api/dashboard'
+    | '/api/health'
     | '/api/notes'
     | '/api/notifications'
     | '/api/profile'
@@ -781,6 +792,7 @@ export interface FileRouteTypes {
     | '/api/activity/'
     | '/api/clients/'
     | '/api/dashboard/'
+    | '/api/health/'
     | '/api/notes/'
     | '/api/notifications/'
     | '/api/profile/'
@@ -838,6 +850,7 @@ export interface RootRouteChildren {
   ApiActivityIndexRoute: typeof ApiActivityIndexRoute
   ApiClientsIndexRoute: typeof ApiClientsIndexRoute
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
+  ApiHealthIndexRoute: typeof ApiHealthIndexRoute
   ApiNotesIndexRoute: typeof ApiNotesIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
   ApiProfileIndexRoute: typeof ApiProfileIndexRoute
@@ -1008,6 +1021,13 @@ declare module '@tanstack/react-router' {
       path: '/api/notes'
       fullPath: '/api/notes'
       preLoaderRoute: typeof ApiNotesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health/': {
+      id: '/api/health/'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/dashboard/': {
@@ -1508,6 +1528,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiActivityIndexRoute: ApiActivityIndexRoute,
   ApiClientsIndexRoute: ApiClientsIndexRoute,
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
+  ApiHealthIndexRoute: ApiHealthIndexRoute,
   ApiNotesIndexRoute: ApiNotesIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
   ApiProfileIndexRoute: ApiProfileIndexRoute,

@@ -4,14 +4,14 @@
  */
 
 export type NotificationType =
-  | 'TASK_ASSIGNED'
-  | 'TASK_MOVED'
-  | 'COMMENT_ADDED'
-  | 'MENTIONED'
-  | 'DEADLINE_APPROACHING';
+  | "TASK_ASSIGNED"
+  | "TASK_MOVED"
+  | "COMMENT_ADDED"
+  | "MENTIONED"
+  | "DEADLINE_APPROACHING";
 
 export interface NotificationData {
-  entityType?: 'TASK' | 'PROJECT' | 'COMMENT' | 'CLIENT' | 'NOTE';
+  entityType?: "TASK" | "PROJECT" | "COMMENT" | "CLIENT" | "NOTE";
   entityId?: string;
   projectId?: string;
   taskId?: string;

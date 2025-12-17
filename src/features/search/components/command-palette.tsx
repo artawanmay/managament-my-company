@@ -3,15 +3,15 @@
  * Global search with Ctrl+K/Cmd+K trigger
  * Requirements: 12.1, 12.2, 12.3, 12.4
  */
-import * as React from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import * as React from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Building2,
   FolderKanban,
   CheckSquare,
   KeyRound,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 
 import {
   CommandDialog,
@@ -22,15 +22,15 @@ import {
   CommandList,
   CommandLoading,
   CommandSeparator,
-} from '@/components/ui/command';
-import { useSearch } from '../hooks/use-search';
-import { useCommandPalette } from '../hooks/use-command-palette';
+} from "@/components/ui/command";
+import { useSearch } from "../hooks/use-search";
+import { useCommandPalette } from "../hooks/use-command-palette";
 import type {
   ClientSearchResult,
   ProjectSearchResult,
   TaskSearchResult,
   NoteSearchResult,
-} from '../types';
+} from "../types";
 
 /**
  * Command Palette with global search
@@ -38,7 +38,8 @@ import type {
  */
 export function CommandPalette() {
   const navigate = useNavigate();
-  const { open, setOpen, query, setQuery, debouncedQuery } = useCommandPalette();
+  const { open, setOpen, query, setQuery, debouncedQuery } =
+    useCommandPalette();
 
   const { data: results, isLoading } = useSearch({
     query: debouncedQuery,
@@ -56,33 +57,36 @@ export function CommandPalette() {
   const handleSelect = React.useCallback(
     (type: string, id: string, projectId?: string) => {
       setOpen(false);
-      setQuery('');
+      setQuery("");
 
       switch (type) {
-        case 'client':
-          navigate({ to: '/app/clients/$clientId', params: { clientId: id } });
+        case "client":
+          navigate({ to: "/app/clients/$clientId", params: { clientId: id } });
           break;
-        case 'project':
-          navigate({ to: '/app/projects/$projectId', params: { projectId: id } });
+        case "project":
+          navigate({
+            to: "/app/projects/$projectId",
+            params: { projectId: id },
+          });
           break;
-        case 'task':
+        case "task":
           // Navigate to project board with task
           if (projectId) {
             navigate({
-              to: '/app/projects/$projectId/board',
+              to: "/app/projects/$projectId/board",
               params: { projectId },
             });
           }
           break;
-        case 'note':
+        case "note":
           // Navigate to notes page
           if (projectId) {
             navigate({
-              to: '/app/projects/$projectId/notes',
+              to: "/app/projects/$projectId/notes",
               params: { projectId },
             });
           } else {
-            navigate({ to: '/app/notes' });
+            navigate({ to: "/app/notes" });
           }
           break;
       }
@@ -121,7 +125,7 @@ export function CommandPalette() {
               <CommandItem
                 key={`client-${client.id}`}
                 value={`client-${client.id}-${client.name}`}
-                onSelect={() => handleSelect('client', client.id)}
+                onSelect={() => handleSelect("client", client.id)}
               >
                 <Building2 className="mr-2 h-4 w-4 text-muted-foreground" />
                 <div className="flex flex-col">
@@ -140,9 +144,9 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
-        {results && results.clients.length > 0 && results.projects.length > 0 && (
-          <CommandSeparator />
-        )}
+        {results &&
+          results.clients.length > 0 &&
+          results.projects.length > 0 && <CommandSeparator />}
 
         {results && results.projects.length > 0 && (
           <CommandGroup heading="Projects">
@@ -150,7 +154,7 @@ export function CommandPalette() {
               <CommandItem
                 key={`project-${project.id}`}
                 value={`project-${project.id}-${project.name}`}
-                onSelect={() => handleSelect('project', project.id)}
+                onSelect={() => handleSelect("project", project.id)}
               >
                 <FolderKanban className="mr-2 h-4 w-4 text-muted-foreground" />
                 <div className="flex flex-col">
@@ -179,7 +183,7 @@ export function CommandPalette() {
               <CommandItem
                 key={`task-${task.id}`}
                 value={`task-${task.id}-${task.title}`}
-                onSelect={() => handleSelect('task', task.id, task.projectId)}
+                onSelect={() => handleSelect("task", task.id, task.projectId)}
               >
                 <CheckSquare className="mr-2 h-4 w-4 text-muted-foreground" />
                 <div className="flex flex-col">
@@ -209,7 +213,7 @@ export function CommandPalette() {
                 key={`note-${note.id}`}
                 value={`note-${note.id}-${note.systemName}`}
                 onSelect={() =>
-                  handleSelect('note', note.id, note.projectId ?? undefined)
+                  handleSelect("note", note.id, note.projectId ?? undefined)
                 }
               >
                 <KeyRound className="mr-2 h-4 w-4 text-muted-foreground" />

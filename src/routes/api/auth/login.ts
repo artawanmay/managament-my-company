@@ -7,11 +7,11 @@
  * - 1.2: Display error without revealing which field is incorrect
  * - 1.3: Lock account after 5 failed attempts within 15 minutes
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite } from '@/lib/db/schema/users';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite } from "@/lib/db/schema/users";
 import {
   verifyPassword,
   createSession,
@@ -19,7 +19,7 @@ import {
   recordFailedAttempt,
   clearAttempts,
   getRemainingLockoutTime,
-} from '@/lib/auth';
+} from "@/lib/auth";
 
 interface LoginRequest {
   email: string;
@@ -39,7 +39,7 @@ interface LoginResponse {
   csrfToken?: string;
 }
 
-export const Route = createFileRoute('/api/auth/login')({
+export const Route = createFileRoute("/api/auth/login")({
   server: {
     handlers: {
       POST: async ({ request }) => {
@@ -51,7 +51,7 @@ export const Route = createFileRoute('/api/auth/login')({
           // Validate input
           if (!email || !password) {
             return json<LoginResponse>(
-              { success: false, error: 'Email and password are required' },
+              { success: false, error: "Email and password are required" },
               { status: 400 }
             );
           }
@@ -65,7 +65,8 @@ export const Route = createFileRoute('/api/auth/login')({
           // Check if account is locked
           const locked = await isLocked(normalizedEmail);
           if (locked) {
-            const remainingTime = await getRemainingLockoutTime(normalizedEmail);
+            const remainingTime =
+              await getRemainingLockoutTime(normalizedEmail);
             const lockoutMinutes = Math.ceil(remainingTime / 60);
             return json<LoginResponse>(
               {
@@ -89,39 +90,50 @@ export const Route = createFileRoute('/api/auth/login')({
           // Verify credentials - use generic error message (Requirement 1.2)
           if (!user) {
             // Record failed attempt even for non-existent users to prevent enumeration
-            const lockoutResult = await recordFailedAttempt(normalizedEmail, ip);
+            const lockoutResult = await recordFailedAttempt(
+              normalizedEmail,
+              ip
+            );
             if (lockoutResult.isLocked) {
               return json<LoginResponse>(
                 {
                   success: false,
-                  error: 'Account is temporarily locked due to too many failed attempts. Please try again in 30 minutes.',
+                  error:
+                    "Account is temporarily locked due to too many failed attempts. Please try again in 30 minutes.",
                   lockoutMinutes: 30,
                 },
                 { status: 429 }
               );
             }
             return json<LoginResponse>(
-              { success: false, error: 'Invalid email or password' },
+              { success: false, error: "Invalid email or password" },
               { status: 401 }
             );
           }
 
           // Verify password
-          const passwordValid = await verifyPassword(password, user.passwordHash);
+          const passwordValid = await verifyPassword(
+            password,
+            user.passwordHash
+          );
           if (!passwordValid) {
-            const lockoutResult = await recordFailedAttempt(normalizedEmail, ip);
+            const lockoutResult = await recordFailedAttempt(
+              normalizedEmail,
+              ip
+            );
             if (lockoutResult.isLocked) {
               return json<LoginResponse>(
                 {
                   success: false,
-                  error: 'Account is temporarily locked due to too many failed attempts. Please try again in 30 minutes.',
+                  error:
+                    "Account is temporarily locked due to too many failed attempts. Please try again in 30 minutes.",
                   lockoutMinutes: 30,
                 },
                 { status: 429 }
               );
             }
             return json<LoginResponse>(
-              { success: false, error: 'Invalid email or password' },
+              { success: false, error: "Invalid email or password" },
               { status: 401 }
             );
           }
@@ -147,16 +159,19 @@ export const Route = createFileRoute('/api/auth/login')({
             {
               status: 200,
               headers: {
-                'Set-Cookie': createSessionCookie(session.id, session.expiresAt),
+                "Set-Cookie": createSessionCookie(
+                  session.id,
+                  session.expiresAt
+                ),
               },
             }
           );
 
           return response;
         } catch (error) {
-          console.error('[Login] Error:', error);
+          console.error("[Login] Error:", error);
           return json<LoginResponse>(
-            { success: false, error: 'An unexpected error occurred' },
+            { success: false, error: "An unexpected error occurred" },
             { status: 500 }
           );
         }
@@ -178,11 +193,11 @@ function createSessionCookie(sessionId: string, expiresAt: Date): string {
   ];
 
   // Add Secure flag in production
-  if (process.env.NODE_ENV === 'production') {
-    cookieOptions.push('Secure');
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.push("Secure");
   }
 
-  return cookieOptions.join('; ');
+  return cookieOptions.join("; ");
 }
 
 /**
@@ -190,19 +205,19 @@ function createSessionCookie(sessionId: string, expiresAt: Date): string {
  */
 function getClientIp(request: Request): string {
   // Check common proxy headers
-  const forwardedFor = request.headers.get('x-forwarded-for');
+  const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0];
+    const firstIp = forwardedFor.split(",")[0];
     if (firstIp) {
       return firstIp.trim();
     }
   }
 
-  const realIp = request.headers.get('x-real-ip');
+  const realIp = request.headers.get("x-real-ip");
   if (realIp) {
     return realIp;
   }
 
   // Fallback to unknown
-  return 'unknown';
+  return "unknown";
 }

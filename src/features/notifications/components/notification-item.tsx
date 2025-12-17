@@ -3,18 +3,18 @@
  * Displays a single notification with navigation support
  * Requirements: 9.3, 9.4
  */
-import { useNavigate } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from "@tanstack/react-router";
+import { formatDistanceToNow } from "date-fns";
 import {
   CheckCircle2,
   MessageSquare,
   AtSign,
   Clock,
   ArrowRight,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Notification } from '../types';
-import { useMarkAsRead } from '../hooks';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { Notification } from "../types";
+import { useMarkAsRead } from "../hooks";
 
 interface NotificationItemProps {
   notification: Notification;
@@ -24,17 +24,17 @@ interface NotificationItemProps {
 /**
  * Get icon for notification type
  */
-function getNotificationIcon(type: Notification['type']) {
+function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
-    case 'TASK_ASSIGNED':
+    case "TASK_ASSIGNED":
       return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
-    case 'TASK_MOVED':
+    case "TASK_MOVED":
       return <ArrowRight className="h-4 w-4 text-green-500" />;
-    case 'COMMENT_ADDED':
+    case "COMMENT_ADDED":
       return <MessageSquare className="h-4 w-4 text-purple-500" />;
-    case 'MENTIONED':
+    case "MENTIONED":
       return <AtSign className="h-4 w-4 text-orange-500" />;
-    case 'DEADLINE_APPROACHING':
+    case "DEADLINE_APPROACHING":
       return <Clock className="h-4 w-4 text-red-500" />;
     default:
       return <CheckCircle2 className="h-4 w-4 text-gray-500" />;
@@ -61,7 +61,10 @@ function getNavigationPath(notification: Notification): string | null {
   return null;
 }
 
-export function NotificationItem({ notification, onNavigate }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  onNavigate,
+}: NotificationItemProps) {
   const navigate = useNavigate();
   const markAsRead = useMarkAsRead();
   const isUnread = !notification.readAt;
@@ -72,7 +75,7 @@ export function NotificationItem({ notification, onNavigate }: NotificationItemP
       try {
         await markAsRead.mutateAsync(notification.id);
       } catch (error) {
-        console.error('Failed to mark notification as read:', error);
+        console.error("Failed to mark notification as read:", error);
       }
     }
 
@@ -92,14 +95,14 @@ export function NotificationItem({ notification, onNavigate }: NotificationItemP
     <button
       onClick={handleClick}
       className={cn(
-        'flex w-full flex-col items-start gap-1 p-3 text-left transition-colors hover:bg-accent',
-        isUnread && 'bg-accent/50'
+        "flex w-full flex-col items-start gap-1 p-3 text-left transition-colors hover:bg-accent",
+        isUnread && "bg-accent/50"
       )}
     >
       <div className="flex w-full items-start gap-2">
         <div className="mt-0.5">{getNotificationIcon(notification.type)}</div>
         <div className="flex-1 min-w-0">
-          <p className={cn('text-sm', isUnread && 'font-medium')}>
+          <p className={cn("text-sm", isUnread && "font-medium")}>
             {notification.title}
           </p>
           <p className="text-xs text-muted-foreground line-clamp-2">

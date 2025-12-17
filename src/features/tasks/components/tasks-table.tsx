@@ -1,9 +1,9 @@
 /**
  * TasksTable component
  * Displays tasks in a table format with filtering and sorting
- * Requirements: 5.1, 5.2
+ * Requirements: 5.1, 5.2, 3.1, 1.3
  */
-import { useState } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,7 +12,7 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -20,28 +20,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowUpDown, Search, Calendar, AlertCircle } from "lucide-react";
+import type { Task, TaskStatus, Priority } from "../types";
 import {
-  ArrowUpDown,
-  Search,
-  Calendar,
-  AlertCircle,
-} from 'lucide-react';
-import type { Task, TaskStatus, Priority } from '../types';
-import { TASK_STATUS_VALUES, PRIORITY_VALUES, PRIORITY_CONFIG, KANBAN_COLUMNS } from '../types';
-import { cn } from '@/lib/utils';
+  TASK_STATUS_VALUES,
+  PRIORITY_VALUES,
+  PRIORITY_CONFIG,
+  KANBAN_COLUMNS,
+} from "../types";
+import { cn } from "@/lib/utils";
+import { useRenderTrackerSafe } from "@/lib/dev-tools/use-render-tracker-safe";
 
 interface TasksTableProps {
   tasks: Task[];
@@ -50,132 +51,152 @@ interface TasksTableProps {
 }
 
 export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'ALL'>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<Priority | 'ALL'>('ALL');
-
-  // Filter tasks
-  const filteredTasks = tasks.filter((task) => {
-    if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
-    if (priorityFilter !== 'ALL' && task.priority !== priorityFilter) return false;
-    return true;
+  // Render tracking for performance monitoring (Requirements: 1.3)
+  useRenderTrackerSafe("TasksTable", {
+    maxRenderCount: 50,
+    timeWindowMs: 1000,
   });
 
-  const columns: ColumnDef<Task>[] = [
-    {
-      accessorKey: 'title',
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="-ml-4"
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const task = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            {task.isOverdue && (
-              <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-            )}
-            <span className="font-medium truncate max-w-[300px]">{task.title}</span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.getValue('status') as TaskStatus;
-        const column = KANBAN_COLUMNS.find((c) => c.id === status);
-        return (
-          <Badge variant="outline" className="whitespace-nowrap">
-            {column?.title || status}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: 'priority',
-      header: 'Priority',
-      cell: ({ row }) => {
-        const priority = row.getValue('priority') as Priority;
-        const config = PRIORITY_CONFIG[priority];
-        return (
-          <Badge variant="secondary" className={cn('whitespace-nowrap', config.color)}>
-            {config.label}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: 'assignee',
-      header: 'Assignee',
-      cell: ({ row }) => {
-        const task = row.original;
-        if (!task.assignee) {
-          return <span className="text-gray-400">Unassigned</span>;
-        }
-        return (
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={task.assignee.avatarUrl || undefined} />
-              <AvatarFallback className="text-xs">
-                {task.assignee.name?.charAt(0).toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
-            <span className="truncate max-w-[120px]">{task.assignee.name}</span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'dueDate',
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="-ml-4"
-        >
-          Due Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const task = row.original;
-        if (!task.dueDate) return <span className="text-gray-400">-</span>;
-        const date = new Date(task.dueDate);
-        return (
-          <div
-            className={cn(
-              'flex items-center gap-1',
-              task.isOverdue && 'text-red-600 dark:text-red-400'
-            )}
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | "ALL">("ALL");
+  const [priorityFilter, setPriorityFilter] = useState<Priority | "ALL">("ALL");
+
+  // Memoize filtered tasks to prevent excessive re-renders (Requirements: 3.1)
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (statusFilter !== "ALL" && task.status !== statusFilter) return false;
+      if (priorityFilter !== "ALL" && task.priority !== priorityFilter)
+        return false;
+      return true;
+    });
+  }, [tasks, statusFilter, priorityFilter]);
+
+  // Memoize columns to maintain stable references (Requirements: 3.1)
+  const columns: ColumnDef<Task>[] = useMemo(
+    () => [
+      {
+        accessorKey: "title",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-4"
           >
-            <Calendar className="h-4 w-4" />
-            <span>{date.toLocaleDateString()}</span>
-          </div>
-        );
+            Title
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const task = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              {task.isOverdue && (
+                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+              )}
+              <span className="font-medium truncate max-w-[300px]">
+                {task.title}
+              </span>
+            </div>
+          );
+        },
       },
-    },
-    {
-      accessorKey: 'projectName',
-      header: 'Project',
-      cell: ({ row }) => {
-        const projectName = row.getValue('projectName') as string | undefined;
-        return (
-          <span className="truncate max-w-[150px] text-gray-600 dark:text-gray-400">
-            {projectName || '-'}
-          </span>
-        );
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const status = row.getValue("status") as TaskStatus;
+          const column = KANBAN_COLUMNS.find((c) => c.id === status);
+          return (
+            <Badge variant="outline" className="whitespace-nowrap">
+              {column?.title || status}
+            </Badge>
+          );
+        },
       },
-    },
-  ];
+      {
+        accessorKey: "priority",
+        header: "Priority",
+        cell: ({ row }) => {
+          const priority = row.getValue("priority") as Priority;
+          const config = PRIORITY_CONFIG[priority];
+          return (
+            <Badge
+              variant="secondary"
+              className={cn("whitespace-nowrap", config.color)}
+            >
+              {config.label}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "assignee",
+        header: "Assignee",
+        cell: ({ row }) => {
+          const task = row.original;
+          if (!task.assignee) {
+            return <span className="text-gray-400">Unassigned</span>;
+          }
+          return (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={task.assignee.avatarUrl || undefined} />
+                <AvatarFallback className="text-xs">
+                  {task.assignee.name?.charAt(0).toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate max-w-[120px]">
+                {task.assignee.name}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "dueDate",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-4"
+          >
+            Due Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const task = row.original;
+          if (!task.dueDate) return <span className="text-gray-400">-</span>;
+          const date = new Date(task.dueDate);
+          return (
+            <div
+              className={cn(
+                "flex items-center gap-1",
+                task.isOverdue && "text-red-600 dark:text-red-400"
+              )}
+            >
+              <Calendar className="h-4 w-4" />
+              <span>{date.toLocaleDateString()}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "projectName",
+        header: "Project",
+        cell: ({ row }) => {
+          const projectName = row.getValue("projectName") as string | undefined;
+          return (
+            <span className="truncate max-w-[150px] text-gray-600 dark:text-gray-400">
+              {projectName || "-"}
+            </span>
+          );
+        },
+      },
+    ],
+    []
+  ); // Empty deps - columns definition is static
 
   const table = useReactTable({
     data: filteredTasks,
@@ -230,7 +251,9 @@ export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
 
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as TaskStatus | 'ALL')}
+          onValueChange={(value) =>
+            setStatusFilter(value as TaskStatus | "ALL")
+          }
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Status" />
@@ -250,7 +273,9 @@ export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
 
         <Select
           value={priorityFilter}
-          onValueChange={(value) => setPriorityFilter(value as Priority | 'ALL')}
+          onValueChange={(value) =>
+            setPriorityFilter(value as Priority | "ALL")
+          }
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Priority" />
@@ -276,7 +301,10 @@ export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -285,7 +313,10 @@ export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No tasks found.
                 </TableCell>
               </TableRow>
@@ -298,7 +329,10 @@ export function TasksTable({ tasks, isLoading, onTaskClick }: TasksTableProps) {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

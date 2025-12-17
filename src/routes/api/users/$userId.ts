@@ -8,23 +8,32 @@
  * - 2.2: SUPER_ADMIN has full control over all users
  * - 2.3: ADMIN can manage users excluding SUPER_ADMIN accounts
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite, type Role } from '@/lib/db/schema/users';
-import { requireAuth, requireAuthWithCsrf, handleAuthError } from '@/lib/auth/middleware';
-import { canManageUsers, canManageUser } from '@/lib/auth/permissions';
-import { z } from 'zod';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite, type Role } from "@/lib/db/schema/users";
+import {
+  requireAuth,
+  requireAuthWithCsrf,
+  handleAuthError,
+} from "@/lib/auth/middleware";
+import { canManageUsers, canManageUser } from "@/lib/auth/permissions";
+import { z } from "zod";
 
 // Zod schema for updating a user
 const updateUserSchema = z.object({
-  email: z.string().email('Invalid email').max(255).optional(),
-  name: z.string().min(1, 'Name is required').max(100).optional(),
-  avatarUrl: z.string().url('Invalid URL').optional().nullable().or(z.literal('')),
+  email: z.string().email("Invalid email").max(255).optional(),
+  name: z.string().min(1, "Name is required").max(100).optional(),
+  avatarUrl: z
+    .string()
+    .url("Invalid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
-export const Route = createFileRoute('/api/users/$userId')({
+export const Route = createFileRoute("/api/users/$userId")({
   server: {
     handlers: {
       /**
@@ -35,11 +44,15 @@ export const Route = createFileRoute('/api/users/$userId')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least ADMIN role to view users
         if (!canManageUsers(auth.user)) {
-          return json({ error: 'Insufficient permissions to view users' }, { status: 403 });
+          return json(
+            { error: "Insufficient permissions to view users" },
+            { status: 403 }
+          );
         }
 
         try {
@@ -64,7 +77,7 @@ export const Route = createFileRoute('/api/users/$userId')({
           const user = userResult[0];
 
           if (!user) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           return json({
@@ -75,8 +88,8 @@ export const Route = createFileRoute('/api/users/$userId')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/users/:userId] Error:', error);
-          return json({ error: 'Failed to fetch user' }, { status: 500 });
+          console.error("[GET /api/users/:userId] Error:", error);
+          return json({ error: "Failed to fetch user" }, { status: 500 });
         }
       },
 
@@ -88,11 +101,15 @@ export const Route = createFileRoute('/api/users/$userId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least ADMIN role to update users
         if (!canManageUsers(auth.user)) {
-          return json({ error: 'Insufficient permissions to update users' }, { status: 403 });
+          return json(
+            { error: "Insufficient permissions to update users" },
+            { status: 403 }
+          );
         }
 
         try {
@@ -100,13 +117,17 @@ export const Route = createFileRoute('/api/users/$userId')({
 
           // Check if user exists and get their role
           const existingUser = await db
-            .select({ id: usersSqlite.id, role: usersSqlite.role, email: usersSqlite.email })
+            .select({
+              id: usersSqlite.id,
+              role: usersSqlite.role,
+              email: usersSqlite.email,
+            })
             .from(usersSqlite)
             .where(eq(usersSqlite.id, userId))
             .limit(1);
 
           if (existingUser.length === 0) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           const targetUser = existingUser[0]!;
@@ -114,7 +135,7 @@ export const Route = createFileRoute('/api/users/$userId')({
           // Check role hierarchy - ADMIN cannot modify SUPER_ADMIN
           if (!canManageUser(auth.user, targetUser.role as Role)) {
             return json(
-              { error: 'You cannot modify users with equal or higher role' },
+              { error: "You cannot modify users with equal or higher role" },
               { status: 403 }
             );
           }
@@ -124,7 +145,7 @@ export const Route = createFileRoute('/api/users/$userId')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -138,7 +159,10 @@ export const Route = createFileRoute('/api/users/$userId')({
               .limit(1);
 
             if (emailExists.length > 0) {
-              return json({ error: 'Email is already in use' }, { status: 409 });
+              return json(
+                { error: "Email is already in use" },
+                { status: 409 }
+              );
             }
           }
 
@@ -147,9 +171,12 @@ export const Route = createFileRoute('/api/users/$userId')({
             updatedAt: new Date(),
           };
 
-          if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
-          if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-          if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl || null;
+          if (parsed.data.email !== undefined)
+            updateData.email = parsed.data.email;
+          if (parsed.data.name !== undefined)
+            updateData.name = parsed.data.name;
+          if (parsed.data.avatarUrl !== undefined)
+            updateData.avatarUrl = parsed.data.avatarUrl || null;
 
           const result = await db
             .update(usersSqlite)
@@ -168,7 +195,7 @@ export const Route = createFileRoute('/api/users/$userId')({
           const updatedUser = result[0];
 
           if (!updatedUser) {
-            return json({ error: 'Failed to update user' }, { status: 500 });
+            return json({ error: "Failed to update user" }, { status: 500 });
           }
 
           return json({
@@ -179,8 +206,8 @@ export const Route = createFileRoute('/api/users/$userId')({
             },
           });
         } catch (error) {
-          console.error('[PUT /api/users/:userId] Error:', error);
-          return json({ error: 'Failed to update user' }, { status: 500 });
+          console.error("[PUT /api/users/:userId] Error:", error);
+          return json({ error: "Failed to update user" }, { status: 500 });
         }
       },
 
@@ -192,11 +219,15 @@ export const Route = createFileRoute('/api/users/$userId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least ADMIN role to delete users
         if (!canManageUsers(auth.user)) {
-          return json({ error: 'Insufficient permissions to delete users' }, { status: 403 });
+          return json(
+            { error: "Insufficient permissions to delete users" },
+            { status: 403 }
+          );
         }
 
         try {
@@ -204,7 +235,10 @@ export const Route = createFileRoute('/api/users/$userId')({
 
           // Prevent self-deletion
           if (userId === auth.user.id) {
-            return json({ error: 'You cannot delete your own account' }, { status: 400 });
+            return json(
+              { error: "You cannot delete your own account" },
+              { status: 400 }
+            );
           }
 
           // Check if user exists and get their role
@@ -215,7 +249,7 @@ export const Route = createFileRoute('/api/users/$userId')({
             .limit(1);
 
           if (existingUser.length === 0) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           const targetUserToDelete = existingUser[0]!;
@@ -223,7 +257,7 @@ export const Route = createFileRoute('/api/users/$userId')({
           // Check role hierarchy - ADMIN cannot delete SUPER_ADMIN
           if (!canManageUser(auth.user, targetUserToDelete.role as Role)) {
             return json(
-              { error: 'You cannot delete users with equal or higher role' },
+              { error: "You cannot delete users with equal or higher role" },
               { status: 403 }
             );
           }
@@ -231,10 +265,10 @@ export const Route = createFileRoute('/api/users/$userId')({
           // Delete the user
           await db.delete(usersSqlite).where(eq(usersSqlite.id, userId));
 
-          return json({ success: true, message: 'User deleted successfully' });
+          return json({ success: true, message: "User deleted successfully" });
         } catch (error) {
-          console.error('[DELETE /api/users/:userId] Error:', error);
-          return json({ error: 'Failed to delete user' }, { status: 500 });
+          console.error("[DELETE /api/users/:userId] Error:", error);
+          return json({ error: "Failed to delete user" }, { status: 500 });
         }
       },
     },

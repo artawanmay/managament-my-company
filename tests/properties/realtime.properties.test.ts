@@ -4,8 +4,8 @@
  *
  * Requirements: 6.4, 20.1
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as fc from 'fast-check';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import * as fc from "fast-check";
 
 // Mock the SSE module to track broadcasts
 const mockBroadcasts: Array<{
@@ -20,7 +20,7 @@ const mockProjectConnections = new Map<
 >();
 
 // Mock SSE functions
-vi.mock('@/lib/realtime/sse', () => ({
+vi.mock("@/lib/realtime/sse", () => ({
   createSSEResponse: vi.fn(),
   registerProjectConnection: vi.fn(
     (
@@ -69,7 +69,7 @@ vi.mock('@/lib/realtime/sse', () => ({
 // Mock Redis pub/sub
 const mockPublishedEvents: Array<{ channel: string; message: object }> = [];
 
-vi.mock('@/lib/realtime/pubsub', () => ({
+vi.mock("@/lib/realtime/pubsub", () => ({
   CHANNELS: {
     projectTasks: (projectId: string) => `project:${projectId}:tasks`,
     userNotifications: (userId: string) => `user:${userId}:notifications`,
@@ -90,17 +90,17 @@ vi.mock('@/lib/realtime/pubsub', () => ({
 import {
   broadcastToProject,
   registerProjectConnection,
-} from '@/lib/realtime/sse';
-import { publishTaskEvent, CHANNELS } from '@/lib/realtime/pubsub';
+} from "@/lib/realtime/sse";
+import { publishTaskEvent, CHANNELS } from "@/lib/realtime/pubsub";
 
 // Task status values for testing
 const taskStatusValues = [
-  'BACKLOG',
-  'TODO',
-  'IN_PROGRESS',
-  'IN_REVIEW',
-  'CHANGES_REQUESTED',
-  'DONE',
+  "BACKLOG",
+  "TODO",
+  "IN_PROGRESS",
+  "IN_REVIEW",
+  "CHANGES_REQUESTED",
+  "DONE",
 ] as const;
 
 type TaskStatus = (typeof taskStatusValues)[number];
@@ -114,7 +114,7 @@ const taskStatusArb = fc.constantFrom(...taskStatusValues);
 const orderArb = fc.integer({ min: 0, max: 1000 });
 
 interface TaskMoveEvent {
-  type: 'TASK_MOVED';
+  type: "TASK_MOVED";
   taskId: string;
   projectId: string;
   data: {
@@ -128,7 +128,7 @@ interface TaskMoveEvent {
   actorId: string;
 }
 
-describe('Realtime Broadcast Properties', () => {
+describe("Realtime Broadcast Properties", () => {
   beforeEach(() => {
     // Clear mock data before each test
     mockBroadcasts.length = 0;
@@ -149,7 +149,7 @@ describe('Realtime Broadcast Properties', () => {
    *
    * **Validates: Requirements 6.4, 20.1**
    */
-  it('Property: Realtime task updates broadcast to project viewers - all viewers receive event', () => {
+  it("Property: Realtime task updates broadcast to project viewers - all viewers receive event", () => {
     fc.assert(
       fc.property(
         projectIdArb,
@@ -194,7 +194,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Create task move event
           const taskEvent: TaskMoveEvent = {
-            type: 'TASK_MOVED',
+            type: "TASK_MOVED",
             taskId,
             projectId,
             data: {
@@ -209,19 +209,19 @@ describe('Realtime Broadcast Properties', () => {
           };
 
           // Broadcast the event
-          broadcastToProject(projectId, 'task_moved', taskEvent);
+          broadcastToProject(projectId, "task_moved", taskEvent);
 
           // Verify broadcast was called
           expect(mockBroadcasts.length).toBe(1);
           expect(mockBroadcasts[0]?.projectId).toBe(projectId);
-          expect(mockBroadcasts[0]?.event).toBe('task_moved');
+          expect(mockBroadcasts[0]?.event).toBe("task_moved");
 
           // Verify all viewers received the event
           expect(receivedEvents.length).toBe(viewerCount);
 
           // Verify event data is correct for each viewer
           for (const received of receivedEvents) {
-            expect(received.event).toBe('task_moved');
+            expect(received.event).toBe("task_moved");
             const data = received.data as TaskMoveEvent;
             expect(data.taskId).toBe(taskId);
             expect(data.projectId).toBe(projectId);
@@ -246,7 +246,7 @@ describe('Realtime Broadcast Properties', () => {
    *
    * **Validates: Requirements 6.4, 20.1**
    */
-  it('Property: Realtime task updates broadcast to project viewers - publishes to correct channel', async () => {
+  it("Property: Realtime task updates broadcast to project viewers - publishes to correct channel", async () => {
     await fc.assert(
       fc.asyncProperty(
         projectIdArb,
@@ -270,7 +270,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Create task move event
           const taskEvent: TaskMoveEvent = {
-            type: 'TASK_MOVED',
+            type: "TASK_MOVED",
             taskId,
             projectId,
             data: {
@@ -295,7 +295,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Verify event data
           const published = mockPublishedEvents[0]?.message as TaskMoveEvent;
-          expect(published.type).toBe('TASK_MOVED');
+          expect(published.type).toBe("TASK_MOVED");
           expect(published.taskId).toBe(taskId);
           expect(published.projectId).toBe(projectId);
           expect(published.data.status).toBe(newStatus);
@@ -315,7 +315,7 @@ describe('Realtime Broadcast Properties', () => {
    *
    * **Validates: Requirements 6.4, 20.1**
    */
-  it('Property: Realtime task updates broadcast to project viewers - isolation between projects', () => {
+  it("Property: Realtime task updates broadcast to project viewers - isolation between projects", () => {
     fc.assert(
       fc.property(
         projectIdArb,
@@ -356,7 +356,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Create and broadcast event for project 1 only
           const taskEvent: TaskMoveEvent = {
-            type: 'TASK_MOVED',
+            type: "TASK_MOVED",
             taskId,
             projectId: projectId1,
             data: {
@@ -370,7 +370,7 @@ describe('Realtime Broadcast Properties', () => {
             actorId,
           };
 
-          broadcastToProject(projectId1, 'task_moved', taskEvent);
+          broadcastToProject(projectId1, "task_moved", taskEvent);
 
           // Verify only project 1 viewer received the event
           expect(project1Events.length).toBe(1);
@@ -391,7 +391,7 @@ describe('Realtime Broadcast Properties', () => {
    *
    * **Validates: Requirements 6.4, 20.1**
    */
-  it('Property: Realtime task updates broadcast to project viewers - event contains required fields', () => {
+  it("Property: Realtime task updates broadcast to project viewers - event contains required fields", () => {
     fc.assert(
       fc.property(
         projectIdArb,
@@ -428,7 +428,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Create and broadcast event
           const taskEvent: TaskMoveEvent = {
-            type: 'TASK_MOVED',
+            type: "TASK_MOVED",
             taskId,
             projectId,
             data: {
@@ -442,11 +442,11 @@ describe('Realtime Broadcast Properties', () => {
             actorId,
           };
 
-          broadcastToProject(projectId, 'task_moved', taskEvent);
+          broadcastToProject(projectId, "task_moved", taskEvent);
 
           // Verify all required fields are present
           expect(receivedData).not.toBeNull();
-          expect(receivedData!.type).toBe('TASK_MOVED');
+          expect(receivedData!.type).toBe("TASK_MOVED");
           expect(receivedData!.taskId).toBeDefined();
           expect(receivedData!.projectId).toBeDefined();
           expect(receivedData!.timestamp).toBeDefined();
@@ -456,7 +456,7 @@ describe('Realtime Broadcast Properties', () => {
           expect(receivedData!.data.previousStatus).toBeDefined();
           expect(receivedData!.data.order).toBeDefined();
           expect(receivedData!.data.title).toBeDefined();
-          expect('assigneeId' in receivedData!.data).toBe(true);
+          expect("assigneeId" in receivedData!.data).toBe(true);
 
           return true;
         }
@@ -472,7 +472,7 @@ describe('Realtime Broadcast Properties', () => {
    *
    * **Validates: Requirements 6.4, 20.1**
    */
-  it('Property: Realtime task updates broadcast to project viewers - closed connections do not receive events', () => {
+  it("Property: Realtime task updates broadcast to project viewers - closed connections do not receive events", () => {
     fc.assert(
       fc.property(
         projectIdArb,
@@ -509,7 +509,7 @@ describe('Realtime Broadcast Properties', () => {
 
           // Broadcast event
           const taskEvent: TaskMoveEvent = {
-            type: 'TASK_MOVED',
+            type: "TASK_MOVED",
             taskId,
             projectId,
             data: {
@@ -523,7 +523,7 @@ describe('Realtime Broadcast Properties', () => {
             actorId,
           };
 
-          broadcastToProject(projectId, 'task_moved', taskEvent);
+          broadcastToProject(projectId, "task_moved", taskEvent);
 
           // Only open connection should receive the event
           expect(openEvents.length).toBe(1);

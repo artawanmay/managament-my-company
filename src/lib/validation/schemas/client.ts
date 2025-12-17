@@ -2,8 +2,8 @@
  * Client validation schemas
  * Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6
  */
-import { z } from 'zod';
-import { clientStatusValues } from '@/lib/db/schema/clients';
+import { z } from "zod";
+import { clientStatusValues } from "@/lib/db/schema/clients";
 import {
   uuidSchema,
   emailSchema,
@@ -14,7 +14,7 @@ import {
   textSchema,
   baseListQuerySchema,
   sortOrderSchema,
-} from './common';
+} from "./common";
 
 // Client status enum
 export const clientStatusSchema = z.enum(clientStatusValues);
@@ -27,7 +27,7 @@ export const createClientSchema = z.object({
   phone: phoneSchema.optional().nullable(),
   address: textSchema(1000),
   website: urlSchema.optional().nullable(),
-  status: clientStatusSchema.default('PROSPECT'),
+  status: clientStatusSchema.default("PROSPECT"),
   notes: textSchema(5000),
 });
 
@@ -46,7 +46,7 @@ export const updateClientSchema = z.object({
 // Client list query schema
 export const clientListQuerySchema = baseListQuerySchema.extend({
   status: clientStatusSchema.optional(),
-  sortBy: z.enum(['name', 'status', 'createdAt', 'updatedAt']).default('name'),
+  sortBy: z.enum(["name", "status", "createdAt", "updatedAt"]).default("name"),
   sortOrder: sortOrderSchema,
 });
 

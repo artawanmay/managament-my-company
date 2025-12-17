@@ -2,7 +2,7 @@
  * FilesTable component with TanStack Table
  * Requirements: 13.2 - Show sortable table with file name, size, type, uploader, and date
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,20 +11,30 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-} from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal, Download, Trash2, FileIcon, FileText, FileImage, FileArchive, FileCode } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+} from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  Download,
+  Trash2,
+  FileIcon,
+  FileText,
+  FileImage,
+  FileArchive,
+  FileCode,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { formatDistanceToNow } from 'date-fns';
-import type { FileItem } from '../types';
-import { formatFileSize, getFileCategory } from '../types';
+} from "@/components/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
+import type { FileItem } from "../types";
+import { formatFileSize, getFileCategory } from "../types";
 
 interface FilesTableProps {
   data: FileItem[];
@@ -34,43 +44,52 @@ interface FilesTableProps {
 }
 
 const categoryColors: Record<string, string> = {
-  Document: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  Spreadsheet: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  Presentation: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  Image: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  Archive: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  Code: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
-  Other: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  Document: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  Spreadsheet:
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  Presentation:
+    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+  Image:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  Archive:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  Code: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300",
+  Other: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
 function getFileIcon(mimeType: string) {
   const category = getFileCategory(mimeType);
   switch (category) {
-    case 'Document':
+    case "Document":
       return <FileText className="h-4 w-4" />;
-    case 'Image':
+    case "Image":
       return <FileImage className="h-4 w-4" />;
-    case 'Archive':
+    case "Archive":
       return <FileArchive className="h-4 w-4" />;
-    case 'Code':
+    case "Code":
       return <FileCode className="h-4 w-4" />;
     default:
       return <FileIcon className="h-4 w-4" />;
   }
 }
 
-export function FilesTable({ data, onDownload, onDelete, isLoading }: FilesTableProps) {
+export function FilesTable({
+  data,
+  onDownload,
+  onDelete,
+  isLoading,
+}: FilesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const columns: ColumnDef<FileItem>[] = useMemo(
     () => [
       {
-        accessorKey: 'fileName',
+        accessorKey: "fileName",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             File Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -81,24 +100,24 @@ export function FilesTable({ data, onDownload, onDelete, isLoading }: FilesTable
           return (
             <div className="flex items-center gap-2">
               {getFileIcon(file.mimeType)}
-              <span className="font-medium">{row.getValue('fileName')}</span>
+              <span className="font-medium">{row.getValue("fileName")}</span>
             </div>
           );
         },
       },
       {
-        accessorKey: 'mimeType',
+        accessorKey: "mimeType",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Type
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const mimeType = row.getValue('mimeType') as string;
+          const mimeType = row.getValue("mimeType") as string;
           const category = getFileCategory(mimeType);
           return (
             <Badge className={categoryColors[category]} variant="outline">
@@ -108,42 +127,44 @@ export function FilesTable({ data, onDownload, onDelete, isLoading }: FilesTable
         },
       },
       {
-        accessorKey: 'size',
+        accessorKey: "size",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Size
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => formatFileSize(row.getValue('size')),
+        cell: ({ row }) => formatFileSize(row.getValue("size")),
       },
       {
-        accessorKey: 'uploaderName',
-        header: 'Uploaded By',
-        cell: ({ row }) => row.getValue('uploaderName') || 'Unknown',
+        accessorKey: "uploaderName",
+        header: "Uploaded By",
+        cell: ({ row }) => row.getValue("uploaderName") || "Unknown",
       },
       {
-        accessorKey: 'uploadedAt',
+        accessorKey: "uploadedAt",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Uploaded
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const date = row.getValue('uploadedAt');
-          if (!date) return '-';
-          return formatDistanceToNow(new Date(date as string), { addSuffix: true });
+          const date = row.getValue("uploadedAt");
+          if (!date) return "-";
+          return formatDistanceToNow(new Date(date as string), {
+            addSuffix: true,
+          });
         },
       },
       {
-        id: 'actions',
+        id: "actions",
         cell: ({ row }) => {
           const file = row.original;
           return (
@@ -224,7 +245,10 @@ export function FilesTable({ data, onDownload, onDelete, isLoading }: FilesTable
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -248,7 +272,10 @@ export function FilesTable({ data, onDownload, onDelete, isLoading }: FilesTable
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-sm">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>

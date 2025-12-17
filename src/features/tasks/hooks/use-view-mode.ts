@@ -1,30 +1,32 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 /**
  * View mode type for tasks display
  */
-export type ViewMode = 'list' | 'kanban';
+export type ViewMode = "list" | "kanban";
 
 /**
  * Storage key for persisting view mode preference
  */
-const TASKS_VIEW_MODE_KEY = 'tasks-view-mode';
+const TASKS_VIEW_MODE_KEY = "tasks-view-mode";
 
 /**
  * Default view mode when no preference is stored
  */
-const DEFAULT_VIEW_MODE: ViewMode = 'list';
+const DEFAULT_VIEW_MODE: ViewMode = "list";
 
 /**
  * Valid view mode values for validation
  */
-const VALID_VIEW_MODES: ViewMode[] = ['list', 'kanban'];
+const VALID_VIEW_MODES: ViewMode[] = ["list", "kanban"];
 
 /**
  * Check if a value is a valid ViewMode
  */
 function isValidViewMode(value: unknown): value is ViewMode {
-  return typeof value === 'string' && VALID_VIEW_MODES.includes(value as ViewMode);
+  return (
+    typeof value === "string" && VALID_VIEW_MODES.includes(value as ViewMode)
+  );
 }
 
 /**
@@ -60,9 +62,9 @@ export interface UseViewModeReturn {
 
 /**
  * Custom hook for managing tasks view mode with localStorage persistence
- * 
+ *
  * @returns Object containing current viewMode and setViewMode function
- * 
+ *
  * Requirements: 1.1, 1.2, 1.3, 1.4
  */
 export function useViewMode(): UseViewModeReturn {
@@ -74,11 +76,11 @@ export function useViewMode(): UseViewModeReturn {
   }, []);
 
   // Sync with localStorage on mount (handles SSR hydration)
+  // We intentionally only run this on mount, not when viewMode changes
   useEffect(() => {
     const stored = getStoredViewMode();
-    if (stored !== viewMode) {
-      setViewModeState(stored);
-    }
+    setViewModeState(stored);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { viewMode, setViewMode };

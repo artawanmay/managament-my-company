@@ -2,7 +2,7 @@
  * ClientsTable component with TanStack Table
  * Requirements: 3.2, 3.3
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,27 +11,27 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-} from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+} from "@tanstack/react-table";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { Client, ClientStatus } from '../types';
-import { clientStatusValues } from '@/lib/db/schema';
+} from "@/components/ui/select";
+import type { Client, ClientStatus } from "../types";
+import { clientStatusValues } from "@/lib/db/schema";
 
 interface ClientsTableProps {
   data: Client[];
@@ -41,29 +41,34 @@ interface ClientsTableProps {
 }
 
 const statusColors: Record<ClientStatus, string> = {
-  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  INACTIVE: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  PROSPECT: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  INACTIVE: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  PROSPECT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
 };
 
-export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTableProps) {
+export function ClientsTable({
+  data,
+  onEdit,
+  onDelete,
+  isLoading,
+}: ClientsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ClientStatus | 'ALL'>('ALL');
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ClientStatus | "ALL">("ALL");
 
   const filteredData = useMemo(() => {
-    if (statusFilter === 'ALL') return data;
+    if (statusFilter === "ALL") return data;
     return data.filter((client) => client.status === statusFilter);
   }, [data, statusFilter]);
 
   const columns: ColumnDef<Client>[] = useMemo(
     () => [
       {
-        accessorKey: 'name',
+        accessorKey: "name",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -75,38 +80,38 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
             params={{ clientId: row.original.id }}
             className="font-medium text-primary hover:underline"
           >
-            {row.getValue('name')}
+            {row.getValue("name")}
           </Link>
         ),
       },
       {
-        accessorKey: 'picName',
-        header: 'PIC',
-        cell: ({ row }) => row.getValue('picName') || '-',
+        accessorKey: "picName",
+        header: "PIC",
+        cell: ({ row }) => row.getValue("picName") || "-",
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
-        cell: ({ row }) => row.getValue('email') || '-',
+        accessorKey: "email",
+        header: "Email",
+        cell: ({ row }) => row.getValue("email") || "-",
       },
       {
-        accessorKey: 'phone',
-        header: 'Phone',
-        cell: ({ row }) => row.getValue('phone') || '-',
+        accessorKey: "phone",
+        header: "Phone",
+        cell: ({ row }) => row.getValue("phone") || "-",
       },
       {
-        accessorKey: 'status',
+        accessorKey: "status",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Status
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const status = row.getValue('status') as ClientStatus;
+          const status = row.getValue("status") as ClientStatus;
           return (
             <Badge className={statusColors[status]} variant="outline">
               {status}
@@ -115,7 +120,7 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
         },
       },
       {
-        id: 'actions',
+        id: "actions",
         cell: ({ row }) => {
           const client = row.original;
           return (
@@ -127,7 +132,10 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <Link to="/app/clients/$clientId" params={{ clientId: client.id }}>
+                <Link
+                  to="/app/clients/$clientId"
+                  params={{ clientId: client.id }}
+                >
                   <DropdownMenuItem>
                     <Eye className="mr-2 h-4 w-4" />
                     View
@@ -190,7 +198,9 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
         />
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as ClientStatus | 'ALL')}
+          onValueChange={(value) =>
+            setStatusFilter(value as ClientStatus | "ALL")
+          }
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
@@ -218,7 +228,10 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -242,7 +255,10 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-sm">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>

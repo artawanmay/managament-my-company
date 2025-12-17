@@ -5,9 +5,9 @@
  * Requirements: 26.11 - WHEN any operation fails THEN the System SHALL display toast notification with error message
  * Requirements: 26.12 - WHEN any operation succeeds THEN the System SHALL display toast notification with success message
  */
-import { toast } from '@/hooks/use-toast';
-import type { ErrorResponse, FieldError, ErrorCodeType } from './index';
-import { ErrorCode } from './index';
+import { toast } from "@/hooks/use-toast";
+import type { ErrorResponse, FieldError, ErrorCodeType } from "./index";
+import { ErrorCode } from "./index";
 
 /**
  * API Error class for typed error handling
@@ -30,7 +30,7 @@ export class ApiError extends Error {
     }
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.code = code;
     this.status = status;
     this.details = options?.details;
@@ -110,7 +110,7 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
 
     // Handle legacy error format
     throw new ApiError(
-      data.error || data.message || 'An unexpected error occurred',
+      data.error || data.message || "An unexpected error occurred",
       ErrorCode.INTERNAL_ERROR,
       response.status
     );
@@ -124,10 +124,10 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
  */
 function isErrorResponse(data: unknown): data is ErrorResponse {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'error' in data &&
-    'message' in data
+    "error" in data &&
+    "message" in data
   );
 }
 
@@ -135,19 +135,22 @@ function isErrorResponse(data: unknown): data is ErrorResponse {
  * User-friendly error messages for display
  */
 const userFriendlyMessages: Partial<Record<ErrorCodeType, string>> = {
-  [ErrorCode.UNAUTHORIZED]: 'Please log in to continue',
-  [ErrorCode.SESSION_EXPIRED]: 'Your session has expired. Please log in again.',
-  [ErrorCode.INVALID_CREDENTIALS]: 'Invalid email or password',
-  [ErrorCode.FORBIDDEN]: 'You don\'t have permission to do this',
-  [ErrorCode.INSUFFICIENT_PERMISSIONS]: 'You don\'t have permission to perform this action',
-  [ErrorCode.CSRF_INVALID]: 'Security token expired. Please refresh the page.',
-  [ErrorCode.VALIDATION_ERROR]: 'Please check your input and try again',
-  [ErrorCode.NOT_FOUND]: 'The requested item was not found',
-  [ErrorCode.DUPLICATE_ENTRY]: 'This item already exists',
-  [ErrorCode.REFERENTIAL_INTEGRITY]: 'Cannot delete this item because it\'s being used elsewhere',
-  [ErrorCode.RATE_LIMITED]: 'Too many requests. Please wait a moment.',
-  [ErrorCode.ACCOUNT_LOCKED]: 'Account temporarily locked. Please try again later.',
-  [ErrorCode.INTERNAL_ERROR]: 'Something went wrong. Please try again.',
+  [ErrorCode.UNAUTHORIZED]: "Please log in to continue",
+  [ErrorCode.SESSION_EXPIRED]: "Your session has expired. Please log in again.",
+  [ErrorCode.INVALID_CREDENTIALS]: "Invalid email or password",
+  [ErrorCode.FORBIDDEN]: "You don't have permission to do this",
+  [ErrorCode.INSUFFICIENT_PERMISSIONS]:
+    "You don't have permission to perform this action",
+  [ErrorCode.CSRF_INVALID]: "Security token expired. Please refresh the page.",
+  [ErrorCode.VALIDATION_ERROR]: "Please check your input and try again",
+  [ErrorCode.NOT_FOUND]: "The requested item was not found",
+  [ErrorCode.DUPLICATE_ENTRY]: "This item already exists",
+  [ErrorCode.REFERENTIAL_INTEGRITY]:
+    "Cannot delete this item because it's being used elsewhere",
+  [ErrorCode.RATE_LIMITED]: "Too many requests. Please wait a moment.",
+  [ErrorCode.ACCOUNT_LOCKED]:
+    "Account temporarily locked. Please try again later.",
+  [ErrorCode.INTERNAL_ERROR]: "Something went wrong. Please try again.",
 };
 
 /**
@@ -160,13 +163,13 @@ export function getUserFriendlyMessage(error: unknown): string {
 
   if (error instanceof Error) {
     // Check for network errors
-    if (error.message.includes('fetch') || error.message.includes('network')) {
-      return 'Network error. Please check your connection.';
+    if (error.message.includes("fetch") || error.message.includes("network")) {
+      return "Network error. Please check your connection.";
     }
     return error.message;
   }
 
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 }
 
 /**
@@ -179,10 +182,10 @@ export function showErrorToast(
   }
 ): void {
   const message = getUserFriendlyMessage(error);
-  const title = options?.title || 'Error';
+  const title = options?.title || "Error";
 
   toast({
-    variant: 'destructive',
+    variant: "destructive",
     title,
     description: message,
   });
@@ -198,7 +201,7 @@ export function showSuccessToast(
   }
 ): void {
   toast({
-    title: options?.title || 'Success',
+    title: options?.title || "Success",
     description: message,
   });
 }
@@ -213,7 +216,7 @@ export function showInfoToast(
   }
 ): void {
   toast({
-    title: options?.title || 'Info',
+    title: options?.title || "Info",
     description: message,
   });
 }
@@ -231,7 +234,12 @@ export function handleApiError(
     context?: string;
   }
 ): boolean {
-  const { showToast = true, onAuthError, onValidationError, context } = options || {};
+  const {
+    showToast = true,
+    onAuthError,
+    onValidationError,
+    context,
+  } = options || {};
 
   if (error instanceof ApiError) {
     // Handle authentication errors
@@ -241,8 +249,8 @@ export function handleApiError(
         return true;
       }
       // Default: redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login';
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth/login";
         return true;
       }
     }
@@ -251,7 +259,9 @@ export function handleApiError(
     if (error.isValidationError() && onValidationError) {
       onValidationError(error.getFieldErrors());
       if (showToast) {
-        showErrorToast(error, { title: context ? `${context} failed` : 'Validation Error' });
+        showErrorToast(error, {
+          title: context ? `${context} failed` : "Validation Error",
+        });
       }
       return true;
     }
@@ -260,10 +270,10 @@ export function handleApiError(
     if (error.isRateLimitError()) {
       const retryMessage = error.retryAfter
         ? `Please try again in ${Math.ceil(error.retryAfter / 60)} minutes.`
-        : 'Please try again later.';
-      
+        : "Please try again later.";
+
       if (showToast) {
-        showErrorToast(new Error(retryMessage), { title: 'Too Many Requests' });
+        showErrorToast(new Error(retryMessage), { title: "Too Many Requests" });
       }
       return true;
     }
@@ -359,17 +369,17 @@ export function getFormFieldError(
  * Network status utilities
  */
 export function isOnline(): boolean {
-  return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  return typeof navigator !== "undefined" ? navigator.onLine : true;
 }
 
 /**
  * Check if an error is a network error
  */
 export function isNetworkError(error: unknown): boolean {
-  if (error instanceof TypeError && error.message.includes('fetch')) {
+  if (error instanceof TypeError && error.message.includes("fetch")) {
     return true;
   }
-  if (error instanceof Error && error.message.includes('network')) {
+  if (error instanceof Error && error.message.includes("network")) {
     return true;
   }
   return false;

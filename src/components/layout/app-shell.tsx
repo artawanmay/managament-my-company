@@ -36,7 +36,14 @@ function AppShellContent({ children, sidebar, topbar }: AppShellProps) {
         {topbar}
 
         {/* Page content - disable transition animation on initial mount */}
-        <main className={cn("flex-1 p-4 md:p-6", !isInitialMount && "page-transition-enter")}>{children}</main>
+        <main
+          className={cn(
+            "flex-1 p-4 md:p-6",
+            !isInitialMount && "page-transition-enter"
+          )}
+        >
+          {children}
+        </main>
       </div>
 
       {/* Toast notifications */}

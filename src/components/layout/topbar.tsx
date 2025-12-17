@@ -61,8 +61,6 @@ function SearchTrigger({ onClick }: { onClick?: () => void }) {
   );
 }
 
-
-
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
@@ -81,7 +79,12 @@ function ThemeToggle() {
         <TooltipContent side="bottom">Theme</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as "light" | "dark" | "system")}>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) =>
+            setTheme(value as "light" | "dark" | "system")
+          }
+        >
           <DropdownMenuRadioItem value="light">
             <Sun className="mr-2 h-4 w-4" />
             Light
@@ -105,16 +108,16 @@ function UserMenu() {
   const { user: sessionUser } = useSession();
   const logout = useLogout({
     onSuccess: () => {
-      navigate({ to: '/' });
+      navigate({ to: "/" });
     },
   });
 
   // Get user initials from name
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -127,11 +130,11 @@ function UserMenu() {
   };
 
   const handleProfileClick = () => {
-    navigate({ to: '/app/profile' });
+    navigate({ to: "/app/profile" });
   };
 
   const handleSettingsClick = () => {
-    navigate({ to: '/app/settings' });
+    navigate({ to: "/app/settings" });
   };
 
   const handleLogout = () => {
@@ -167,7 +170,10 @@ function UserMenu() {
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="text-destructive focus:text-destructive"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>

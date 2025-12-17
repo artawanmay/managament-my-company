@@ -10,9 +10,9 @@ import type {
   UpdateProjectInput,
   AddMemberInput,
   ProjectMemberWithUser,
-} from '../types';
+} from "../types";
 
-const API_BASE = '/api/projects';
+const API_BASE = "/api/projects";
 
 /**
  * Fetch projects list with filters
@@ -22,24 +22,24 @@ export async function fetchProjects(
 ): Promise<ProjectListResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params.search) searchParams.set('search', params.search);
-  if (params.status) searchParams.set('status', params.status);
-  if (params.priority) searchParams.set('priority', params.priority);
-  if (params.clientId) searchParams.set('clientId', params.clientId);
-  if (params.includeArchived) searchParams.set('includeArchived', 'true');
-  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
-  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  if (params.page) searchParams.set('page', params.page.toString());
-  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set("search", params.search);
+  if (params.status) searchParams.set("status", params.status);
+  if (params.priority) searchParams.set("priority", params.priority);
+  if (params.clientId) searchParams.set("clientId", params.clientId);
+  if (params.includeArchived) searchParams.set("includeArchived", "true");
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.page) searchParams.set("page", params.page.toString());
+  if (params.limit) searchParams.set("limit", params.limit.toString());
 
   const url = `${API_BASE}/?${searchParams.toString()}`;
   const response = await fetch(url, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch projects');
+    throw new Error(error.error || "Failed to fetch projects");
   }
 
   return response.json();
@@ -48,14 +48,16 @@ export async function fetchProjects(
 /**
  * Fetch single project with details
  */
-export async function fetchProject(projectId: string): Promise<{ data: ProjectWithDetails }> {
+export async function fetchProject(
+  projectId: string
+): Promise<{ data: ProjectWithDetails }> {
   const response = await fetch(`${API_BASE}/${projectId}`, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch project');
+    throw new Error(error.error || "Failed to fetch project");
   }
 
   return response.json();
@@ -69,18 +71,18 @@ export async function createProject(
   csrfToken: string
 ): Promise<{ data: ProjectWithDetails }> {
   const response = await fetch(`${API_BASE}/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to create project');
+    throw new Error(error.error || "Failed to create project");
   }
 
   return response.json();
@@ -95,18 +97,18 @@ export async function updateProject(
   csrfToken: string
 ): Promise<{ data: ProjectWithDetails }> {
   const response = await fetch(`${API_BASE}/${projectId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to update project');
+    throw new Error(error.error || "Failed to update project");
   }
 
   return response.json();
@@ -120,17 +122,17 @@ export async function archiveProject(
   csrfToken: string
 ): Promise<{ data: ProjectWithDetails; message: string }> {
   const response = await fetch(`${API_BASE}/${projectId}/archive`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to archive project');
+    throw new Error(error.error || "Failed to archive project");
   }
 
   return response.json();
@@ -143,12 +145,12 @@ export async function fetchProjectMembers(
   projectId: string
 ): Promise<{ data: ProjectMemberWithUser[] }> {
   const response = await fetch(`${API_BASE}/${projectId}/members/`, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch project members');
+    throw new Error(error.error || "Failed to fetch project members");
   }
 
   return response.json();
@@ -163,18 +165,18 @@ export async function addProjectMember(
   csrfToken: string
 ): Promise<{ data: ProjectMemberWithUser }> {
   const response = await fetch(`${API_BASE}/${projectId}/members/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to add project member');
+    throw new Error(error.error || "Failed to add project member");
   }
 
   return response.json();
@@ -189,16 +191,16 @@ export async function removeProjectMember(
   csrfToken: string
 ): Promise<{ success: boolean; message: string }> {
   const response = await fetch(`${API_BASE}/${projectId}/members/${userId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'X-CSRF-Token': csrfToken,
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to remove project member');
+    throw new Error(error.error || "Failed to remove project member");
   }
 
   return response.json();

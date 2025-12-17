@@ -3,13 +3,18 @@
  * List of comments on a task
  * Requirements: 8.1, 8.2, 8.4, 8.5
  */
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare } from 'lucide-react';
-import { CommentItem } from './comment-item';
-import { CommentForm } from './comment-form';
-import { useComments, useCreateComment, useUpdateComment, useDeleteComment } from '../hooks';
-import type { Comment } from '../types';
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MessageSquare } from "lucide-react";
+import { CommentItem } from "./comment-item";
+import { CommentForm } from "./comment-form";
+import {
+  useComments,
+  useCreateComment,
+  useUpdateComment,
+  useDeleteComment,
+} from "../hooks";
+import type { Comment } from "../types";
 
 interface MentionUser {
   id: string;
@@ -36,8 +41,8 @@ export function CommentThread({
   const updateComment = useUpdateComment(taskId);
   const deleteComment = useDeleteComment(taskId);
 
-  const isAdmin = currentUserRole === 'SUPER_ADMIN';
-  const canComment = currentUserRole !== 'GUEST';
+  const isAdmin = currentUserRole === "SUPER_ADMIN";
+  const canComment = currentUserRole !== "GUEST";
 
   const handleCreateComment = async (message: string) => {
     await createComment.mutateAsync({ message });

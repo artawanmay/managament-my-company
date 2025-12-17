@@ -7,15 +7,15 @@ Tools untuk tracking error, infinite loops, dan performance issues di React.
 ### 1. Track Component Renders
 
 ```tsx
-import { useRenderTracker, useLoopDetector } from '@/lib/dev-tools';
+import { useRenderTracker, useLoopDetector } from "@/lib/dev-tools";
 
 function MyComponent(props) {
   // Track renders dengan props comparison
-  useRenderTracker('MyComponent', props, true); // verbose mode
-  
+  useRenderTracker("MyComponent", props, true); // verbose mode
+
   // Detect infinite loops (warns if > 20 renders/second)
-  useLoopDetector('MyComponent');
-  
+  useLoopDetector("MyComponent");
+
   return <div>...</div>;
 }
 ```
@@ -23,18 +23,18 @@ function MyComponent(props) {
 ### 2. Track Hook State Changes
 
 ```tsx
-import { trackHook, trackEffect } from '@/lib/dev-tools';
+import { trackHook, trackEffect } from "@/lib/dev-tools";
 
 function MyComponent() {
   const [count, setCount] = useState(0);
-  
+
   const handleClick = () => {
-    trackHook('useState:count', 'MyComponent', count + 1, count);
+    trackHook("useState:count", "MyComponent", count + 1, count);
     setCount(count + 1);
   };
-  
+
   useEffect(() => {
-    trackEffect('MyComponent', 'fetchData', [userId]);
+    trackEffect("MyComponent", "fetchData", [userId]);
     // ... effect code
   }, [userId]);
 }
@@ -43,10 +43,10 @@ function MyComponent() {
 ### 3. Measure Performance
 
 ```tsx
-import { measureRender, startMark, endMark } from '@/lib/dev-tools';
+import { measureRender, startMark, endMark } from "@/lib/dev-tools";
 
 function ExpensiveComponent() {
-  return measureRender('ExpensiveComponent', () => {
+  return measureRender("ExpensiveComponent", () => {
     // ... expensive render logic
     return <div>...</div>;
   });
@@ -54,9 +54,9 @@ function ExpensiveComponent() {
 
 // Or for async operations:
 async function fetchData() {
-  startMark('fetchData');
+  startMark("fetchData");
   const data = await api.getData();
-  endMark('fetchData'); // Logs: ⏱️ [PERF] fetchData: 123.45ms
+  endMark("fetchData"); // Logs: ⏱️ [PERF] fetchData: 123.45ms
   return data;
 }
 ```
@@ -80,32 +80,33 @@ export default MyComponent;
 ## Available Tools
 
 ### React Query DevTools
+
 - Otomatis muncul di bottom-left saat development
 - Klik icon untuk lihat query states, cache, mutations
 
 ### Console Outputs
 
-| Emoji | Meaning |
-|-------|---------|
-| 🔄 | Component render |
-| 🔴 | Infinite loop detected |
-| 🪝 | Hook state change |
-| ⚡ | useEffect execution |
-| ⏱️ | Performance measurement |
-| 🐢 | Slow render (> 16ms) |
-| ⚠️ | Warning |
-| 📝 | Props changed |
-| 📊 | Performance summary |
+| Emoji | Meaning                 |
+| ----- | ----------------------- |
+| 🔄    | Component render        |
+| 🔴    | Infinite loop detected  |
+| 🪝    | Hook state change       |
+| ⚡    | useEffect execution     |
+| ⏱️    | Performance measurement |
+| 🐢    | Slow render (> 16ms)    |
+| ⚠️    | Warning                 |
+| 📝    | Props changed           |
+| 📊    | Performance summary     |
 
 ### Debug Functions (Console)
 
 ```js
 // Di browser console:
-import('@/lib/dev-tools').then(d => {
-  d.getAllRenderStats()      // Get all render counts
-  d.getHookHistory()         // Get hook call history
-  d.getSlowRenders()         // Get renders > 16ms
-  d.logPerformanceSummary()  // Log performance stats
+import("@/lib/dev-tools").then((d) => {
+  d.getAllRenderStats(); // Get all render counts
+  d.getHookHistory(); // Get hook call history
+  d.getSlowRenders(); // Get renders > 16ms
+  d.logPerformanceSummary(); // Log performance stats
 });
 ```
 

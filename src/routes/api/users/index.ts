@@ -7,43 +7,52 @@
  * - 2.2: SUPER_ADMIN has full control over all users
  * - 2.3: ADMIN can manage users excluding SUPER_ADMIN accounts
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, like, or, desc, asc, sql } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite, roleValues, type NewUser } from '@/lib/db/schema/users';
-import { requireAuth, requireAuthWithCsrf, handleAuthError } from '@/lib/auth/middleware';
-import { canManageUsers } from '@/lib/auth/permissions';
-import { hashPassword } from '@/lib/auth/password';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, like, or, desc, asc, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite, roleValues, type NewUser } from "@/lib/db/schema/users";
+import {
+  requireAuth,
+  requireAuthWithCsrf,
+  handleAuthError,
+} from "@/lib/auth/middleware";
+import { canManageUsers } from "@/lib/auth/permissions";
+import { hashPassword } from "@/lib/auth/password";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for creating a user
 const createUserSchema = z.object({
-  email: z.string().email('Invalid email').max(255),
+  email: z.string().email("Invalid email").max(255),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password is too long')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  name: z.string().min(1, 'Name is required').max(100),
-  role: z.enum(roleValues).default('MEMBER'),
-  avatarUrl: z.string().url('Invalid URL').optional().nullable().or(z.literal('')),
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password is too long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  name: z.string().min(1, "Name is required").max(100),
+  role: z.enum(roleValues).default("MEMBER"),
+  avatarUrl: z
+    .string()
+    .url("Invalid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 // Query params schema
 const listQuerySchema = z.object({
   search: z.string().optional(),
   role: z.enum(roleValues).optional(),
-  sortBy: z.enum(['name', 'email', 'role', 'createdAt']).default('name'),
-  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  sortBy: z.enum(["name", "email", "role", "createdAt"]).default("name"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
 });
 
-export const Route = createFileRoute('/api/users/')({
+export const Route = createFileRoute("/api/users/")({
   server: {
     handlers: {
       /**
@@ -54,29 +63,36 @@ export const Route = createFileRoute('/api/users/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least ADMIN role to list users
         if (!canManageUsers(auth.user)) {
-          return json({ error: 'Insufficient permissions to manage users' }, { status: 403 });
+          return json(
+            { error: "Insufficient permissions to manage users" },
+            { status: 403 }
+          );
         }
 
         try {
           // Parse query parameters
           const url = new URL(request.url);
           const queryParams = {
-            search: url.searchParams.get('search') || undefined,
-            role: url.searchParams.get('role') || undefined,
-            sortBy: url.searchParams.get('sortBy') || 'name',
-            sortOrder: url.searchParams.get('sortOrder') || 'asc',
-            page: url.searchParams.get('page') || '1',
-            limit: url.searchParams.get('limit') || '20',
+            search: url.searchParams.get("search") || undefined,
+            role: url.searchParams.get("role") || undefined,
+            sortBy: url.searchParams.get("sortBy") || "name",
+            sortOrder: url.searchParams.get("sortOrder") || "asc",
+            page: url.searchParams.get("page") || "1",
+            limit: url.searchParams.get("limit") || "20",
           };
 
           const parsed = listQuerySchema.safeParse(queryParams);
           if (!parsed.success) {
             return json(
-              { error: 'Invalid query parameters', details: parsed.error.flatten() },
+              {
+                error: "Invalid query parameters",
+                details: parsed.error.flatten(),
+              },
               { status: 400 }
             );
           }
@@ -108,7 +124,7 @@ export const Route = createFileRoute('/api/users/')({
             createdAt: usersSqlite.createdAt,
           }[sortBy];
 
-          const orderFn = sortOrder === 'asc' ? asc : desc;
+          const orderFn = sortOrder === "asc" ? asc : desc;
 
           // Execute query with conditions
           let query = db
@@ -137,7 +153,9 @@ export const Route = createFileRoute('/api/users/')({
             .offset(offset);
 
           // Get total count for pagination
-          let countQuery = db.select({ count: sql<number>`count(*)` }).from(usersSqlite);
+          let countQuery = db
+            .select({ count: sql<number>`count(*)` })
+            .from(usersSqlite);
 
           if (conditions.length > 0) {
             for (const condition of conditions) {
@@ -164,8 +182,8 @@ export const Route = createFileRoute('/api/users/')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/users] Error:', error);
-          return json({ error: 'Failed to fetch users' }, { status: 500 });
+          console.error("[GET /api/users] Error:", error);
+          return json({ error: "Failed to fetch users" }, { status: 500 });
         }
       },
 
@@ -177,11 +195,15 @@ export const Route = createFileRoute('/api/users/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least ADMIN role to create users
         if (!canManageUsers(auth.user)) {
-          return json({ error: 'Insufficient permissions to create users' }, { status: 403 });
+          return json(
+            { error: "Insufficient permissions to create users" },
+            { status: 403 }
+          );
         }
 
         try {
@@ -190,15 +212,18 @@ export const Route = createFileRoute('/api/users/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
 
           // Check role hierarchy - ADMIN cannot create SUPER_ADMIN
-          if (auth.user.role !== 'SUPER_ADMIN' && parsed.data.role === 'SUPER_ADMIN') {
+          if (
+            auth.user.role !== "SUPER_ADMIN" &&
+            parsed.data.role === "SUPER_ADMIN"
+          ) {
             return json(
-              { error: 'Only SUPER_ADMIN can create SUPER_ADMIN users' },
+              { error: "Only SUPER_ADMIN can create SUPER_ADMIN users" },
               { status: 403 }
             );
           }
@@ -211,7 +236,7 @@ export const Route = createFileRoute('/api/users/')({
             .limit(1);
 
           if (existingUser.length > 0) {
-            return json({ error: 'Email is already in use' }, { status: 409 });
+            return json({ error: "Email is already in use" }, { status: 409 });
           }
 
           // Hash password
@@ -226,20 +251,23 @@ export const Route = createFileRoute('/api/users/')({
             avatarUrl: parsed.data.avatarUrl || null,
           };
 
-          const result = await db.insert(usersSqlite).values(userData).returning({
-            id: usersSqlite.id,
-            email: usersSqlite.email,
-            name: usersSqlite.name,
-            role: usersSqlite.role,
-            avatarUrl: usersSqlite.avatarUrl,
-            createdAt: usersSqlite.createdAt,
-            updatedAt: usersSqlite.updatedAt,
-          });
+          const result = await db
+            .insert(usersSqlite)
+            .values(userData)
+            .returning({
+              id: usersSqlite.id,
+              email: usersSqlite.email,
+              name: usersSqlite.name,
+              role: usersSqlite.role,
+              avatarUrl: usersSqlite.avatarUrl,
+              createdAt: usersSqlite.createdAt,
+              updatedAt: usersSqlite.updatedAt,
+            });
 
           const newUser = result[0];
 
           if (!newUser) {
-            return json({ error: 'Failed to create user' }, { status: 500 });
+            return json({ error: "Failed to create user" }, { status: 500 });
           }
 
           return json(
@@ -253,8 +281,8 @@ export const Route = createFileRoute('/api/users/')({
             { status: 201 }
           );
         } catch (error) {
-          console.error('[POST /api/users] Error:', error);
-          return json({ error: 'Failed to create user' }, { status: 500 });
+          console.error("[POST /api/users] Error:", error);
+          return json({ error: "Failed to create user" }, { status: 500 });
         }
       },
     },

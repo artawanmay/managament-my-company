@@ -7,9 +7,15 @@ import {
   type Priority,
   type ProjectMember,
   type ProjectMemberRole,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 
-export type { Project, ProjectStatus, Priority, ProjectMember, ProjectMemberRole };
+export type {
+  Project,
+  ProjectStatus,
+  Priority,
+  ProjectMember,
+  ProjectMemberRole,
+};
 
 export interface ProjectWithDetails extends Project {
   clientName: string | null;
@@ -52,8 +58,15 @@ export interface ProjectListParams {
   priority?: Priority;
   clientId?: string;
   includeArchived?: boolean;
-  sortBy?: 'name' | 'status' | 'priority' | 'startDate' | 'endDate' | 'createdAt' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?:
+    | "name"
+    | "status"
+    | "priority"
+    | "startDate"
+    | "endDate"
+    | "createdAt"
+    | "updatedAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }

@@ -2,10 +2,10 @@
  * Session management service
  * Requirements: 1.1, 1.4, 1.6 - Session creation, invalidation, and CSRF protection
  */
-import { randomBytes } from 'crypto';
-import { eq, and, gt } from 'drizzle-orm';
-import { db as defaultDb } from '@/lib/db';
-import { sessionsSqlite } from '@/lib/db/schema/sessions';
+import { randomBytes } from "crypto";
+import { eq, and, gt } from "drizzle-orm";
+import { db as defaultDb } from "@/lib/db";
+import { sessionsSqlite } from "@/lib/db/schema/sessions";
 
 // Session duration: 7 days
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -31,7 +31,7 @@ export interface SessionData {
  * @param length - Number of bytes (will be hex encoded, so output is 2x length)
  */
 function generateSecureId(length: number = 32): string {
-  return randomBytes(length).toString('hex');
+  return randomBytes(length).toString("hex");
 }
 
 /**

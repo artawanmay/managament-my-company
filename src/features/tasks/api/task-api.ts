@@ -8,9 +8,9 @@ import type {
   UpdateTaskInput,
   MoveTaskInput,
   TaskFilters,
-} from '../types';
+} from "../types";
 
-const API_BASE = '/api/tasks';
+const API_BASE = "/api/tasks";
 
 /**
  * Fetch tasks with filters
@@ -19,25 +19,27 @@ export async function fetchTasks(
   filters: TaskFilters = {}
 ): Promise<TaskListResponse> {
   const params = new URLSearchParams();
-  
-  if (filters.search) params.set('search', filters.search);
-  if (filters.projectId) params.set('projectId', filters.projectId);
-  if (filters.status) params.set('status', filters.status);
-  if (filters.priority) params.set('priority', filters.priority);
-  if (filters.assigneeId) params.set('assigneeId', filters.assigneeId);
-  if (filters.sortBy) params.set('sortBy', filters.sortBy);
-  if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+
+  if (filters.search) params.set("search", filters.search);
+  if (filters.projectId) params.set("projectId", filters.projectId);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.priority) params.set("priority", filters.priority);
+  if (filters.assigneeId) params.set("assigneeId", filters.assigneeId);
+  if (filters.sortBy) params.set("sortBy", filters.sortBy);
+  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
 
   const url = `${API_BASE}?${params.toString()}`;
   const response = await fetch(url, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch tasks' }));
-    throw new Error(error.error || 'Failed to fetch tasks');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch tasks" }));
+    throw new Error(error.error || "Failed to fetch tasks");
   }
 
   return response.json();
@@ -48,12 +50,14 @@ export async function fetchTasks(
  */
 export async function fetchTask(taskId: string): Promise<TaskResponse> {
   const response = await fetch(`${API_BASE}/${taskId}`, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch task' }));
-    throw new Error(error.error || 'Failed to fetch task');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch task" }));
+    throw new Error(error.error || "Failed to fetch task");
   }
 
   return response.json();
@@ -67,18 +71,20 @@ export async function createTask(
   csrfToken: string
 ): Promise<TaskResponse> {
   const response = await fetch(API_BASE, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to create task' }));
-    throw new Error(error.error || 'Failed to create task');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to create task" }));
+    throw new Error(error.error || "Failed to create task");
   }
 
   return response.json();
@@ -93,18 +99,20 @@ export async function updateTask(
   csrfToken: string
 ): Promise<TaskResponse> {
   const response = await fetch(`${API_BASE}/${taskId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to update task' }));
-    throw new Error(error.error || 'Failed to update task');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to update task" }));
+    throw new Error(error.error || "Failed to update task");
   }
 
   return response.json();
@@ -119,18 +127,20 @@ export async function moveTask(
   csrfToken: string
 ): Promise<TaskResponse> {
   const response = await fetch(`${API_BASE}/${taskId}/move`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to move task' }));
-    throw new Error(error.error || 'Failed to move task');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to move task" }));
+    throw new Error(error.error || "Failed to move task");
   }
 
   return response.json();
@@ -144,16 +154,18 @@ export async function deleteTask(
   csrfToken: string
 ): Promise<{ success: boolean }> {
   const response = await fetch(`${API_BASE}/${taskId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'X-CSRF-Token': csrfToken,
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete task' }));
-    throw new Error(error.error || 'Failed to delete task');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete task" }));
+    throw new Error(error.error || "Failed to delete task");
   }
 
   return response.json();

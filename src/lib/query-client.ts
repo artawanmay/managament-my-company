@@ -2,8 +2,8 @@
  * TanStack Query Client Configuration
  * Centralized query client with error handling and retry logic
  */
-import { QueryClient } from '@tanstack/react-query';
-import { shouldRetry, getRetryDelay } from './errors/client';
+import { QueryClient } from "@tanstack/react-query";
+import { shouldRetry, getRetryDelay } from "./errors/client";
 
 /**
  * Create a configured QueryClient instance

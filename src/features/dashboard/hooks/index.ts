@@ -1,1 +1,1 @@
-export { useDashboard, dashboardQueryKey } from './use-dashboard';
+export { useDashboard, dashboardQueryKey } from "./use-dashboard";

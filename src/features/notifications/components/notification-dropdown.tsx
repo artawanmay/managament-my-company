@@ -3,26 +3,26 @@
  * Displays a scrollable list of notifications with real data
  * Requirements: 9.3, 9.4, 9.5
  */
-import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useNotifications, useMarkAllAsRead } from '../hooks';
-import { NotificationItem } from './notification-item';
-import { useState } from 'react';
+} from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useNotifications, useMarkAllAsRead } from "../hooks";
+import { NotificationItem } from "./notification-item";
+import { useState } from "react";
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +39,7 @@ export function NotificationDropdown() {
     try {
       await markAllAsRead.mutateAsync();
     } catch (error) {
-      console.error('Failed to mark all as read:', error);
+      console.error("Failed to mark all as read:", error);
     }
   };
 
@@ -55,7 +55,7 @@ export function NotificationDropdown() {
                   variant="destructive"
                   className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                 >
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </Badge>
               )}
               <span className="sr-only">Notifications</span>
@@ -75,7 +75,7 @@ export function NotificationDropdown() {
               onClick={handleMarkAllAsRead}
               disabled={markAllAsRead.isPending}
             >
-              {markAllAsRead.isPending ? 'Marking...' : 'Mark all as read'}
+              {markAllAsRead.isPending ? "Marking..." : "Mark all as read"}
             </Button>
           )}
         </DropdownMenuLabel>

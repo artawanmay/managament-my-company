@@ -6,23 +6,23 @@
  * Requirements:
  * - 13.4: Remove the file after confirmation
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { files, users } from '@/lib/db/schema';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { files, users } from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
   handleAuthError,
   requireProjectAccess,
   handleProjectAccessError,
-} from '@/lib/auth/middleware';
-import { logActivity } from '@/lib/activity';
-import { logError } from '@/lib/logger';
-import * as fs from 'fs';
+} from "@/lib/auth/middleware";
+import { logActivity } from "@/lib/activity";
+import { logError } from "@/lib/logger";
+import * as fs from "fs";
 
-export const Route = createFileRoute('/api/files/$fileId/')({
+export const Route = createFileRoute("/api/files/$fileId/")({
   server: {
     handlers: {
       /**
@@ -33,7 +33,8 @@ export const Route = createFileRoute('/api/files/$fileId/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { fileId } = params;
@@ -58,20 +59,25 @@ export const Route = createFileRoute('/api/files/$fileId/')({
             .limit(1);
 
           if (fileResult.length === 0) {
-            return json({ error: 'File not found' }, { status: 404 });
+            return json({ error: "File not found" }, { status: 404 });
           }
 
           const file = fileResult[0]!;
 
           // Check project access
-          const accessCheck = await requireProjectAccess(auth.user, file.projectId);
+          const accessCheck = await requireProjectAccess(
+            auth.user,
+            file.projectId
+          );
           const accessError = handleProjectAccessError(accessCheck);
           if (accessError) return accessError;
 
           return json({ data: file });
         } catch (error) {
-          logError('[GET /api/files/:fileId] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to fetch file' }, { status: 500 });
+          logError("[GET /api/files/:fileId] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json({ error: "Failed to fetch file" }, { status: 500 });
         }
       },
 
@@ -84,11 +90,12 @@ export const Route = createFileRoute('/api/files/$fileId/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // GUEST users cannot delete files
-        if (auth.user.role === 'GUEST') {
-          return json({ error: 'Access denied' }, { status: 403 });
+        if (auth.user.role === "GUEST") {
+          return json({ error: "Access denied" }, { status: 403 });
         }
 
         try {
@@ -110,13 +117,16 @@ export const Route = createFileRoute('/api/files/$fileId/')({
             .limit(1);
 
           if (fileResult.length === 0) {
-            return json({ error: 'File not found' }, { status: 404 });
+            return json({ error: "File not found" }, { status: 404 });
           }
 
           const file = fileResult[0]!;
 
           // Check project access - need management access or be the uploader
-          const accessCheck = await requireProjectAccess(auth.user, file.projectId);
+          const accessCheck = await requireProjectAccess(
+            auth.user,
+            file.projectId
+          );
           const accessError = handleProjectAccessError(accessCheck);
           if (accessError) return accessError;
 
@@ -125,10 +135,13 @@ export const Route = createFileRoute('/api/files/$fileId/')({
             accessCheck.success &&
             (accessCheck.canManage ||
               file.uploadedBy === auth.user.id ||
-              auth.user.role === 'SUPER_ADMIN');
+              auth.user.role === "SUPER_ADMIN");
 
           if (!canDelete) {
-            return json({ error: 'You do not have permission to delete this file' }, { status: 403 });
+            return json(
+              { error: "You do not have permission to delete this file" },
+              { status: 403 }
+            );
           }
 
           // Delete file from disk
@@ -142,9 +155,9 @@ export const Route = createFileRoute('/api/files/$fileId/')({
           // Log activity
           await logActivity({
             actorId: auth.user.id,
-            entityType: 'FILE',
+            entityType: "FILE",
             entityId: fileId,
-            action: 'DELETED',
+            action: "DELETED",
             metadata: {
               projectId: file.projectId,
               fileName: file.fileName,
@@ -153,10 +166,12 @@ export const Route = createFileRoute('/api/files/$fileId/')({
             },
           });
 
-          return json({ success: true, message: 'File deleted successfully' });
+          return json({ success: true, message: "File deleted successfully" });
         } catch (error) {
-          logError('[DELETE /api/files/:fileId] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to delete file' }, { status: 500 });
+          logError("[DELETE /api/files/:fileId] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json({ error: "Failed to delete file" }, { status: 500 });
         }
       },
     },

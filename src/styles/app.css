@@ -153,7 +153,7 @@
 
 @layer components {
   /* Liquid Glass Design System - Utility Classes (Requirements 21.1, 21.7, 28.1, 28.2) */
-  
+
   /* Base glass card styling */
   .glass-card {
     background: var(--glass-bg);
@@ -266,7 +266,9 @@
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .glass-task-card:hover {
@@ -341,12 +343,15 @@
 
 /* Smooth content transitions */
 .content-transition {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 /* Loading skeleton pulse animation enhancement */
 @keyframes skeleton-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {

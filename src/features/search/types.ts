@@ -44,7 +44,7 @@ export interface SearchResponse {
   data: SearchResults;
 }
 
-export type SearchResultType = 'client' | 'project' | 'task' | 'note';
+export type SearchResultType = "client" | "project" | "task" | "note";
 
 export interface SearchResultItem {
   type: SearchResultType;

@@ -3,16 +3,16 @@
  * Implements Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6
  */
 
-import { eq, and } from 'drizzle-orm';
-import { db as defaultDb, type Database } from '@/lib/db';
-import { projectMembersSqlite } from '@/lib/db/schema/project-members';
-import { notesSqlite } from '@/lib/db/schema/notes';
-import { projectsSqlite } from '@/lib/db/schema/projects';
-import type { Role } from '@/lib/db/schema/users';
+import { eq, and } from "drizzle-orm";
+import { db as defaultDb, type Database } from "@/lib/db";
+import { projectMembersSqlite } from "@/lib/db/schema/project-members";
+import { notesSqlite } from "@/lib/db/schema/notes";
+import { projectsSqlite } from "@/lib/db/schema/projects";
+import type { Role } from "@/lib/db/schema/users";
 
 // Re-export Role type for convenience
-export type { Role } from '@/lib/db/schema/users';
-export { roleValues } from '@/lib/db/schema/users';
+export type { Role } from "@/lib/db/schema/users";
+export { roleValues } from "@/lib/db/schema/users";
 
 // Allow injecting a custom database for testing
 let _db: Database = defaultDb;
@@ -53,15 +53,15 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
  * Permission actions that can be performed in the system
  */
 export type PermissionAction =
-  | 'manage_all_users'
-  | 'manage_users'
-  | 'manage_clients'
-  | 'manage_projects'
-  | 'manage_assigned_projects'
-  | 'create_tasks'
-  | 'edit_tasks'
-  | 'view_secrets'
-  | 'read_only';
+  | "manage_all_users"
+  | "manage_users"
+  | "manage_clients"
+  | "manage_projects"
+  | "manage_assigned_projects"
+  | "create_tasks"
+  | "edit_tasks"
+  | "view_secrets"
+  | "read_only";
 
 /**
  * Permission matrix defining what each role can do
@@ -69,30 +69,24 @@ export type PermissionAction =
  */
 export const PERMISSION_MATRIX: Record<Role, Set<PermissionAction>> = {
   SUPER_ADMIN: new Set([
-    'manage_all_users',
-    'manage_users',
-    'manage_clients',
-    'manage_projects',
-    'manage_assigned_projects',
-    'create_tasks',
-    'edit_tasks',
-    'view_secrets',
+    "manage_all_users",
+    "manage_users",
+    "manage_clients",
+    "manage_projects",
+    "manage_assigned_projects",
+    "create_tasks",
+    "edit_tasks",
+    "view_secrets",
   ]),
   MANAGER: new Set([
-    'manage_assigned_projects',
-    'create_tasks',
-    'edit_tasks',
-    'view_secrets',
+    "manage_assigned_projects",
+    "create_tasks",
+    "edit_tasks",
+    "view_secrets",
   ]),
-  MEMBER: new Set([
-    'create_tasks',
-    'edit_tasks',
-  ]),
-  GUEST: new Set([
-    'read_only',
-  ]),
+  MEMBER: new Set(["create_tasks", "edit_tasks"]),
+  GUEST: new Set(["read_only"]),
 };
-
 
 /**
  * User interface for permission checks
@@ -123,7 +117,10 @@ export function hasEqualOrHigherRole(roleA: Role, roleB: Role): boolean {
  * Requirements 2.2, 2.3
  */
 export function canManageUsers(user: PermissionUser): boolean {
-  return hasPermission(user.role, 'manage_users') || hasPermission(user.role, 'manage_all_users');
+  return (
+    hasPermission(user.role, "manage_users") ||
+    hasPermission(user.role, "manage_all_users")
+  );
 }
 
 /**
@@ -131,8 +128,11 @@ export function canManageUsers(user: PermissionUser): boolean {
  * Only SUPER_ADMIN can manage users (ADMIN role removed)
  * Requirements 2.2, 2.3
  */
-export function canManageUser(user: PermissionUser, _targetUserRole: Role): boolean {
-  if (user.role === 'SUPER_ADMIN') {
+export function canManageUser(
+  user: PermissionUser,
+  _targetUserRole: Role
+): boolean {
+  if (user.role === "SUPER_ADMIN") {
     return true;
   }
   return false;
@@ -142,7 +142,10 @@ export function canManageUser(user: PermissionUser, _targetUserRole: Role): bool
  * Check if a user is a member of a specific project
  * Requirements 4.4, 4.5
  */
-export async function isProjectMember(userId: string, projectId: string): Promise<boolean> {
+export async function isProjectMember(
+  userId: string,
+  projectId: string
+): Promise<boolean> {
   const members = await _db
     .select({ id: projectMembersSqlite.id })
     .from(projectMembersSqlite)
@@ -163,9 +166,12 @@ export async function isProjectMember(userId: string, projectId: string): Promis
  * MANAGER, MEMBER, GUEST can only access projects they are members of
  * Requirements 4.2, 4.4, 4.5
  */
-export async function canAccessProject(user: PermissionUser, projectId: string): Promise<boolean> {
+export async function canAccessProject(
+  user: PermissionUser,
+  projectId: string
+): Promise<boolean> {
   // SUPER_ADMIN can access all projects
-  if (user.role === 'SUPER_ADMIN') {
+  if (user.role === "SUPER_ADMIN") {
     return true;
   }
 
@@ -185,21 +191,23 @@ export async function canAccessProject(user: PermissionUser, projectId: string):
   return isProjectMember(user.id, projectId);
 }
 
-
 /**
  * Check if a user can manage a project (add/remove members, edit project)
  * SUPER_ADMIN can manage all projects
  * MANAGER can manage projects they are assigned to as manager
  * Requirements 2.4, 4.4, 4.5
  */
-export async function canManageProject(user: PermissionUser, projectId: string): Promise<boolean> {
+export async function canManageProject(
+  user: PermissionUser,
+  projectId: string
+): Promise<boolean> {
   // SUPER_ADMIN can manage all projects
-  if (user.role === 'SUPER_ADMIN') {
+  if (user.role === "SUPER_ADMIN") {
     return true;
   }
 
   // MANAGER can manage projects they are the manager of
-  if (user.role === 'MANAGER') {
+  if (user.role === "MANAGER") {
     const projects = await _db
       .select({ managerId: projectsSqlite.managerId })
       .from(projectsSqlite)
@@ -224,7 +232,7 @@ export async function canManageProject(user: PermissionUser, projectId: string):
       .limit(1);
 
     const member = members[0];
-    return member !== undefined && member.role === 'MANAGER';
+    return member !== undefined && member.role === "MANAGER";
   }
 
   return false;
@@ -237,9 +245,12 @@ export async function canManageProject(user: PermissionUser, projectId: string):
  * SUPER_ADMIN can access all notes
  * Requirements 7.1, 7.4
  */
-export async function canAccessNote(user: PermissionUser, noteId: string): Promise<boolean> {
+export async function canAccessNote(
+  user: PermissionUser,
+  noteId: string
+): Promise<boolean> {
   // SUPER_ADMIN can access all notes
-  if (user.role === 'SUPER_ADMIN') {
+  if (user.role === "SUPER_ADMIN") {
     return true;
   }
 
@@ -272,7 +283,7 @@ export async function canAccessNote(user: PermissionUser, noteId: string): Promi
   // Client-level notes without project association
   // Only SUPER_ADMIN, ADMIN can access (already handled above)
   // MANAGER can access if they manage any project for that client
-  if (user.role === 'MANAGER') {
+  if (user.role === "MANAGER") {
     // This would require checking if user manages any project for the client
     // For now, deny access to client-level notes for MANAGER without project association
     return false;
@@ -281,26 +292,31 @@ export async function canAccessNote(user: PermissionUser, noteId: string): Promi
   return false;
 }
 
-
 /**
  * Check if a user can view the secret (decrypted value) of a note
  * GUEST users cannot view secrets even if they can access the note
  * Requirements 2.6, 7.3, 7.4
  */
-export async function canViewNoteSecret(user: PermissionUser, noteId: string): Promise<boolean> {
+export async function canViewNoteSecret(
+  user: PermissionUser,
+  noteId: string
+): Promise<boolean> {
   // GUEST users cannot view secrets
-  if (user.role === 'GUEST') {
+  if (user.role === "GUEST") {
     return false;
   }
 
   // Must have view_secrets permission
-  if (!hasPermission(user.role, 'view_secrets')) {
+  if (!hasPermission(user.role, "view_secrets")) {
     // MEMBER role doesn't have view_secrets by default
     // But they can view secrets for notes in their assigned projects
-    if (user.role === 'MEMBER') {
+    if (user.role === "MEMBER") {
       // Check if note is in a project they're a member of
       const notes = await _db
-        .select({ projectId: notesSqlite.projectId, createdBy: notesSqlite.createdBy })
+        .select({
+          projectId: notesSqlite.projectId,
+          createdBy: notesSqlite.createdBy,
+        })
         .from(notesSqlite)
         .where(eq(notesSqlite.id, noteId))
         .limit(1);
@@ -336,7 +352,7 @@ export async function canViewNoteSecret(user: PermissionUser, noteId: string): P
 export async function getProjectMemberRole(
   userId: string,
   projectId: string
-): Promise<'MANAGER' | 'MEMBER' | 'VIEWER' | null> {
+): Promise<"MANAGER" | "MEMBER" | "VIEWER" | null> {
   const members = await _db
     .select({ role: projectMembersSqlite.role })
     .from(projectMembersSqlite)
@@ -360,9 +376,12 @@ export async function getProjectMemberRole(
  * Check if a user can create tasks in a project
  * Requirements 2.4, 2.5, 5.1
  */
-export async function canCreateTask(user: PermissionUser, projectId: string): Promise<boolean> {
+export async function canCreateTask(
+  user: PermissionUser,
+  projectId: string
+): Promise<boolean> {
   // GUEST cannot create tasks
-  if (user.role === 'GUEST') {
+  if (user.role === "GUEST") {
     return false;
   }
 
@@ -373,15 +392,15 @@ export async function canCreateTask(user: PermissionUser, projectId: string): Pr
   }
 
   // SUPER_ADMIN, MANAGER can always create tasks if they have access
-  if (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER') {
+  if (user.role === "SUPER_ADMIN" || user.role === "MANAGER") {
     return true;
   }
 
   // MEMBER can create tasks in projects they're a member of
-  if (user.role === 'MEMBER') {
+  if (user.role === "MEMBER") {
     const memberRole = await getProjectMemberRole(user.id, projectId);
     // VIEWER role in project cannot create tasks
-    return memberRole !== null && memberRole !== 'VIEWER';
+    return memberRole !== null && memberRole !== "VIEWER";
   }
 
   return false;
@@ -391,7 +410,10 @@ export async function canCreateTask(user: PermissionUser, projectId: string): Pr
  * Check if a user can edit a task
  * Requirements 2.4, 2.5, 5.3
  */
-export async function canEditTask(user: PermissionUser, projectId: string): Promise<boolean> {
+export async function canEditTask(
+  user: PermissionUser,
+  projectId: string
+): Promise<boolean> {
   // Same rules as creating tasks
   return canCreateTask(user, projectId);
 }

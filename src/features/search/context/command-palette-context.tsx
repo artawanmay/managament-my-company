@@ -3,7 +3,7 @@
  * Provides shared state for command palette across components
  * Requirements: 12.1, 12.4
  */
-import * as React from 'react';
+import * as React from "react";
 
 const DEBOUNCE_DELAY = 300; // ms
 
@@ -22,12 +22,17 @@ export interface CommandPaletteContextValue {
   debouncedQuery: string;
 }
 
-const CommandPaletteContext = React.createContext<CommandPaletteContextValue | null>(null);
+const CommandPaletteContext =
+  React.createContext<CommandPaletteContextValue | null>(null);
 
-export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
+export function CommandPaletteProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState('');
-  const [debouncedQuery, setDebouncedQuery] = React.useState('');
+  const [query, setQuery] = React.useState("");
+  const [debouncedQuery, setDebouncedQuery] = React.useState("");
 
   // Debounce the search query
   React.useEffect(() => {
@@ -43,8 +48,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     if (!open) {
       // Small delay to allow animation to complete
       const timer = setTimeout(() => {
-        setQuery('');
-        setDebouncedQuery('');
+        setQuery("");
+        setDebouncedQuery("");
       }, 150);
       return () => clearTimeout(timer);
     }
@@ -54,14 +59,14 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Ctrl+K (Windows/Linux) or Cmd+K (Mac)
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
         event.preventDefault();
         setOpen((prev) => !prev);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const toggle = React.useCallback(() => {
@@ -90,7 +95,9 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 export function useCommandPaletteContext(): CommandPaletteContextValue {
   const context = React.useContext(CommandPaletteContext);
   if (!context) {
-    throw new Error('useCommandPaletteContext must be used within a CommandPaletteProvider');
+    throw new Error(
+      "useCommandPaletteContext must be used within a CommandPaletteProvider"
+    );
   }
   return context;
 }

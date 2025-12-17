@@ -40,11 +40,11 @@ Parallelism: 4 threads
 
 Brute force protection is implemented using Redis:
 
-| Parameter | Value |
-|-----------|-------|
-| Max Failed Attempts | 5 |
-| Attempt Window | 15 minutes |
-| Lockout Duration | 30 minutes |
+| Parameter           | Value      |
+| ------------------- | ---------- |
+| Max Failed Attempts | 5          |
+| Attempt Window      | 15 minutes |
+| Lockout Duration    | 30 minutes |
 
 After 5 failed login attempts within 15 minutes, the account is locked for 30 minutes.
 
@@ -62,6 +62,7 @@ All mutation requests (POST, PUT, PATCH, DELETE) require CSRF token validation:
 ### Protected Endpoints
 
 All API endpoints that modify data require CSRF tokens:
+
 - User management
 - Client/Project/Task CRUD
 - Note creation and secret access
@@ -74,27 +75,27 @@ All API endpoints that modify data require CSRF tokens:
 
 Five user roles with hierarchical permissions:
 
-| Role | Level | Description |
-|------|-------|-------------|
-| SUPER_ADMIN | 4 | Full system access, can manage all users |
-| ADMIN | 3 | Manage users (except SUPER_ADMIN), all projects |
-| MANAGER | 2 | Manage assigned projects, view secrets |
-| MEMBER | 1 | Create/edit tasks in assigned projects |
-| GUEST | 0 | Read-only access to assigned projects |
+| Role        | Level | Description                                     |
+| ----------- | ----- | ----------------------------------------------- |
+| SUPER_ADMIN | 4     | Full system access, can manage all users        |
+| ADMIN       | 3     | Manage users (except SUPER_ADMIN), all projects |
+| MANAGER     | 2     | Manage assigned projects, view secrets          |
+| MEMBER      | 1     | Create/edit tasks in assigned projects          |
+| GUEST       | 0     | Read-only access to assigned projects           |
 
 ### Permission Matrix
 
-| Permission | SUPER_ADMIN | ADMIN | MANAGER | MEMBER | GUEST |
-|------------|:-----------:|:-----:|:-------:|:------:|:-----:|
-| manage_all_users | ✓ | | | | |
-| manage_users | ✓ | ✓ | | | |
-| manage_clients | ✓ | ✓ | | | |
-| manage_projects | ✓ | ✓ | | | |
-| manage_assigned_projects | ✓ | ✓ | ✓ | | |
-| create_tasks | ✓ | ✓ | ✓ | ✓ | |
-| edit_tasks | ✓ | ✓ | ✓ | ✓ | |
-| view_secrets | ✓ | ✓ | ✓ | | |
-| read_only | | | | | ✓ |
+| Permission               | SUPER_ADMIN | ADMIN | MANAGER | MEMBER | GUEST |
+| ------------------------ | :---------: | :---: | :-----: | :----: | :---: |
+| manage_all_users         |      ✓      |       |         |        |       |
+| manage_users             |      ✓      |   ✓   |         |        |       |
+| manage_clients           |      ✓      |   ✓   |         |        |       |
+| manage_projects          |      ✓      |   ✓   |         |        |       |
+| manage_assigned_projects |      ✓      |   ✓   |    ✓    |        |       |
+| create_tasks             |      ✓      |   ✓   |    ✓    |   ✓    |       |
+| edit_tasks               |      ✓      |   ✓   |    ✓    |   ✓    |       |
+| view_secrets             |      ✓      |   ✓   |    ✓    |        |       |
+| read_only                |             |       |         |        |   ✓   |
 
 ### Project-Level Roles
 
@@ -174,11 +175,11 @@ Path: /
 
 Required security-related environment variables:
 
-| Variable | Description |
-|----------|-------------|
+| Variable         | Description                           |
+| ---------------- | ------------------------------------- |
 | `ENCRYPTION_KEY` | Master key for AES-256-GCM encryption |
-| `DATABASE_URL` | Database connection string |
-| `REDIS_URL` | Redis connection for lockout tracking |
+| `DATABASE_URL`   | Database connection string            |
+| `REDIS_URL`      | Redis connection for lockout tracking |
 
 ## Security Best Practices
 

@@ -7,18 +7,22 @@
  * - 16.2: Dark theme with black and blue styling
  * - 16.3: Theme preference persisted and applied immediately
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import { db } from '@/lib/db';
-import { usersSqlite, themeValues, type ThemePreference } from '@/lib/db/schema/users';
-import { requireAuthWithCsrf } from '@/lib/auth/middleware';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import {
+  usersSqlite,
+  themeValues,
+  type ThemePreference,
+} from "@/lib/db/schema/users";
+import { requireAuthWithCsrf } from "@/lib/auth/middleware";
 
 // Zod schema for theme update
 const updateThemeSchema = z.object({
   theme: z.enum(themeValues, {
-    message: 'Theme must be light, dark, or system',
+    message: "Theme must be light, dark, or system",
   }),
 });
 
@@ -26,7 +30,7 @@ interface ThemeResponse {
   themePreference: ThemePreference;
 }
 
-export const Route = createFileRoute('/api/users/me/theme')({
+export const Route = createFileRoute("/api/users/me/theme")({
   server: {
     handlers: {
       /**
@@ -47,7 +51,10 @@ export const Route = createFileRoute('/api/users/me/theme')({
 
           if (!validation.success) {
             return json(
-              { error: 'Validation failed', details: validation.error.flatten() },
+              {
+                error: "Validation failed",
+                details: validation.error.flatten(),
+              },
               { status: 400 }
             );
           }
@@ -69,8 +76,11 @@ export const Route = createFileRoute('/api/users/me/theme')({
 
           return json(response);
         } catch (error) {
-          console.error('[PUT /api/users/me/theme] Error:', error);
-          return json({ error: 'Failed to update theme preference' }, { status: 500 });
+          console.error("[PUT /api/users/me/theme] Error:", error);
+          return json(
+            { error: "Failed to update theme preference" },
+            { status: 500 }
+          );
         }
       },
     },

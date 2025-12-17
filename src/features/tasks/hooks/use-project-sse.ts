@@ -3,13 +3,14 @@
  * Connects to project SSE endpoint and updates TanStack Query cache on events
  * Falls back to polling on connection failure
  *
- * Requirements: 6.4, 20.3, 20.4
+ * Requirements: 4.1, 4.2, 4.3, 4.4, 6.4, 7.2, 20.3, 20.4
  */
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { tasksQueryKey } from './use-tasks';
-import type { Task, TaskListResponse } from '../types';
-import { logDebug, logError } from '@/lib/logger';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { tasksQueryKey } from "./use-tasks";
+import type { Task, TaskListResponse } from "../types";
+import { logDebug, logError } from "@/lib/logger";
+import { useCircuitBreaker } from "@/lib/dev-tools/use-circuit-breaker";
 
 // SSE event types from the server
 interface TaskSSEEvent {
@@ -34,10 +35,12 @@ interface UseProjectSSEOptions {
   enabled?: boolean;
   /** Polling interval in ms when SSE fails (default: 10000) */
   pollingInterval?: number;
-  /** Max reconnection attempts before falling back to polling (default: 3) */
+  /** Max reconnection attempts before falling back to polling (default: 3) - HARD LIMIT */
   maxReconnectAttempts?: number;
   /** Base delay for exponential backoff in ms (default: 1000) */
   reconnectBaseDelay?: number;
+  /** Callback when max retries exceeded - circuit breaker opens */
+  onMaxRetriesExceeded?: () => void;
 }
 
 interface UseProjectSSEReturn {
@@ -53,22 +56,48 @@ interface UseProjectSSEReturn {
   reconnect: () => void;
 }
 
+// Hard limit for reconnection attempts - Requirements 4.3, 7.2
+const HARD_MAX_RECONNECT_ATTEMPTS = 3;
+
 export function useProjectSSE({
   projectId,
   enabled = true,
   pollingInterval = 10000,
-  maxReconnectAttempts = 3,
+  maxReconnectAttempts = HARD_MAX_RECONNECT_ATTEMPTS,
   reconnectBaseDelay = 1000,
+  onMaxRetriesExceeded,
 }: UseProjectSSEOptions): UseProjectSSEReturn {
   const queryClient = useQueryClient();
   const eventSourceRef = useRef<EventSource | null>(null);
-  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  // Track if component is mounted to prevent stale state updates - Requirements 4.1, 4.2
+  const isMountedRef = useRef(true);
 
   const [isConnected, setIsConnected] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
+
+  // Enforce hard limit on reconnection attempts - Requirements 7.2
+  const effectiveMaxAttempts = Math.min(
+    maxReconnectAttempts,
+    HARD_MAX_RECONNECT_ATTEMPTS
+  );
+
+  // Circuit breaker for SSE reconnection - Requirements 7.2, 7.3
+  const circuitBreaker = useCircuitBreaker(`sse-${projectId}`, {
+    maxFailures: effectiveMaxAttempts,
+    resetTimeMs: 30000,
+    onOpen: () => {
+      logDebug("[SSE] Circuit breaker opened - stopping reconnection attempts");
+      onMaxRetriesExceeded?.();
+    },
+  });
 
   // Update task in query cache
   const updateTaskInCache = useCallback(
@@ -90,7 +119,7 @@ export function useProjectSSE({
       // Also invalidate to ensure fresh data
       queryClient.invalidateQueries({
         queryKey: tasksQueryKey({ projectId }),
-        refetchType: 'none', // Don't refetch immediately, just mark as stale
+        refetchType: "none", // Don't refetch immediately, just mark as stale
       });
     },
     [queryClient, projectId]
@@ -99,7 +128,7 @@ export function useProjectSSE({
   // Handle task created event
   const handleTaskCreated = useCallback(
     (event: TaskSSEEvent) => {
-      logDebug('[SSE] Task created', { taskId: event.taskId });
+      logDebug("[SSE] Task created", { taskId: event.taskId });
       // Invalidate to fetch the new task
       queryClient.invalidateQueries({
         queryKey: tasksQueryKey({ projectId }),
@@ -111,7 +140,10 @@ export function useProjectSSE({
   // Handle task updated event
   const handleTaskUpdated = useCallback(
     (event: TaskSSEEvent) => {
-      logDebug('[SSE] Task updated', { taskId: event.taskId, data: event.data });
+      logDebug("[SSE] Task updated", {
+        taskId: event.taskId,
+        data: event.data,
+      });
       updateTaskInCache(event.taskId, event.data as Partial<Task>);
     },
     [updateTaskInCache]
@@ -120,9 +152,9 @@ export function useProjectSSE({
   // Handle task moved event (Kanban drag-drop)
   const handleTaskMoved = useCallback(
     (event: TaskSSEEvent) => {
-      logDebug('[SSE] Task moved', { taskId: event.taskId, data: event.data });
+      logDebug("[SSE] Task moved", { taskId: event.taskId, data: event.data });
       updateTaskInCache(event.taskId, {
-        status: event.data.status as Task['status'],
+        status: event.data.status as Task["status"],
         order: event.data.order,
       });
     },
@@ -132,7 +164,7 @@ export function useProjectSSE({
   // Handle task deleted event
   const handleTaskDeleted = useCallback(
     (event: TaskSSEEvent) => {
-      logDebug('[SSE] Task deleted', { taskId: event.taskId });
+      logDebug("[SSE] Task deleted", { taskId: event.taskId });
       queryClient.setQueriesData<TaskListResponse>(
         { queryKey: tasksQueryKey({ projectId }) },
         (oldData) => {
@@ -155,7 +187,7 @@ export function useProjectSSE({
   const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) return;
 
-    logDebug('[SSE] Starting polling fallback');
+    logDebug("[SSE] Starting polling fallback");
     setIsPolling(true);
 
     pollingIntervalRef.current = setInterval(() => {
@@ -171,7 +203,7 @@ export function useProjectSSE({
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
       setIsPolling(false);
-      logDebug('[SSE] Stopped polling');
+      logDebug("[SSE] Stopped polling");
     }
   }, []);
 
@@ -185,96 +217,130 @@ export function useProjectSSE({
     }
 
     const url = `/api/realtime/projects/${projectId}`;
-    logDebug('[SSE] Connecting to', { url });
+    logDebug("[SSE] Connecting to", { url });
 
     try {
       const eventSource = new EventSource(url, { withCredentials: true });
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        logDebug('[SSE] Connected to project', { projectId });
+        // Prevent state updates if unmounted - Requirements 4.1, 4.2
+        if (!isMountedRef.current) return;
+
+        logDebug("[SSE] Connected to project", { projectId });
         setIsConnected(true);
         setError(null);
         setReconnectAttempts(0);
+        circuitBreaker.recordSuccess(); // Reset circuit breaker on successful connection
         stopPolling();
       };
 
       // Handle connection event from server
-      eventSource.addEventListener('connected', (e) => {
-        logDebug('[SSE] Server confirmed connection', { data: e.data });
+      eventSource.addEventListener("connected", (e) => {
+        logDebug("[SSE] Server confirmed connection", { data: e.data });
       });
 
       // Handle task events
-      eventSource.addEventListener('task_created', (e) => {
+      eventSource.addEventListener("task_created", (e) => {
         try {
           const data = JSON.parse(e.data) as TaskSSEEvent;
           handleTaskCreated(data);
         } catch (err) {
-          logError('[SSE] Failed to parse task_created event', { error: err });
+          logError("[SSE] Failed to parse task_created event", { error: err });
         }
       });
 
-      eventSource.addEventListener('task_updated', (e) => {
+      eventSource.addEventListener("task_updated", (e) => {
         try {
           const data = JSON.parse(e.data) as TaskSSEEvent;
           handleTaskUpdated(data);
         } catch (err) {
-          logError('[SSE] Failed to parse task_updated event', { error: err });
+          logError("[SSE] Failed to parse task_updated event", { error: err });
         }
       });
 
-      eventSource.addEventListener('task_moved', (e) => {
+      eventSource.addEventListener("task_moved", (e) => {
         try {
           const data = JSON.parse(e.data) as TaskSSEEvent;
           handleTaskMoved(data);
         } catch (err) {
-          logError('[SSE] Failed to parse task_moved event', { error: err });
+          logError("[SSE] Failed to parse task_moved event", { error: err });
         }
       });
 
-      eventSource.addEventListener('task_deleted', (e) => {
+      eventSource.addEventListener("task_deleted", (e) => {
         try {
           const data = JSON.parse(e.data) as TaskSSEEvent;
           handleTaskDeleted(data);
         } catch (err) {
-          logError('[SSE] Failed to parse task_deleted event', { error: err });
+          logError("[SSE] Failed to parse task_deleted event", { error: err });
         }
       });
 
       eventSource.onerror = (e) => {
-        logError('[SSE] Connection error', { event: e });
-        setIsConnected(false);
-        setError(new Error('SSE connection failed'));
+        logError("[SSE] Connection error", { event: e });
 
-        // Close the errored connection
+        // Prevent state updates if unmounted - Requirements 4.1, 4.2
+        if (!isMountedRef.current) return;
+
+        setIsConnected(false);
+        setError(new Error("SSE connection failed"));
+
+        // Close the errored connection immediately
         eventSource.close();
         eventSourceRef.current = null;
 
-        // Attempt reconnection with exponential backoff
-        if (reconnectAttempts < maxReconnectAttempts) {
-          const delay = reconnectBaseDelay * Math.pow(2, reconnectAttempts);
-          logDebug('[SSE] Reconnecting', { delay, attempt: reconnectAttempts + 1, maxAttempts: maxReconnectAttempts });
-          
-          setReconnectAttempts((prev) => prev + 1);
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, delay);
-        } else {
-          logDebug('[SSE] Max reconnection attempts reached, falling back to polling');
+        // Record failure in circuit breaker - Requirements 7.2
+        circuitBreaker.recordFailure();
+
+        // Check if circuit breaker is open (max retries exceeded)
+        if (
+          circuitBreaker.state.isOpen ||
+          reconnectAttempts >= effectiveMaxAttempts
+        ) {
+          logDebug(
+            "[SSE] Max reconnection attempts reached (hard limit: 3), falling back to polling"
+          );
+          onMaxRetriesExceeded?.();
           startPolling();
+          return;
         }
+
+        // Attempt reconnection with exponential backoff
+        const delay = reconnectBaseDelay * Math.pow(2, reconnectAttempts);
+        logDebug("[SSE] Reconnecting", {
+          delay,
+          attempt: reconnectAttempts + 1,
+          maxAttempts: effectiveMaxAttempts,
+        });
+
+        setReconnectAttempts((prev) => prev + 1);
+
+        // Clear any existing timeout before setting new one
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            connect();
+          }
+        }, delay);
       };
     } catch (err) {
-      logError('[SSE] Failed to create EventSource', { error: err });
-      setError(err instanceof Error ? err : new Error('Failed to create SSE connection'));
+      logError("[SSE] Failed to create EventSource", { error: err });
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Failed to create SSE connection")
+      );
       startPolling();
     }
   }, [
     enabled,
     projectId,
     reconnectAttempts,
-    maxReconnectAttempts,
+    effectiveMaxAttempts,
     reconnectBaseDelay,
     handleTaskCreated,
     handleTaskUpdated,
@@ -282,33 +348,51 @@ export function useProjectSSE({
     handleTaskDeleted,
     startPolling,
     stopPolling,
+    circuitBreaker,
+    onMaxRetriesExceeded,
   ]);
 
-  // Manual reconnect function
+  // Manual reconnect function - also resets circuit breaker
   const reconnect = useCallback(() => {
     setReconnectAttempts(0);
+    circuitBreaker.reset();
     stopPolling();
     connect();
-  }, [connect, stopPolling]);
+  }, [connect, stopPolling, circuitBreaker]);
 
-  // Connect on mount and cleanup on unmount
+  // Connect on mount and cleanup on unmount - Requirements 4.1, 4.2, 4.4
   useEffect(() => {
+    // Mark as mounted
+    isMountedRef.current = true;
+
     if (enabled && projectId) {
       connect();
     }
 
     return () => {
-      // Cleanup
+      // Mark as unmounted immediately to prevent stale state updates
+      isMountedRef.current = false;
+
+      // Cleanup EventSource immediately - Requirements 4.1
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
+
+      // Clear all timeouts - Requirements 4.2
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      stopPolling();
-      setIsConnected(false);
+
+      // Stop polling - Requirements 4.4
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+
+      // Reset state to prevent stale updates (only if still mounted check is needed)
+      // Note: We don't call setIsConnected here as component is unmounting
     };
   }, [enabled, projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 

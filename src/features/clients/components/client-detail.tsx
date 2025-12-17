@@ -2,13 +2,27 @@
  * ClientDetail component
  * Requirements: 3.4
  */
-import { Link } from '@tanstack/react-router';
-import { Building2, Mail, Phone, Globe, MapPin, Calendar, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { ClientWithProjects, ClientStatus } from '../types';
+import { Link } from "@tanstack/react-router";
+import {
+  Building2,
+  Mail,
+  Phone,
+  Globe,
+  MapPin,
+  Calendar,
+  ArrowLeft,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { ClientWithProjects, ClientStatus } from "../types";
 
 interface ClientDetailProps {
   client: ClientWithProjects | null;
@@ -18,20 +32,27 @@ interface ClientDetailProps {
 }
 
 const statusColors: Record<ClientStatus, string> = {
-  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  INACTIVE: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  PROSPECT: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  INACTIVE: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  PROSPECT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
 };
 
 const projectStatusColors: Record<string, string> = {
-  PLANNING: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  ON_HOLD: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  COMPLETED: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  ARCHIVED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  PLANNING:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  ON_HOLD:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  COMPLETED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  ARCHIVED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
-export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDetailProps) {
+export function ClientDetail({
+  client,
+  isLoading,
+  onEdit,
+  onDelete,
+}: ClientDetailProps) {
   if (isLoading) {
     return <ClientDetailSkeleton />;
   }
@@ -62,7 +83,10 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{client.name}</h1>
-            <Badge className={statusColors[client.status as ClientStatus]} variant="outline">
+            <Badge
+              className={statusColors[client.status as ClientStatus]}
+              variant="outline"
+            >
               {client.status}
             </Badge>
           </div>
@@ -93,7 +117,9 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
           <CardContent className="space-y-4">
             {client.picName && (
               <div>
-                <p className="text-sm text-muted-foreground">Person in Charge</p>
+                <p className="text-sm text-muted-foreground">
+                  Person in Charge
+                </p>
                 <p className="font-medium">{client.picName}</p>
               </div>
             )}
@@ -101,7 +127,10 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
             {client.email && (
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <a href={`mailto:${client.email}`} className="text-primary hover:underline">
+                <a
+                  href={`mailto:${client.email}`}
+                  className="text-primary hover:underline"
+                >
                   {client.email}
                 </a>
               </div>
@@ -140,11 +169,11 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
               <span>
-                Created{' '}
-                {new Date(client.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+                Created{" "}
+                {new Date(client.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </span>
             </div>
@@ -169,8 +198,9 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
         <CardHeader>
           <CardTitle>Projects</CardTitle>
           <CardDescription>
-            {client.projects.length} project{client.projects.length !== 1 ? 's' : ''} associated
-            with this client
+            {client.projects.length} project
+            {client.projects.length !== 1 ? "s" : ""} associated with this
+            client
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -183,14 +213,17 @@ export function ClientDetail({ client, isLoading, onEdit, onDelete }: ClientDeta
               {client.projects.map((project) => (
                 <Link
                   key={project.id}
-                  to={`/app/projects/${project.id}` as any}
+                  to={"/app/projects/$projectId" as const}
+                  params={{ projectId: project.id }}
                   className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                 >
                   <div>
                     <p className="font-medium">{project.name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge
-                        className={projectStatusColors[project.status] || 'bg-gray-100'}
+                        className={
+                          projectStatusColors[project.status] || "bg-gray-100"
+                        }
                         variant="outline"
                       >
                         {project.status}

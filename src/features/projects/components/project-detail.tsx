@@ -2,16 +2,27 @@
  * ProjectDetail component with tabs
  * Requirements: 4.3, 10.2
  */
-import { Calendar, Building2, User, Clock } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ProjectMembers } from './project-members';
-import { ActivityFeed, useProjectActivity } from '@/features/activity';
-import type { ProjectWithDetails, ProjectMemberRole, ProjectStatus, Priority } from '../types';
+import { Calendar, Building2, User, Clock } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ProjectMembers } from "./project-members";
+import { ActivityFeed, useProjectActivity } from "@/features/activity";
+import type {
+  ProjectWithDetails,
+  ProjectMemberRole,
+  ProjectStatus,
+  Priority,
+} from "../types";
 
 interface UserOption {
   id: string;
@@ -28,26 +39,27 @@ interface ProjectDetailProps {
 }
 
 const statusColors: Record<ProjectStatus, string> = {
-  PLANNING: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  ON_HOLD: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  COMPLETED: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  ARCHIVED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  PLANNING: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  ON_HOLD:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  COMPLETED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  ARCHIVED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 const priorityColors: Record<Priority, string> = {
-  LOW: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  MEDIUM: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  URGENT: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  LOW: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  MEDIUM: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+  URGENT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 function formatDate(date: Date | null): string {
-  if (!date) return 'Not set';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  if (!date) return "Not set";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -94,7 +106,7 @@ export function ProjectDetail({
         </div>
         <div className="flex gap-2">
           <Badge className={statusColors[project.status]} variant="outline">
-            {project.status.replace('_', ' ')}
+            {project.status.replace("_", " ")}
           </Badge>
           <Badge className={priorityColors[project.priority]} variant="outline">
             {project.priority}
@@ -110,7 +122,9 @@ export function ProjectDetail({
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{project.clientName || 'N/A'}</div>
+            <div className="text-lg font-semibold">
+              {project.clientName || "N/A"}
+            </div>
           </CardContent>
         </Card>
 
@@ -120,9 +134,13 @@ export function ProjectDetail({
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{project.managerName || 'N/A'}</div>
+            <div className="text-lg font-semibold">
+              {project.managerName || "N/A"}
+            </div>
             {project.managerEmail && (
-              <p className="text-xs text-muted-foreground">{project.managerEmail}</p>
+              <p className="text-xs text-muted-foreground">
+                {project.managerEmail}
+              </p>
             )}
           </CardContent>
         </Card>
@@ -133,7 +151,9 @@ export function ProjectDetail({
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{formatDate(project.startDate)}</div>
+            <div className="text-lg font-semibold">
+              {formatDate(project.startDate)}
+            </div>
           </CardContent>
         </Card>
 
@@ -143,7 +163,9 @@ export function ProjectDetail({
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{formatDate(project.endDate)}</div>
+            <div className="text-lg font-semibold">
+              {formatDate(project.endDate)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -151,22 +173,34 @@ export function ProjectDetail({
       {/* Quick Navigation */}
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" asChild>
-          <Link to="/app/projects/$projectId/board" params={{ projectId: project.id }}>
+          <Link
+            to="/app/projects/$projectId/board"
+            params={{ projectId: project.id }}
+          >
             Kanban Board
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/app/projects/$projectId/tasks" params={{ projectId: project.id }}>
+          <Link
+            to="/app/projects/$projectId/tasks"
+            params={{ projectId: project.id }}
+          >
             Tasks
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/app/projects/$projectId/files" params={{ projectId: project.id }}>
+          <Link
+            to="/app/projects/$projectId/files"
+            params={{ projectId: project.id }}
+          >
             Files
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/app/projects/$projectId/notes" params={{ projectId: project.id }}>
+          <Link
+            to="/app/projects/$projectId/notes"
+            params={{ projectId: project.id }}
+          >
             Notes
           </Link>
         </Button>
@@ -176,7 +210,9 @@ export function ProjectDetail({
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="members">Members ({project.members.length})</TabsTrigger>
+          <TabsTrigger value="members">
+            Members ({project.members.length})
+          </TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -184,31 +220,45 @@ export function ProjectDetail({
           <Card>
             <CardHeader>
               <CardTitle>Project Details</CardTitle>
-              <CardDescription>Overview of the project information</CardDescription>
+              <CardDescription>
+                Overview of the project information
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Status</h4>
-                  <p className="mt-1">{project.status.replace('_', ' ')}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </h4>
+                  <p className="mt-1">{project.status.replace("_", " ")}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Priority</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Priority
+                  </h4>
                   <p className="mt-1">{project.priority}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Created
+                  </h4>
                   <p className="mt-1">{formatDate(project.createdAt)}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Last Updated</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Last Updated
+                  </h4>
                   <p className="mt-1">{formatDate(project.updatedAt)}</p>
                 </div>
               </div>
               {project.description && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Description</h4>
-                  <p className="mt-1 whitespace-pre-wrap">{project.description}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Description
+                  </h4>
+                  <p className="mt-1 whitespace-pre-wrap">
+                    {project.description}
+                  </p>
                 </div>
               )}
             </CardContent>

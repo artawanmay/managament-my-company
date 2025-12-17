@@ -2,16 +2,17 @@
  * Global tasks page
  * Requirements: 5.1, 5.2
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
-import { Plus, List, LayoutGrid } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { Plus, List, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   TasksTable,
   KanbanBoard,
   TaskForm,
   TaskDetail,
+  TaskErrorBoundary,
   useTasks,
   useCreateTask,
   useUpdateTask,
@@ -22,9 +23,9 @@ import {
   type TaskStatus,
   type CreateTaskInput,
   type UpdateTaskInput,
-} from '@/features/tasks';
-import { useProjects } from '@/features/projects';
-import { useUsers } from '@/features/users';
+} from "@/features/tasks";
+import { useProjects } from "@/features/projects";
+import { useUsers } from "@/features/users";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,29 +35,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
-export const Route = createFileRoute('/app/tasks')({
+export const Route = createFileRoute("/app/tasks")({
   component: TasksPage,
 });
 
-
-
 function TasksPage() {
   const { toast } = useToast();
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const { viewMode, setViewMode } = useViewMode();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -86,12 +85,14 @@ function TasksPage() {
     setIsDetailOpen(true);
   };
 
-  const handleCreateSubmit = async (data: CreateTaskInput | UpdateTaskInput) => {
+  const handleCreateSubmit = async (
+    data: CreateTaskInput | UpdateTaskInput
+  ) => {
     if (!selectedProjectId) {
       toast({
-        title: 'Error',
-        description: 'Please select a project first',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please select a project first",
+        variant: "destructive",
       });
       return;
     }
@@ -102,15 +103,16 @@ function TasksPage() {
         projectId: selectedProjectId,
       } as CreateTaskInput);
       toast({
-        title: 'Task created',
-        description: 'The task has been created successfully.',
+        title: "Task created",
+        description: "The task has been created successfully.",
       });
       setIsCreateFormOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -125,16 +127,17 @@ function TasksPage() {
         projectId: selectedTask.projectId,
       });
       toast({
-        title: 'Task updated',
-        description: 'The task has been updated successfully.',
+        title: "Task updated",
+        description: "The task has been updated successfully.",
       });
       setIsEditFormOpen(false);
       setSelectedTask(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -152,7 +155,11 @@ function TasksPage() {
     }
   };
 
-  const handleTaskMove = (taskId: string, newStatus: TaskStatus, newOrder: number) => {
+  const handleTaskMove = (
+    taskId: string,
+    newStatus: TaskStatus,
+    newOrder: number
+  ) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
@@ -167,9 +174,10 @@ function TasksPage() {
       {
         onError: (error) => {
           toast({
-            title: 'Error',
-            description: error instanceof Error ? error.message : 'Failed to move task',
-            variant: 'destructive',
+            title: "Error",
+            description:
+              error instanceof Error ? error.message : "Failed to move task",
+            variant: "destructive",
           });
         },
       }
@@ -185,17 +193,18 @@ function TasksPage() {
         projectId: taskToDelete.projectId,
       });
       toast({
-        title: 'Task deleted',
-        description: 'The task has been deleted successfully.',
+        title: "Task deleted",
+        description: "The task has been deleted successfully.",
       });
       setIsDeleteDialogOpen(false);
       setTaskToDelete(null);
       setSelectedTask(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -205,10 +214,17 @@ function TasksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">View and manage all your tasks</p>
+          <p className="text-muted-foreground">
+            View and manage all your tasks
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <Select value={selectedProjectId || "all"} onValueChange={(value) => setSelectedProjectId(value === "all" ? "" : value)}>
+          <Select
+            value={selectedProjectId || "all"}
+            onValueChange={(value) =>
+              setSelectedProjectId(value === "all" ? "" : value)
+            }
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Projects" />
             </SelectTrigger>
@@ -225,10 +241,10 @@ function TasksPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
                   size="icon"
                   className="rounded-r-none"
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setViewMode("list")}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -238,10 +254,10 @@ function TasksPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                  variant={viewMode === "kanban" ? "secondary" : "ghost"}
                   size="icon"
                   className="rounded-l-none"
-                  onClick={() => setViewMode('kanban')}
+                  onClick={() => setViewMode("kanban")}
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
@@ -259,41 +275,47 @@ function TasksPage() {
         </div>
       </div>
 
-      {viewMode === 'list' ? (
-        <TasksTable
-          tasks={tasks}
-          isLoading={isLoading}
-          onTaskClick={handleTaskClick}
-        />
-      ) : (
-        <KanbanBoard
-          tasks={tasks}
-          onTaskClick={handleTaskClick}
-          onTaskMove={handleTaskMove}
-          isLoading={isLoading}
-        />
-      )}
+      <TaskErrorBoundary>
+        {viewMode === "list" ? (
+          <TasksTable
+            tasks={tasks}
+            isLoading={isLoading}
+            onTaskClick={handleTaskClick}
+          />
+        ) : (
+          <KanbanBoard
+            tasks={tasks}
+            onTaskClick={handleTaskClick}
+            onTaskMove={handleTaskMove}
+            isLoading={isLoading}
+          />
+        )}
+      </TaskErrorBoundary>
 
       {/* Create Task Form */}
-      <TaskForm
-        open={isCreateFormOpen}
-        onOpenChange={setIsCreateFormOpen}
-        projectId={selectedProjectId}
-        users={users}
-        onSubmit={handleCreateSubmit}
-        isLoading={createMutation.isPending}
-      />
+      <TaskErrorBoundary>
+        <TaskForm
+          open={isCreateFormOpen}
+          onOpenChange={setIsCreateFormOpen}
+          projectId={selectedProjectId}
+          users={users}
+          onSubmit={handleCreateSubmit}
+          isLoading={createMutation.isPending}
+        />
+      </TaskErrorBoundary>
 
       {/* Edit Task Form */}
-      <TaskForm
-        open={isEditFormOpen}
-        onOpenChange={setIsEditFormOpen}
-        task={selectedTask}
-        projectId={selectedTask?.projectId}
-        users={users}
-        onSubmit={handleEditSubmit}
-        isLoading={updateMutation.isPending}
-      />
+      <TaskErrorBoundary>
+        <TaskForm
+          open={isEditFormOpen}
+          onOpenChange={setIsEditFormOpen}
+          task={selectedTask}
+          projectId={selectedTask?.projectId}
+          users={users}
+          onSubmit={handleEditSubmit}
+          isLoading={updateMutation.isPending}
+        />
+      </TaskErrorBoundary>
 
       {/* Task Detail Modal */}
       <TaskDetail
@@ -305,13 +327,16 @@ function TasksPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{taskToDelete?.title}"? This action
-              cannot be undone.
+              Are you sure you want to delete &quot;{taskToDelete?.title}&quot;?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

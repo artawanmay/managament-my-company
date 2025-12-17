@@ -1,1 +1,1 @@
-export { fetchDashboard } from './dashboard-api';
+export { fetchDashboard } from "./dashboard-api";

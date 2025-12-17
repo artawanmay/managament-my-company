@@ -2,10 +2,10 @@
  * useTask hook for fetching single task
  * Requirements: 5.1
  */
-import { useQuery } from '@tanstack/react-query';
-import { fetchTask } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchTask } from "../api";
 
-export const taskQueryKey = (taskId: string) => ['task', taskId];
+export const taskQueryKey = (taskId: string) => ["task", taskId];
 
 export function useTask(taskId: string) {
   return useQuery({

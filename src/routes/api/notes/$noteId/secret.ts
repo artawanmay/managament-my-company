@@ -7,44 +7,44 @@
  * - 7.4: Display "You don't have permission to view this secret" for unauthorized users
  * - 7.5: Log access in note_access_logs with user ID, action, timestamp, IP, and user agent
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { notes, noteAccessLogs, type NewNoteAccessLog } from '@/lib/db/schema';
-import { requireAuth, handleAuthError } from '@/lib/auth/middleware';
-import { canViewNoteSecret } from '@/lib/auth/permissions';
-import { decryptSecret } from '@/lib/security/crypto';
-import { randomUUID } from 'crypto';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { notes, noteAccessLogs, type NewNoteAccessLog } from "@/lib/db/schema";
+import { requireAuth, handleAuthError } from "@/lib/auth/middleware";
+import { canViewNoteSecret } from "@/lib/auth/permissions";
+import { decryptSecret } from "@/lib/security/crypto";
+import { randomUUID } from "crypto";
 
 /**
  * Extract client IP from request headers
  */
 function getClientIp(request: Request): string {
   // Check common proxy headers
-  const forwardedFor = request.headers.get('x-forwarded-for');
+  const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     // Take the first IP in the list (client IP)
-    return forwardedFor.split(',')[0]?.trim() || 'unknown';
+    return forwardedFor.split(",")[0]?.trim() || "unknown";
   }
 
-  const realIp = request.headers.get('x-real-ip');
+  const realIp = request.headers.get("x-real-ip");
   if (realIp) {
     return realIp;
   }
 
   // Fallback
-  return 'unknown';
+  return "unknown";
 }
 
 /**
  * Extract user agent from request headers
  */
 function getUserAgent(request: Request): string {
-  return request.headers.get('user-agent') || 'unknown';
+  return request.headers.get("user-agent") || "unknown";
 }
 
-export const Route = createFileRoute('/api/notes/$noteId/secret')({
+export const Route = createFileRoute("/api/notes/$noteId/secret")({
   server: {
     handlers: {
       /**
@@ -55,7 +55,8 @@ export const Route = createFileRoute('/api/notes/$noteId/secret')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { noteId } = params;
@@ -74,7 +75,7 @@ export const Route = createFileRoute('/api/notes/$noteId/secret')({
           const note = noteResult[0];
 
           if (!note) {
-            return json({ error: 'Note not found' }, { status: 404 });
+            return json({ error: "Note not found" }, { status: 404 });
           }
 
           // Check if user can view the secret (Requirement 7.4)
@@ -91,7 +92,7 @@ export const Route = createFileRoute('/api/notes/$noteId/secret')({
             id: randomUUID(),
             noteId: noteId,
             userId: auth.user.id,
-            action: 'VIEW_SECRET',
+            action: "VIEW_SECRET",
             ip: getClientIp(request),
             userAgent: getUserAgent(request),
           };
@@ -103,8 +104,11 @@ export const Route = createFileRoute('/api/notes/$noteId/secret')({
           try {
             decryptedSecret = decryptSecret(note.secret);
           } catch (error) {
-            console.error('[GET /api/notes/:noteId/secret] Decryption error:', error);
-            return json({ error: 'Failed to decrypt secret' }, { status: 500 });
+            console.error(
+              "[GET /api/notes/:noteId/secret] Decryption error:",
+              error
+            );
+            return json({ error: "Failed to decrypt secret" }, { status: 500 });
           }
 
           return json({
@@ -115,8 +119,8 @@ export const Route = createFileRoute('/api/notes/$noteId/secret')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/notes/:noteId/secret] Error:', error);
-          return json({ error: 'Failed to fetch secret' }, { status: 500 });
+          console.error("[GET /api/notes/:noteId/secret] Error:", error);
+          return json({ error: "Failed to fetch secret" }, { status: 500 });
         }
       },
     },

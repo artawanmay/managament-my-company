@@ -11,8 +11,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import type { User } from '../types';
+} from "@/components/ui/alert-dialog";
+import type { User } from "../types";
 
 interface DeleteUserDialogProps {
   open: boolean;
@@ -43,8 +43,10 @@ export function DeleteUserDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete User</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <span className="font-medium">{user.name}</span>?
-            This action cannot be undone. All data associated with this user will be permanently removed.
+            Are you sure you want to delete{" "}
+            <span className="font-medium">{user.name}</span>? This action cannot
+            be undone. All data associated with this user will be permanently
+            removed.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -54,7 +56,7 @@ export function DeleteUserDialog({
             disabled={isLoading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

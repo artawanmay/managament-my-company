@@ -10,20 +10,20 @@ import type {
   UpdateProfileRequest,
   UpdateThemeRequest,
   UpdateThemeResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Get current user profile
  */
 export async function getUserProfile(): Promise<UserProfile> {
-  const response = await fetch('/api/users/me', {
-    method: 'GET',
-    credentials: 'include',
+  const response = await fetch("/api/users/me", {
+    method: "GET",
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch profile');
+    throw new Error(error.error || "Failed to fetch profile");
   }
 
   return response.json();
@@ -36,19 +36,19 @@ export async function updateUserProfile(
   data: UpdateProfileRequest,
   csrfToken: string
 ): Promise<UserProfile> {
-  const response = await fetch('/api/users/me', {
-    method: 'PUT',
+  const response = await fetch("/api/users/me", {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
     body: JSON.stringify(data),
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to update profile');
+    throw new Error(error.error || "Failed to update profile");
   }
 
   return response.json();
@@ -61,19 +61,19 @@ export async function updateThemePreference(
   data: UpdateThemeRequest,
   csrfToken: string
 ): Promise<UpdateThemeResponse> {
-  const response = await fetch('/api/users/me/theme', {
-    method: 'PUT',
+  const response = await fetch("/api/users/me/theme", {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
     body: JSON.stringify(data),
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to update theme');
+    throw new Error(error.error || "Failed to update theme");
   }
 
   return response.json();

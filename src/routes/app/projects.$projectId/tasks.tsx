@@ -2,15 +2,16 @@
  * Project tasks list page
  * Requirements: 5.1, 5.2
  */
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
-import { ArrowLeft, Plus, LayoutGrid } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowLeft, Plus, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   TasksTable,
   TaskForm,
   TaskDetail,
+  TaskErrorBoundary,
   useTasks,
   useCreateTask,
   useUpdateTask,
@@ -18,9 +19,9 @@ import {
   type Task,
   type CreateTaskInput,
   type UpdateTaskInput,
-} from '@/features/tasks';
-import { useProject } from '@/features/projects';
-import { useUsers } from '@/features/users';
+} from "@/features/tasks";
+import { useProject } from "@/features/projects";
+import { useUsers } from "@/features/users";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,13 +31,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
-export const Route = createFileRoute('/app/projects/$projectId/tasks')({
+export const Route = createFileRoute("/app/projects/$projectId/tasks")({
   component: ProjectTasksPage,
 });
-
-
 
 function ProjectTasksPage() {
   const { projectId } = Route.useParams();
@@ -48,7 +47,8 @@ function ProjectTasksPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
-  const { data: projectData, isLoading: projectLoading } = useProject(projectId);
+  const { data: projectData, isLoading: projectLoading } =
+    useProject(projectId);
   const { data: tasksData, isLoading: tasksLoading } = useTasks({ projectId });
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask();
@@ -66,22 +66,25 @@ function ProjectTasksPage() {
     setIsDetailOpen(true);
   };
 
-  const handleCreateSubmit = async (data: CreateTaskInput | UpdateTaskInput) => {
+  const handleCreateSubmit = async (
+    data: CreateTaskInput | UpdateTaskInput
+  ) => {
     try {
       await createMutation.mutateAsync({
         ...data,
         projectId,
       } as CreateTaskInput);
       toast({
-        title: 'Task created',
-        description: 'The task has been created successfully.',
+        title: "Task created",
+        description: "The task has been created successfully.",
       });
       setIsCreateFormOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -96,16 +99,17 @@ function ProjectTasksPage() {
         projectId,
       });
       toast({
-        title: 'Task updated',
-        description: 'The task has been updated successfully.',
+        title: "Task updated",
+        description: "The task has been updated successfully.",
       });
       setIsEditFormOpen(false);
       setSelectedTask(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -132,17 +136,18 @@ function ProjectTasksPage() {
         projectId,
       });
       toast({
-        title: 'Task deleted',
-        description: 'The task has been deleted successfully.',
+        title: "Task deleted",
+        description: "The task has been deleted successfully.",
       });
       setIsDeleteDialogOpen(false);
       setTaskToDelete(null);
       setSelectedTask(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -160,7 +165,7 @@ function ProjectTasksPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">
-              {project?.name || 'Project'} - Tasks
+              {project?.name || "Project"} - Tasks
             </h1>
             <p className="text-muted-foreground">
               View and manage project tasks in list view
@@ -181,32 +186,38 @@ function ProjectTasksPage() {
         </div>
       </div>
 
-      <TasksTable
-        tasks={tasks}
-        isLoading={isLoading}
-        onTaskClick={handleTaskClick}
-      />
+      <TaskErrorBoundary>
+        <TasksTable
+          tasks={tasks}
+          isLoading={isLoading}
+          onTaskClick={handleTaskClick}
+        />
+      </TaskErrorBoundary>
 
       {/* Create Task Form */}
-      <TaskForm
-        open={isCreateFormOpen}
-        onOpenChange={setIsCreateFormOpen}
-        projectId={projectId}
-        users={users}
-        onSubmit={handleCreateSubmit}
-        isLoading={createMutation.isPending}
-      />
+      <TaskErrorBoundary>
+        <TaskForm
+          open={isCreateFormOpen}
+          onOpenChange={setIsCreateFormOpen}
+          projectId={projectId}
+          users={users}
+          onSubmit={handleCreateSubmit}
+          isLoading={createMutation.isPending}
+        />
+      </TaskErrorBoundary>
 
       {/* Edit Task Form */}
-      <TaskForm
-        open={isEditFormOpen}
-        onOpenChange={setIsEditFormOpen}
-        task={selectedTask}
-        projectId={projectId}
-        users={users}
-        onSubmit={handleEditSubmit}
-        isLoading={updateMutation.isPending}
-      />
+      <TaskErrorBoundary>
+        <TaskForm
+          open={isEditFormOpen}
+          onOpenChange={setIsEditFormOpen}
+          task={selectedTask}
+          projectId={projectId}
+          users={users}
+          onSubmit={handleEditSubmit}
+          isLoading={updateMutation.isPending}
+        />
+      </TaskErrorBoundary>
 
       {/* Task Detail Modal */}
       <TaskDetail
@@ -218,13 +229,16 @@ function ProjectTasksPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{taskToDelete?.title}"? This action
-              cannot be undone.
+              Are you sure you want to delete &quot;{taskToDelete?.title}&quot;?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

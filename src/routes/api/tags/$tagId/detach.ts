@@ -5,26 +5,30 @@
  * Requirements:
  * - 14.4: Remove tag from entity
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, and } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { tags, taggables, taggableTypeValues, tasks, projects, notes } from '@/lib/db/schema';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, and } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
-  requireAuthWithCsrf,
-  handleAuthError,
-} from '@/lib/auth/middleware';
-import { canAccessProject, canAccessNote } from '@/lib/auth/permissions';
-import { logError } from '@/lib/logger';
-import { z } from 'zod';
+  tags,
+  taggables,
+  taggableTypeValues,
+  tasks,
+  projects,
+  notes,
+} from "@/lib/db/schema";
+import { requireAuthWithCsrf, handleAuthError } from "@/lib/auth/middleware";
+import { canAccessProject, canAccessNote } from "@/lib/auth/permissions";
+import { logError } from "@/lib/logger";
+import { z } from "zod";
 
 // Zod schema for detaching a tag
 const detachTagSchema = z.object({
   taggableType: z.enum(taggableTypeValues),
-  taggableId: z.string().uuid('Invalid entity ID'),
+  taggableId: z.string().uuid("Invalid entity ID"),
 });
 
-export const Route = createFileRoute('/api/tags/$tagId/detach')({
+export const Route = createFileRoute("/api/tags/$tagId/detach")({
   server: {
     handlers: {
       /**
@@ -36,21 +40,25 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
         if (authError || !auth.success)
-          return authError ?? new Response('Unauthorized', { status: 401 });
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // GUEST users cannot detach tags
-        if (auth.user.role === 'GUEST') {
-          return json({ error: 'Access denied' }, { status: 403 });
+        if (auth.user.role === "GUEST") {
+          return json({ error: "Access denied" }, { status: 403 });
         }
 
         try {
           const { tagId } = params;
 
           // Check if tag exists
-          const tagResult = await db.select().from(tags).where(eq(tags.id, tagId)).limit(1);
+          const tagResult = await db
+            .select()
+            .from(tags)
+            .where(eq(tags.id, tagId))
+            .limit(1);
 
           if (tagResult.length === 0) {
-            return json({ error: 'Tag not found' }, { status: 404 });
+            return json({ error: "Tag not found" }, { status: 404 });
           }
 
           // Parse body for entity info
@@ -59,7 +67,7 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -67,7 +75,7 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
           const { taggableType, taggableId } = parsed.data;
 
           // Verify entity exists and user has access
-          if (taggableType === 'TASK') {
+          if (taggableType === "TASK") {
             const taskResult = await db
               .select({ id: tasks.id, projectId: tasks.projectId })
               .from(tasks)
@@ -75,14 +83,20 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
               .limit(1);
 
             if (taskResult.length === 0) {
-              return json({ error: 'Task not found' }, { status: 404 });
+              return json({ error: "Task not found" }, { status: 404 });
             }
 
-            const hasAccess = await canAccessProject(auth.user, taskResult[0]!.projectId);
+            const hasAccess = await canAccessProject(
+              auth.user,
+              taskResult[0]!.projectId
+            );
             if (!hasAccess) {
-              return json({ error: 'Access denied to this task' }, { status: 403 });
+              return json(
+                { error: "Access denied to this task" },
+                { status: 403 }
+              );
             }
-          } else if (taggableType === 'PROJECT') {
+          } else if (taggableType === "PROJECT") {
             const projectResult = await db
               .select({ id: projects.id })
               .from(projects)
@@ -90,14 +104,17 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
               .limit(1);
 
             if (projectResult.length === 0) {
-              return json({ error: 'Project not found' }, { status: 404 });
+              return json({ error: "Project not found" }, { status: 404 });
             }
 
             const hasAccess = await canAccessProject(auth.user, taggableId);
             if (!hasAccess) {
-              return json({ error: 'Access denied to this project' }, { status: 403 });
+              return json(
+                { error: "Access denied to this project" },
+                { status: 403 }
+              );
             }
-          } else if (taggableType === 'NOTE') {
+          } else if (taggableType === "NOTE") {
             const noteResult = await db
               .select({ id: notes.id })
               .from(notes)
@@ -105,12 +122,15 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
               .limit(1);
 
             if (noteResult.length === 0) {
-              return json({ error: 'Note not found' }, { status: 404 });
+              return json({ error: "Note not found" }, { status: 404 });
             }
 
             const hasAccess = await canAccessNote(auth.user, taggableId);
             if (!hasAccess) {
-              return json({ error: 'Access denied to this note' }, { status: 403 });
+              return json(
+                { error: "Access denied to this note" },
+                { status: 403 }
+              );
             }
           }
 
@@ -128,7 +148,10 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
             .limit(1);
 
           if (existingTaggable.length === 0) {
-            return json({ error: 'Tag is not attached to this entity' }, { status: 404 });
+            return json(
+              { error: "Tag is not attached to this entity" },
+              { status: 404 }
+            );
           }
 
           // Delete the taggable association
@@ -142,10 +165,12 @@ export const Route = createFileRoute('/api/tags/$tagId/detach')({
               )
             );
 
-          return json({ success: true, message: 'Tag detached successfully' });
+          return json({ success: true, message: "Tag detached successfully" });
         } catch (error) {
-          logError('[DELETE /api/tags/:tagId/detach] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to detach tag' }, { status: 500 });
+          logError("[DELETE /api/tags/:tagId/detach] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json({ error: "Failed to detach tag" }, { status: 500 });
         }
       },
     },

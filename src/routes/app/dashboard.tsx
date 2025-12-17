@@ -1,22 +1,22 @@
 /**
  * Dashboard Page
  * Displays summary statistics and charts for the application
- * 
+ *
  * Requirements:
  * - 15.1: Display summary cards for active clients, projects by status, tasks by status, and overdue tasks
  * - 15.2: Show tasks by status distribution and overdue tasks per project
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { Users, FolderKanban, CheckSquare, AlertTriangle } from 'lucide-react';
+import { createFileRoute } from "@tanstack/react-router";
+import { Users, FolderKanban, CheckSquare, AlertTriangle } from "lucide-react";
 import {
   useDashboard,
   StatCard,
   TaskStatusChart,
   OverdueChart,
   ProjectStatusChart,
-} from '@/features/dashboard';
+} from "@/features/dashboard";
 
-export const Route = createFileRoute('/app/dashboard')({
+export const Route = createFileRoute("/app/dashboard")({
   component: DashboardPage,
 });
 
@@ -40,9 +40,7 @@ function DashboardPage() {
   }
 
   // Calculate open tasks (not done)
-  const openTasks = data
-    ? data.tasks.total - data.tasks.done
-    : 0;
+  const openTasks = data ? data.tasks.total - data.tasks.done : 0;
 
   return (
     <div className="space-y-6">
@@ -79,10 +77,12 @@ function DashboardPage() {
         <StatCard
           title="Overdue Tasks"
           value={data?.overdue.total ?? 0}
-          description={data?.overdue.total ? 'Requires attention' : 'All on track'}
+          description={
+            data?.overdue.total ? "Requires attention" : "All on track"
+          }
           icon={AlertTriangle}
           isLoading={isLoading}
-          className={data?.overdue.total ? 'border-destructive/50' : ''}
+          className={data?.overdue.total ? "border-destructive/50" : ""}
         />
       </div>
 

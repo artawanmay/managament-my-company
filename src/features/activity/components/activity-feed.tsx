@@ -2,11 +2,11 @@
  * ActivityFeed component - displays a list of activity log entries
  * Requirements: 10.2
  */
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ActivityItem } from './activity-item';
-import type { ActivityLog } from '../types';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ActivityItem } from "./activity-item";
+import type { ActivityLog } from "../types";
 
 interface ActivityFeedProps {
   activities: ActivityLog[];
@@ -40,8 +40,8 @@ export function ActivityFeed({
   hasMore,
   onLoadMore,
   isLoadingMore,
-  emptyMessage = 'No activity yet',
-  maxHeight = '400px',
+  emptyMessage = "No activity yet",
+  maxHeight = "400px",
 }: ActivityFeedProps) {
   if (isLoading) {
     return (
@@ -78,7 +78,7 @@ export function ActivityFeed({
             disabled={isLoadingMore}
             className="w-full"
           >
-            {isLoadingMore ? 'Loading...' : 'Load more'}
+            {isLoadingMore ? "Loading..." : "Load more"}
           </Button>
         </div>
       )}

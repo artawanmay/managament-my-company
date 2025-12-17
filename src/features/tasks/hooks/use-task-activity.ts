@@ -1,7 +1,7 @@
 /**
  * Hook for fetching task activity logs
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 export interface TaskActivityLog {
   id: string;
@@ -16,13 +16,16 @@ export interface TaskActivityLog {
   actorAvatarUrl: string | null;
 }
 
-async function fetchTaskActivity(taskId: string, limit = 20): Promise<{ data: TaskActivityLog[] }> {
+async function fetchTaskActivity(
+  taskId: string,
+  limit = 20
+): Promise<{ data: TaskActivityLog[] }> {
   const response = await fetch(`/api/tasks/${taskId}/activity?limit=${limit}`, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch activity logs');
+    throw new Error("Failed to fetch activity logs");
   }
 
   return response.json();
@@ -30,7 +33,7 @@ async function fetchTaskActivity(taskId: string, limit = 20): Promise<{ data: Ta
 
 export function useTaskActivity(taskId: string | undefined, limit = 20) {
   return useQuery({
-    queryKey: ['task-activity', taskId, limit],
+    queryKey: ["task-activity", taskId, limit],
     queryFn: () => fetchTaskActivity(taskId!, limit),
     enabled: !!taskId,
   });

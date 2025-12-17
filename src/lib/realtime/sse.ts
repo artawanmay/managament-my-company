@@ -45,7 +45,7 @@ export function createSSEResponse(
             const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
             controller.enqueue(encoder.encode(message));
           } catch (error) {
-            console.error('[SSE] Failed to send message:', error);
+            console.error("[SSE] Failed to send message:", error);
           }
         },
         close: () => {
@@ -64,7 +64,7 @@ export function createSSEResponse(
       };
 
       // Send initial connection event
-      connection.send('connected', { timestamp: new Date().toISOString() });
+      connection.send("connected", { timestamp: new Date().toISOString() });
 
       // Call the onConnect callback with the connection
       onConnect(connection);
@@ -77,10 +77,10 @@ export function createSSEResponse(
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no', // Disable nginx buffering
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no", // Disable nginx buffering
     },
   });
 }

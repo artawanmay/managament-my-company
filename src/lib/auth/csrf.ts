@@ -2,18 +2,18 @@
  * CSRF protection middleware
  * Requirements: 1.6, 18.2 - CSRF token protection for mutation requests
  */
-import { validateCsrfToken } from './session';
-import type { Database } from '@/lib/db';
+import { validateCsrfToken } from "./session";
+import type { Database } from "@/lib/db";
 
 // Allow injecting a different database for testing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbInstance = Database | any;
 
 // CSRF token header name
-export const CSRF_HEADER = 'x-csrf-token';
+export const CSRF_HEADER = "x-csrf-token";
 
 // HTTP methods that require CSRF protection (mutations)
-const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
+const MUTATION_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
 
 export interface CsrfValidationResult {
   valid: boolean;
@@ -32,9 +32,9 @@ export function extractSessionIdFromCookie(
     return null;
   }
 
-  const cookies = cookieHeader.split(';').reduce(
+  const cookies = cookieHeader.split(";").reduce(
     (acc, cookie) => {
-      const [key, value] = cookie.trim().split('=');
+      const [key, value] = cookie.trim().split("=");
       if (key && value) {
         acc[key] = value;
       }
@@ -43,7 +43,7 @@ export function extractSessionIdFromCookie(
     {} as Record<string, string>
   );
 
-  return cookies['session_id'] || null;
+  return cookies["session_id"] || null;
 }
 
 /**
@@ -82,17 +82,17 @@ export async function validateCsrfRequest(
   db?: DbInstance
 ): Promise<CsrfValidationResult> {
   if (!sessionId) {
-    return { valid: false, error: 'No session found' };
+    return { valid: false, error: "No session found" };
   }
 
   if (!csrfToken) {
-    return { valid: false, error: 'CSRF token missing' };
+    return { valid: false, error: "CSRF token missing" };
   }
 
   const isValid = await validateCsrfToken(sessionId, csrfToken, db);
 
   if (!isValid) {
-    return { valid: false, error: 'Invalid CSRF token' };
+    return { valid: false, error: "Invalid CSRF token" };
   }
 
   return { valid: true };
@@ -128,7 +128,7 @@ export async function csrfMiddleware(
     return { valid: true };
   }
 
-  const cookieHeader = request.headers.get('cookie');
+  const cookieHeader = request.headers.get("cookie");
   const sessionId = extractSessionIdFromCookie(cookieHeader);
   const csrfToken = extractCsrfToken(request.headers);
 
@@ -139,13 +139,10 @@ export async function csrfMiddleware(
  * Create a CSRF-protected response helper
  * Sets the CSRF token in a cookie for the client to use
  */
-export function setCsrfCookie(
-  response: Response,
-  csrfToken: string
-): Response {
+export function setCsrfCookie(response: Response, csrfToken: string): Response {
   const headers = new Headers(response.headers);
   headers.append(
-    'Set-Cookie',
+    "Set-Cookie",
     `csrf_token=${csrfToken}; Path=/; HttpOnly=false; SameSite=Strict`
   );
   return new Response(response.body, {

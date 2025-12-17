@@ -3,16 +3,16 @@
  * Single comment with edit/delete actions
  * Requirements: 8.4, 8.5
  */
-import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +22,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import type { Comment } from '../types';
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import type { Comment } from "../types";
 
 interface CommentItemProps {
   comment: Comment;
@@ -61,15 +61,15 @@ export function CommentItem({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
 
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
     });
   };
 
@@ -115,14 +115,14 @@ export function CommentItem({
       <Avatar className="h-8 w-8 flex-shrink-0">
         <AvatarImage src={comment.user?.avatarUrl || undefined} />
         <AvatarFallback>
-          {comment.user?.name?.charAt(0).toUpperCase() || '?'}
+          {comment.user?.name?.charAt(0).toUpperCase() || "?"}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-medium text-sm">
-            {comment.user?.name || 'Unknown User'}
+            {comment.user?.name || "Unknown User"}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {formatDate(comment.createdAt)}
@@ -148,7 +148,7 @@ export function CommentItem({
                 onClick={handleSaveEdit}
                 disabled={isUpdating || !editMessage.trim()}
               >
-                {isUpdating ? 'Saving...' : 'Save'}
+                {isUpdating ? "Saving..." : "Save"}
               </Button>
               <Button
                 size="sm"
@@ -200,7 +200,8 @@ export function CommentItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Comment</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this comment? This action cannot be undone.
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -210,7 +211,7 @@ export function CommentItem({
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

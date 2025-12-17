@@ -2,10 +2,10 @@
  * Hook for marking all notifications as read
  * Requirement 9.5
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markAllNotificationsAsRead } from '../api';
-import { useSession } from '@/features/auth/hooks';
-import type { NotificationsListResponse, Notification } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { markAllNotificationsAsRead } from "../api";
+import { useSession } from "@/features/auth/hooks";
+import type { NotificationsListResponse, Notification } from "../types";
 
 export function useMarkAllAsRead() {
   const queryClient = useQueryClient();
@@ -14,22 +14,23 @@ export function useMarkAllAsRead() {
   return useMutation({
     mutationFn: () => {
       if (!session.csrfToken) {
-        throw new Error('No CSRF token available');
+        throw new Error("No CSRF token available");
       }
       return markAllNotificationsAsRead(session.csrfToken);
     },
     onMutate: async () => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['notifications'] });
+      await queryClient.cancelQueries({ queryKey: ["notifications"] });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueriesData<NotificationsListResponse>({
-        queryKey: ['notifications'],
-      });
+      const previousData =
+        queryClient.getQueriesData<NotificationsListResponse>({
+          queryKey: ["notifications"],
+        });
 
       // Optimistically update all notification queries
       queryClient.setQueriesData<NotificationsListResponse>(
-        { queryKey: ['notifications'] },
+        { queryKey: ["notifications"] },
         (old) => {
           if (!old) return old;
           return {
@@ -55,7 +56,7 @@ export function useMarkAllAsRead() {
     },
     onSettled: () => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }

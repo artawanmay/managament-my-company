@@ -8,10 +8,10 @@
  * - 4.2: Display only projects user has permission to access
  * - 4.6: Hide archived projects from default views
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, like, or, desc, asc, sql, ne, inArray } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, like, or, desc, asc, sql, ne, inArray } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   projects,
   projectStatusValues,
@@ -20,28 +20,28 @@ import {
   clients,
   users,
   type NewProject,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
   requireRole,
   handleAuthError,
   handleRoleError,
-} from '@/lib/auth/middleware';
-import { logProjectCreated } from '@/lib/activity';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+} from "@/lib/auth/middleware";
+import { logProjectCreated } from "@/lib/activity";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for creating a project
 const createProjectSchema = z.object({
-  clientId: z.string().uuid('Invalid client ID'),
-  name: z.string().min(1, 'Name is required').max(255),
+  clientId: z.string().uuid("Invalid client ID"),
+  name: z.string().min(1, "Name is required").max(255),
   description: z.string().max(2000).optional().nullable(),
-  status: z.enum(projectStatusValues).default('PLANNING'),
-  priority: z.enum(priorityValues).default('MEDIUM'),
+  status: z.enum(projectStatusValues).default("PLANNING"),
+  priority: z.enum(priorityValues).default("MEDIUM"),
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
-  managerId: z.string().uuid('Invalid manager ID'),
+  managerId: z.string().uuid("Invalid manager ID"),
 });
 
 // Query params schema
@@ -50,14 +50,24 @@ const listQuerySchema = z.object({
   status: z.enum(projectStatusValues).optional(),
   priority: z.enum(priorityValues).optional(),
   clientId: z.string().uuid().optional(),
-  includeArchived: z.enum(['true', 'false']).default('false'),
-  sortBy: z.enum(['name', 'status', 'priority', 'startDate', 'endDate', 'createdAt', 'updatedAt']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  includeArchived: z.enum(["true", "false"]).default("false"),
+  sortBy: z
+    .enum([
+      "name",
+      "status",
+      "priority",
+      "startDate",
+      "endDate",
+      "createdAt",
+      "updatedAt",
+    ])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
 });
 
-export const Route = createFileRoute('/api/projects/')({
+export const Route = createFileRoute("/api/projects/")({
   server: {
     handlers: {
       /**
@@ -68,10 +78,11 @@ export const Route = createFileRoute('/api/projects/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MEMBER role to view projects
-        const roleCheck = requireRole(auth.user, 'MEMBER');
+        const roleCheck = requireRole(auth.user, "MEMBER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -79,26 +90,39 @@ export const Route = createFileRoute('/api/projects/')({
           // Parse query parameters
           const url = new URL(request.url);
           const queryParams = {
-            search: url.searchParams.get('search') || undefined,
-            status: url.searchParams.get('status') || undefined,
-            priority: url.searchParams.get('priority') || undefined,
-            clientId: url.searchParams.get('clientId') || undefined,
-            includeArchived: url.searchParams.get('includeArchived') || 'false',
-            sortBy: url.searchParams.get('sortBy') || 'createdAt',
-            sortOrder: url.searchParams.get('sortOrder') || 'desc',
-            page: url.searchParams.get('page') || '1',
-            limit: url.searchParams.get('limit') || '20',
+            search: url.searchParams.get("search") || undefined,
+            status: url.searchParams.get("status") || undefined,
+            priority: url.searchParams.get("priority") || undefined,
+            clientId: url.searchParams.get("clientId") || undefined,
+            includeArchived: url.searchParams.get("includeArchived") || "false",
+            sortBy: url.searchParams.get("sortBy") || "createdAt",
+            sortOrder: url.searchParams.get("sortOrder") || "desc",
+            page: url.searchParams.get("page") || "1",
+            limit: url.searchParams.get("limit") || "20",
           };
 
           const parsed = listQuerySchema.safeParse(queryParams);
           if (!parsed.success) {
             return json(
-              { error: 'Invalid query parameters', details: parsed.error.flatten() },
+              {
+                error: "Invalid query parameters",
+                details: parsed.error.flatten(),
+              },
               { status: 400 }
             );
           }
 
-          const { search, status, priority, clientId, includeArchived, sortBy, sortOrder, page, limit } = parsed.data;
+          const {
+            search,
+            status,
+            priority,
+            clientId,
+            includeArchived,
+            sortBy,
+            sortOrder,
+            page,
+            limit,
+          } = parsed.data;
           const offset = (page - 1) * limit;
 
           // Build base conditions
@@ -130,8 +154,8 @@ export const Route = createFileRoute('/api/projects/')({
           }
 
           // Exclude archived projects by default (Requirement 4.6)
-          if (includeArchived !== 'true') {
-            conditions.push(ne(projects.status, 'ARCHIVED'));
+          if (includeArchived !== "true") {
+            conditions.push(ne(projects.status, "ARCHIVED"));
           }
 
           // Build sort order
@@ -145,14 +169,14 @@ export const Route = createFileRoute('/api/projects/')({
             updatedAt: projects.updatedAt,
           }[sortBy];
 
-          const orderFn = sortOrder === 'asc' ? asc : desc;
+          const orderFn = sortOrder === "asc" ? asc : desc;
 
           // For SUPER_ADMIN and ADMIN, show all projects
           // For others, only show projects they have access to
           let projectList;
           let total;
 
-          if (auth.user.role === 'SUPER_ADMIN') {
+          if (auth.user.role === "SUPER_ADMIN") {
             // SUPER_ADMIN users can see all projects
             let query = db
               .select({
@@ -188,7 +212,9 @@ export const Route = createFileRoute('/api/projects/')({
               .offset(offset);
 
             // Get total count
-            let countQuery = db.select({ count: sql<number>`count(*)` }).from(projects);
+            let countQuery = db
+              .select({ count: sql<number>`count(*)` })
+              .from(projects);
             if (conditions.length > 0) {
               for (const condition of conditions) {
                 if (condition) {
@@ -217,7 +243,9 @@ export const Route = createFileRoute('/api/projects/')({
             const managedProjectIds = managedProjects.map((p) => p.id);
 
             // Combine both sets of project IDs
-            const accessibleProjectIds = [...new Set([...memberProjectIds, ...managedProjectIds])];
+            const accessibleProjectIds = [
+              ...new Set([...memberProjectIds, ...managedProjectIds]),
+            ];
 
             if (accessibleProjectIds.length === 0) {
               return json({
@@ -266,7 +294,9 @@ export const Route = createFileRoute('/api/projects/')({
               .offset(offset);
 
             // Get total count
-            let countQuery = db.select({ count: sql<number>`count(*)` }).from(projects);
+            let countQuery = db
+              .select({ count: sql<number>`count(*)` })
+              .from(projects);
             for (const condition of conditions) {
               if (condition) {
                 countQuery = countQuery.where(condition) as typeof countQuery;
@@ -286,8 +316,8 @@ export const Route = createFileRoute('/api/projects/')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/projects] Error:', error);
-          return json({ error: 'Failed to fetch projects' }, { status: 500 });
+          console.error("[GET /api/projects] Error:", error);
+          return json({ error: "Failed to fetch projects" }, { status: 500 });
         }
       },
 
@@ -299,10 +329,11 @@ export const Route = createFileRoute('/api/projects/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MANAGER role to create projects
-        const roleCheck = requireRole(auth.user, 'MANAGER');
+        const roleCheck = requireRole(auth.user, "MANAGER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -312,7 +343,7 @@ export const Route = createFileRoute('/api/projects/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -325,7 +356,7 @@ export const Route = createFileRoute('/api/projects/')({
             .limit(1);
 
           if (clientExists.length === 0) {
-            return json({ error: 'Client not found' }, { status: 404 });
+            return json({ error: "Client not found" }, { status: 404 });
           }
 
           // Verify manager exists
@@ -336,7 +367,7 @@ export const Route = createFileRoute('/api/projects/')({
             .limit(1);
 
           if (managerExists.length === 0) {
-            return json({ error: 'Manager not found' }, { status: 404 });
+            return json({ error: "Manager not found" }, { status: 404 });
           }
 
           const projectData: NewProject = {
@@ -346,21 +377,31 @@ export const Route = createFileRoute('/api/projects/')({
             description: parsed.data.description || null,
             status: parsed.data.status,
             priority: parsed.data.priority,
-            startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : null,
+            startDate: parsed.data.startDate
+              ? new Date(parsed.data.startDate)
+              : null,
             endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : null,
             managerId: parsed.data.managerId,
           };
 
-          const result = await db.insert(projects).values(projectData).returning();
+          const result = await db
+            .insert(projects)
+            .values(projectData)
+            .returning();
           const newProject = result[0]!;
 
           // Log activity
-          await logProjectCreated(auth.user.id, newProject.id, newProject.name, newProject.clientId);
+          await logProjectCreated(
+            auth.user.id,
+            newProject.id,
+            newProject.name,
+            newProject.clientId
+          );
 
           return json({ data: newProject }, { status: 201 });
         } catch (error) {
-          console.error('[POST /api/projects] Error:', error);
-          return json({ error: 'Failed to create project' }, { status: 500 });
+          console.error("[POST /api/projects] Error:", error);
+          return json({ error: "Failed to create project" }, { status: 500 });
         }
       },
     },

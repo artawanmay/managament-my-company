@@ -2,9 +2,9 @@
  * Task validation schemas
  * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 6.1, 6.2
  */
-import { z } from 'zod';
-import { taskStatusValues } from '@/lib/db/schema/tasks';
-import { priorityValues } from '@/lib/db/schema/projects';
+import { z } from "zod";
+import { taskStatusValues } from "@/lib/db/schema/tasks";
+import { priorityValues } from "@/lib/db/schema/projects";
 import {
   uuidSchema,
   requiredStringSchema,
@@ -14,7 +14,7 @@ import {
   positiveIntSchema,
   baseListQuerySchema,
   sortOrderSchema,
-} from './common';
+} from "./common";
 
 // Task status enum
 export const taskStatusSchema = z.enum(taskStatusValues);
@@ -27,8 +27,8 @@ export const createTaskSchema = z.object({
   projectId: uuidSchema,
   title: requiredStringSchema(255),
   description: textSchema(5000),
-  status: taskStatusSchema.default('BACKLOG'),
-  priority: taskPrioritySchema.default('MEDIUM'),
+  status: taskStatusSchema.default("BACKLOG"),
+  priority: taskPrioritySchema.default("MEDIUM"),
   assigneeId: uuidSchema.optional().nullable(),
   dueDate: optionalDateStringSchema,
   estimatedHours: positiveNumberSchema.optional().nullable(),
@@ -60,8 +60,18 @@ export const taskListQuerySchema = baseListQuerySchema.extend({
   status: taskStatusSchema.optional(),
   priority: taskPrioritySchema.optional(),
   assigneeId: uuidSchema.optional(),
-  includeOverdue: z.enum(['true', 'false']).default('false'),
-  sortBy: z.enum(['title', 'status', 'priority', 'dueDate', 'createdAt', 'updatedAt', 'order']).default('createdAt'),
+  includeOverdue: z.enum(["true", "false"]).default("false"),
+  sortBy: z
+    .enum([
+      "title",
+      "status",
+      "priority",
+      "dueDate",
+      "createdAt",
+      "updatedAt",
+      "order",
+    ])
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

@@ -2,20 +2,25 @@
  * Client Activity Log API Routes
  * GET /api/clients/:clientId/activity - Get activity for a specific client
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, desc, and, or, sql } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { activityLogs, users } from '@/lib/db/schema';
-import { requireAuth, requireRole, handleAuthError, handleRoleError } from '@/lib/auth/middleware';
-import { z } from 'zod';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, desc, and, or, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { activityLogs, users } from "@/lib/db/schema";
+import {
+  requireAuth,
+  requireRole,
+  handleAuthError,
+  handleRoleError,
+} from "@/lib/auth/middleware";
+import { z } from "zod";
 
 const querySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(20),
   offset: z.coerce.number().min(0).default(0),
 });
 
-export const Route = createFileRoute('/api/clients/$clientId/activity')({
+export const Route = createFileRoute("/api/clients/$clientId/activity")({
   server: {
     handlers: {
       /**
@@ -26,24 +31,25 @@ export const Route = createFileRoute('/api/clients/$clientId/activity')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MEMBER role
-        const roleCheck = requireRole(auth.user, 'MEMBER');
+        const roleCheck = requireRole(auth.user, "MEMBER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
         try {
           const { clientId } = params;
           const url = new URL(request.url);
-          
+
           const parsed = querySchema.safeParse({
-            limit: url.searchParams.get('limit') || '20',
-            offset: url.searchParams.get('offset') || '0',
+            limit: url.searchParams.get("limit") || "20",
+            offset: url.searchParams.get("offset") || "0",
           });
 
           if (!parsed.success) {
-            return json({ error: 'Invalid query parameters' }, { status: 400 });
+            return json({ error: "Invalid query parameters" }, { status: 400 });
           }
 
           const { limit, offset } = parsed.data;
@@ -53,7 +59,7 @@ export const Route = createFileRoute('/api/clients/$clientId/activity')({
           // 2. Activities with clientId in metadata
           const clientCondition = or(
             and(
-              eq(activityLogs.entityType, 'CLIENT'),
+              eq(activityLogs.entityType, "CLIENT"),
               eq(activityLogs.entityId, clientId)
             ),
             sql`json_extract(${activityLogs.metadata}, '$.clientId') = ${clientId}`
@@ -82,13 +88,18 @@ export const Route = createFileRoute('/api/clients/$clientId/activity')({
           // Parse metadata JSON
           const activities = activityList.map((activity) => ({
             ...activity,
-            metadata: activity.metadata ? JSON.parse(activity.metadata as string) : null,
+            metadata: activity.metadata
+              ? JSON.parse(activity.metadata as string)
+              : null,
           }));
 
           return json({ data: activities });
         } catch (error) {
-          console.error('[GET /api/clients/:clientId/activity] Error:', error);
-          return json({ error: 'Failed to fetch activity logs' }, { status: 500 });
+          console.error("[GET /api/clients/:clientId/activity] Error:", error);
+          return json(
+            { error: "Failed to fetch activity logs" },
+            { status: 500 }
+          );
         }
       },
     },

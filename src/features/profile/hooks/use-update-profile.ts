@@ -1,7 +1,7 @@
 /**
  * useUpdateProfile Hook - Update current user profile
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UpdateProfileData {
   name?: string;
@@ -10,19 +10,19 @@ interface UpdateProfileData {
 }
 
 async function updateProfile(data: UpdateProfileData) {
-  const csrfToken = sessionStorage.getItem('csrf_token');
-  const response = await fetch('/api/profile', {
-    method: 'PUT',
+  const csrfToken = sessionStorage.getItem("csrf_token");
+  const response = await fetch("/api/profile", {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+      "Content-Type": "application/json",
+      ...(csrfToken && { "X-CSRF-Token": csrfToken }),
     },
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to update profile');
+    throw new Error(error.error || "Failed to update profile");
   }
 
   return response.json();
@@ -34,8 +34,8 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['session'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
     },
   });
 }

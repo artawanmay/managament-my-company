@@ -1,25 +1,29 @@
-import { sqliteTable, text, index, unique } from 'drizzle-orm/sqlite-core';
-import { tagsSqlite } from './tags';
+import { sqliteTable, text, index, unique } from "drizzle-orm/sqlite-core";
+import { tagsSqlite } from "./tags";
 
 // Taggable type values
-export const taggableTypeValues = ['TASK', 'PROJECT', 'NOTE'] as const;
+export const taggableTypeValues = ["TASK", "PROJECT", "NOTE"] as const;
 export type TaggableType = (typeof taggableTypeValues)[number];
 
 // Taggables Table (Polymorphic Join)
 export const taggablesSqlite = sqliteTable(
-  'taggables',
+  "taggables",
   {
-    id: text('id').primaryKey(),
-    tagId: text('tag_id')
+    id: text("id").primaryKey(),
+    tagId: text("tag_id")
       .notNull()
-      .references(() => tagsSqlite.id, { onDelete: 'cascade' }),
-    taggableType: text('taggable_type', { enum: taggableTypeValues }).notNull(),
-    taggableId: text('taggable_id').notNull(), // ID of the tagged entity
+      .references(() => tagsSqlite.id, { onDelete: "cascade" }),
+    taggableType: text("taggable_type", { enum: taggableTypeValues }).notNull(),
+    taggableId: text("taggable_id").notNull(), // ID of the tagged entity
   },
   (table) => [
-    index('taggables_tag_id_idx').on(table.tagId),
-    index('taggables_taggable_idx').on(table.taggableType, table.taggableId),
-    unique('taggables_unique').on(table.tagId, table.taggableType, table.taggableId),
+    index("taggables_tag_id_idx").on(table.tagId),
+    index("taggables_taggable_idx").on(table.taggableType, table.taggableId),
+    unique("taggables_unique").on(
+      table.tagId,
+      table.taggableType,
+      table.taggableId
+    ),
   ]
 );
 

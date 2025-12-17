@@ -47,9 +47,9 @@ const sheetVariants = cva(
   }
 );
 
-
 interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
+  extends
+    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<
@@ -78,7 +78,10 @@ const SheetHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex-shrink-0 flex flex-col space-y-2 text-center sm:text-left pb-4 border-b", className)}
+    className={cn(
+      "flex-shrink-0 flex flex-col space-y-2 text-center sm:text-left pb-4 border-b",
+      className
+    )}
     {...props}
   />
 );
@@ -88,10 +91,7 @@ const SheetBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex-1 overflow-y-auto py-4", className)}
-    {...props}
-  />
+  <div className={cn("flex-1 overflow-y-auto py-4", className)} {...props} />
 );
 SheetBody.displayName = "SheetBody";
 

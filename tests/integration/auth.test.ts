@@ -4,19 +4,19 @@
  *
  * Requirements: 1.1, 1.3, 1.4, 1.5, 25.5
  */
-import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
-import { hashPassword, verifyPassword } from '@/lib/auth/password';
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import {
   createSession,
   validateSession,
   invalidateSession,
   invalidateAllUserSessions,
   validateCsrfToken,
-} from '@/lib/auth/session';
+} from "@/lib/auth/session";
 import {
   recordFailedAttempt,
   isLocked,
@@ -24,15 +24,15 @@ import {
   unlockAccount,
   setRedisClient,
   LOCKOUT_CONFIG,
-} from '@/lib/auth/lockout';
-import { getMockRedisClient, resetMockRedis } from '../setup/mock-redis';
+} from "@/lib/auth/lockout";
+import { getMockRedisClient, resetMockRedis } from "../setup/mock-redis";
 
 // Test database setup
 let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -61,7 +61,9 @@ function setupTestDb() {
     )
   `);
 
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`
+  );
 }
 
 function cleanupTestDb() {
@@ -75,7 +77,7 @@ async function createTestUser(
   id: string,
   email: string,
   password: string,
-  role: string = 'MEMBER'
+  role: string = "MEMBER"
 ) {
   const passwordHash = await hashPassword(password);
   db.run(sql`
@@ -85,7 +87,7 @@ async function createTestUser(
   return { id, email, passwordHash };
 }
 
-describe('Authentication Flow Integration Tests', () => {
+describe("Authentication Flow Integration Tests", () => {
   beforeEach(() => {
     setupTestDb();
     setRedisClient(getMockRedisClient());
@@ -100,14 +102,14 @@ describe('Authentication Flow Integration Tests', () => {
     setRedisClient(null);
   });
 
-  describe('Login Flow', () => {
+  describe("Login Flow", () => {
     /**
      * Requirement 1.1: User login with valid credentials
      */
-    it('should authenticate user with valid credentials', async () => {
-      const userId = 'user-1';
-      const email = 'test@example.com';
-      const password = 'SecurePassword123!';
+    it("should authenticate user with valid credentials", async () => {
+      const userId = "user-1";
+      const email = "test@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
@@ -129,11 +131,11 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.1: User login with invalid credentials
      */
-    it('should reject login with invalid password', async () => {
-      const userId = 'user-2';
-      const email = 'test2@example.com';
-      const password = 'SecurePassword123!';
-      const wrongPassword = 'WrongPassword456!';
+    it("should reject login with invalid password", async () => {
+      const userId = "user-2";
+      const email = "test2@example.com";
+      const password = "SecurePassword123!";
+      const wrongPassword = "WrongPassword456!";
 
       await createTestUser(userId, email, password);
 
@@ -146,20 +148,22 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.1: Login with non-existent user
      */
-    it('should reject login for non-existent user', async () => {
-      const users = db.all(sql`SELECT * FROM users WHERE email = ${'nonexistent@example.com'}`);
+    it("should reject login for non-existent user", async () => {
+      const users = db.all(
+        sql`SELECT * FROM users WHERE email = ${"nonexistent@example.com"}`
+      );
       expect(users.length).toBe(0);
     });
   });
 
-  describe('Logout Flow', () => {
+  describe("Logout Flow", () => {
     /**
      * Requirement 1.4: Session invalidation on logout
      */
-    it('should invalidate session on logout', async () => {
-      const userId = 'user-3';
-      const email = 'test3@example.com';
-      const password = 'SecurePassword123!';
+    it("should invalidate session on logout", async () => {
+      const userId = "user-3";
+      const email = "test3@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
@@ -182,10 +186,10 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.4: Invalidate all user sessions
      */
-    it('should invalidate all sessions for a user', async () => {
-      const userId = 'user-4';
-      const email = 'test4@example.com';
-      const password = 'SecurePassword123!';
+    it("should invalidate all sessions for a user", async () => {
+      const userId = "user-4";
+      const email = "test4@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
@@ -209,14 +213,14 @@ describe('Authentication Flow Integration Tests', () => {
     });
   });
 
-  describe('Session Validation', () => {
+  describe("Session Validation", () => {
     /**
      * Requirement 1.5: Protected routes require valid session
      */
-    it('should validate active session', async () => {
-      const userId = 'user-5';
-      const email = 'test5@example.com';
-      const password = 'SecurePassword123!';
+    it("should validate active session", async () => {
+      const userId = "user-5";
+      const email = "test5@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
@@ -231,18 +235,18 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.5: Invalid session ID should be rejected
      */
-    it('should reject invalid session ID', async () => {
-      const invalidSession = await validateSession('invalid-session-id', db);
+    it("should reject invalid session ID", async () => {
+      const invalidSession = await validateSession("invalid-session-id", db);
       expect(invalidSession).toBeNull();
     });
 
     /**
      * Requirement 1.5: Expired session should be rejected
      */
-    it('should reject expired session', async () => {
-      const userId = 'user-6';
-      const email = 'test6@example.com';
-      const password = 'SecurePassword123!';
+    it("should reject expired session", async () => {
+      const userId = "user-6";
+      const email = "test6@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
@@ -263,41 +267,49 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.6: CSRF token validation
      */
-    it('should validate correct CSRF token', async () => {
-      const userId = 'user-7';
-      const email = 'test7@example.com';
-      const password = 'SecurePassword123!';
+    it("should validate correct CSRF token", async () => {
+      const userId = "user-7";
+      const email = "test7@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
       const session = await createSession(userId, db);
-      const isValid = await validateCsrfToken(session.id, session.csrfToken, db);
+      const isValid = await validateCsrfToken(
+        session.id,
+        session.csrfToken,
+        db
+      );
       expect(isValid).toBe(true);
     });
 
     /**
      * Requirement 1.6: Invalid CSRF token should be rejected
      */
-    it('should reject invalid CSRF token', async () => {
-      const userId = 'user-8';
-      const email = 'test8@example.com';
-      const password = 'SecurePassword123!';
+    it("should reject invalid CSRF token", async () => {
+      const userId = "user-8";
+      const email = "test8@example.com";
+      const password = "SecurePassword123!";
 
       await createTestUser(userId, email, password);
 
       const session = await createSession(userId, db);
-      const isValid = await validateCsrfToken(session.id, 'invalid-csrf-token', db);
+      const isValid = await validateCsrfToken(
+        session.id,
+        "invalid-csrf-token",
+        db
+      );
       expect(isValid).toBe(false);
     });
   });
 
-  describe('Lockout Flow', () => {
+  describe("Lockout Flow", () => {
     /**
      * Requirement 1.3: Account lockout after failed attempts
      */
-    it('should lock account after max failed attempts', async () => {
-      const email = 'lockout@example.com';
-      const ip = '192.168.1.1';
+    it("should lock account after max failed attempts", async () => {
+      const email = "lockout@example.com";
+      const ip = "192.168.1.1";
 
       // Record max failed attempts
       for (let i = 0; i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS; i++) {
@@ -311,9 +323,9 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.3: Account should not lock before max attempts
      */
-    it('should not lock account before max failed attempts', async () => {
-      const email = 'notlocked@example.com';
-      const ip = '192.168.1.2';
+    it("should not lock account before max failed attempts", async () => {
+      const email = "notlocked@example.com";
+      const ip = "192.168.1.2";
 
       // Record fewer than max attempts
       for (let i = 0; i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - 1; i++) {
@@ -327,9 +339,9 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.3: Clear attempts on successful login
      */
-    it('should clear attempts on successful login', async () => {
-      const email = 'clearattempts@example.com';
-      const ip = '192.168.1.3';
+    it("should clear attempts on successful login", async () => {
+      const email = "clearattempts@example.com";
+      const ip = "192.168.1.3";
 
       // Record some failed attempts
       await recordFailedAttempt(email, ip);
@@ -341,15 +353,17 @@ describe('Authentication Flow Integration Tests', () => {
       // Should be able to fail again without immediate lockout
       const result = await recordFailedAttempt(email, ip);
       expect(result.isLocked).toBe(false);
-      expect(result.attemptsRemaining).toBe(LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - 1);
+      expect(result.attemptsRemaining).toBe(
+        LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - 1
+      );
     });
 
     /**
      * Requirement 1.3: Admin can unlock account
      */
-    it('should allow admin to unlock account', async () => {
-      const email = 'adminunlock@example.com';
-      const ip = '192.168.1.4';
+    it("should allow admin to unlock account", async () => {
+      const email = "adminunlock@example.com";
+      const ip = "192.168.1.4";
 
       // Lock the account
       for (let i = 0; i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS; i++) {
@@ -367,9 +381,9 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 1.3: Locked account rejects login attempts
      */
-    it('should reject login attempts on locked account', async () => {
-      const email = 'lockedreject@example.com';
-      const ip = '192.168.1.5';
+    it("should reject login attempts on locked account", async () => {
+      const email = "lockedreject@example.com";
+      const ip = "192.168.1.5";
 
       // Lock the account
       for (let i = 0; i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS; i++) {
@@ -383,14 +397,14 @@ describe('Authentication Flow Integration Tests', () => {
     });
   });
 
-  describe('Complete Authentication Flow', () => {
+  describe("Complete Authentication Flow", () => {
     /**
      * Requirement 25.5: Complete authentication flow integration test
      */
-    it('should complete full login -> access -> logout flow', async () => {
-      const userId = 'user-flow';
-      const email = 'flow@example.com';
-      const password = 'SecurePassword123!';
+    it("should complete full login -> access -> logout flow", async () => {
+      const userId = "user-flow";
+      const email = "flow@example.com";
+      const password = "SecurePassword123!";
 
       // Step 1: Create user
       await createTestUser(userId, email, password);
@@ -411,7 +425,11 @@ describe('Authentication Flow Integration Tests', () => {
       expect(validSession?.userId).toBe(userId);
 
       // Step 5: Validate CSRF for state-changing operations
-      const csrfValid = await validateCsrfToken(session.id, session.csrfToken, db);
+      const csrfValid = await validateCsrfToken(
+        session.id,
+        session.csrfToken,
+        db
+      );
       expect(csrfValid).toBe(true);
 
       // Step 6: Logout
@@ -425,12 +443,12 @@ describe('Authentication Flow Integration Tests', () => {
     /**
      * Requirement 25.5: Failed login with lockout flow
      */
-    it('should complete failed login -> lockout -> unlock flow', async () => {
-      const userId = 'user-lockout-flow';
-      const email = 'lockoutflow@example.com';
-      const password = 'SecurePassword123!';
-      const wrongPassword = 'WrongPassword!';
-      const ip = '192.168.1.100';
+    it("should complete failed login -> lockout -> unlock flow", async () => {
+      const userId = "user-lockout-flow";
+      const email = "lockoutflow@example.com";
+      const password = "SecurePassword123!";
+      const wrongPassword = "WrongPassword!";
+      const ip = "192.168.1.100";
 
       // Step 1: Create user
       await createTestUser(userId, email, password);

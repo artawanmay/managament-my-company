@@ -3,9 +3,9 @@
  * Requirements: 17.4, 17.5 - Display appropriate error states
  * Requirements: 29.8 - THE System SHALL display form validation errors with aria-describedby linking to error messages
  */
-import * as React from 'react';
-import { AlertCircle, AlertTriangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import * as React from "react";
+import { AlertCircle, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * Props for FormError component
@@ -27,7 +27,7 @@ export function FormError({ message, className, id }: FormErrorProps) {
       id={id}
       role="alert"
       className={cn(
-        'mt-1.5 flex items-center gap-1.5 text-sm text-destructive',
+        "mt-1.5 flex items-center gap-1.5 text-sm text-destructive",
         className
       )}
     >
@@ -51,7 +51,7 @@ interface FormErrorSummaryProps {
  */
 export function FormErrorSummary({
   errors,
-  title = 'Please fix the following errors:',
+  title = "Please fix the following errors:",
   className,
 }: FormErrorSummaryProps) {
   const errorEntries = Object.entries(errors);
@@ -63,7 +63,7 @@ export function FormErrorSummary({
       role="alert"
       aria-live="polite"
       className={cn(
-        'rounded-md border border-destructive/50 bg-destructive/10 p-4',
+        "rounded-md border border-destructive/50 bg-destructive/10 p-4",
         className
       )}
     >
@@ -77,7 +77,7 @@ export function FormErrorSummary({
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-destructive/90">
             {errorEntries.map(([field, message]) => (
               <li key={field}>
-                <span className="font-medium">{formatFieldName(field)}:</span>{' '}
+                <span className="font-medium">{formatFieldName(field)}:</span>{" "}
                 {message}
               </li>
             ))}
@@ -112,7 +112,7 @@ export function GeneralError({
       role="alert"
       aria-live="polite"
       className={cn(
-        'flex items-center justify-between rounded-md border border-destructive/50 bg-destructive/10 p-4',
+        "flex items-center justify-between rounded-md border border-destructive/50 bg-destructive/10 p-4",
         className
       )}
     >
@@ -142,11 +142,11 @@ export function GeneralError({
  */
 function formatFieldName(field: string): string {
   // Handle nested fields (e.g., "address.city" -> "City")
-  const lastPart = field.split('.').pop() || field;
+  const lastPart = field.split(".").pop() || field;
 
   // Convert camelCase to Title Case
   return lastPart
-    .replace(/([A-Z])/g, ' $1')
+    .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase())
     .trim();
 }
@@ -167,7 +167,7 @@ export function NetworkError({ onRetry, className }: NetworkErrorProps) {
     <div
       role="alert"
       className={cn(
-        'flex flex-col items-center justify-center gap-4 rounded-md border border-destructive/50 bg-destructive/10 p-6 text-center',
+        "flex flex-col items-center justify-center gap-4 rounded-md border border-destructive/50 bg-destructive/10 p-6 text-center",
         className
       )}
     >
@@ -180,7 +180,8 @@ export function NetworkError({ onRetry, className }: NetworkErrorProps) {
           Connection Error
         </h3>
         <p className="mt-1 text-sm text-destructive/80">
-          Unable to connect to the server. Please check your internet connection.
+          Unable to connect to the server. Please check your internet
+          connection.
         </p>
       </div>
       {onRetry && (
@@ -224,7 +225,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-4 rounded-md border border-dashed p-8 text-center',
+        "flex flex-col items-center justify-center gap-4 rounded-md border border-dashed p-8 text-center",
         className
       )}
     >

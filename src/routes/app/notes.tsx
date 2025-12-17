@@ -2,10 +2,10 @@
  * Global Notes Page
  * Requirements: 7.1, 7.3
  */
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +15,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   NotesTable,
   NoteForm,
@@ -29,9 +29,9 @@ import {
   type Note,
   type CreateNoteInput,
   type UpdateNoteInput,
-} from '@/features/notes';
+} from "@/features/notes";
 
-export const Route = createFileRoute('/app/notes')({
+export const Route = createFileRoute("/app/notes")({
   component: NotesPage,
 });
 
@@ -82,7 +82,9 @@ function NotesPage() {
       setViewedSecret(result.data.secret);
       setSecretError(null);
     } catch (error) {
-      setSecretError(error instanceof Error ? error.message : 'Failed to view secret');
+      setSecretError(
+        error instanceof Error ? error.message : "Failed to view secret"
+      );
       setViewedSecret(null);
     }
   };
@@ -101,21 +103,22 @@ function NotesPage() {
           data: data as UpdateNoteInput,
         });
         toast({
-          title: 'Note updated',
-          description: 'The note has been updated successfully.',
+          title: "Note updated",
+          description: "The note has been updated successfully.",
         });
       } else {
         await createNote.mutateAsync(data as CreateNoteInput);
         toast({
-          title: 'Note created',
-          description: 'The note has been created successfully.',
+          title: "Note created",
+          description: "The note has been created successfully.",
         });
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
       throw error;
     }
@@ -127,15 +130,16 @@ function NotesPage() {
     try {
       await deleteNote.mutateAsync(deletingNote.id);
       toast({
-        title: 'Note deleted',
-        description: 'The note has been deleted successfully.',
+        title: "Note deleted",
+        description: "The note has been deleted successfully.",
       });
       setDeletingNote(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete note',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete note",
+        variant: "destructive",
       });
     }
   };
@@ -191,12 +195,16 @@ function NotesPage() {
       />
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingNote} onOpenChange={(open) => !open && setDeletingNote(null)}>
+      <AlertDialog
+        open={!!deletingNote}
+        onOpenChange={(open) => !open && setDeletingNote(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Note</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingNote?.systemName}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{deletingNote?.systemName}
+              &quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,1 +1,1 @@
-export { search, type SearchParams } from './search-api';
+export { search, type SearchParams } from "./search-api";

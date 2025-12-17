@@ -8,18 +8,18 @@
  * - 9.4: Click notification to navigate and mark as read
  * - 9.5: Mark all as read functionality
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, desc, isNull, and, sql } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { notifications } from '@/lib/db/schema';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, desc, isNull, and, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { notifications } from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
   handleAuthError,
-} from '@/lib/auth/middleware';
+} from "@/lib/auth/middleware";
 
-export const Route = createFileRoute('/api/notifications/')({
+export const Route = createFileRoute("/api/notifications/")({
   server: {
     handlers: {
       /**
@@ -31,14 +31,18 @@ export const Route = createFileRoute('/api/notifications/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           // Parse query params for pagination
           const url = new URL(request.url);
-          const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
-          const offset = parseInt(url.searchParams.get('offset') || '0', 10);
-          const unreadOnly = url.searchParams.get('unreadOnly') === 'true';
+          const limit = Math.min(
+            parseInt(url.searchParams.get("limit") || "20", 10),
+            100
+          );
+          const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+          const unreadOnly = url.searchParams.get("unreadOnly") === "true";
 
           // Build query conditions
           const conditions = [eq(notifications.userId, auth.user.id)];
@@ -79,7 +83,11 @@ export const Route = createFileRoute('/api/notifications/')({
           // Parse JSON data field for each notification
           const notificationsWithParsedData = notificationList.map((n) => ({
             ...n,
-            data: n.data ? (typeof n.data === 'string' ? JSON.parse(n.data) : n.data) : null,
+            data: n.data
+              ? typeof n.data === "string"
+                ? JSON.parse(n.data)
+                : n.data
+              : null,
           }));
 
           return json({
@@ -93,8 +101,11 @@ export const Route = createFileRoute('/api/notifications/')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/notifications] Error:', error);
-          return json({ error: 'Failed to fetch notifications' }, { status: 500 });
+          console.error("[GET /api/notifications] Error:", error);
+          return json(
+            { error: "Failed to fetch notifications" },
+            { status: 500 }
+          );
         }
       },
 
@@ -107,7 +118,8 @@ export const Route = createFileRoute('/api/notifications/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           // Mark all unread notifications as read
@@ -127,8 +139,11 @@ export const Route = createFileRoute('/api/notifications/')({
             markedCount: result.length,
           });
         } catch (error) {
-          console.error('[PUT /api/notifications/mark-all-read] Error:', error);
-          return json({ error: 'Failed to mark notifications as read' }, { status: 500 });
+          console.error("[PUT /api/notifications/mark-all-read] Error:", error);
+          return json(
+            { error: "Failed to mark notifications as read" },
+            { status: 500 }
+          );
         }
       },
     },

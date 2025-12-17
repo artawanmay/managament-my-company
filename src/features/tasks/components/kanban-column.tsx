@@ -2,21 +2,21 @@
  * KanbanColumn component
  * A single column in the Kanban board with droppable area
  * Requirements: 6.5, 17.3, 27.3, 27.4
- * 
+ *
  * Responsive behavior:
  * - Mobile vertical: Full width, collapsible columns
  * - Mobile horizontal / Tablet / Desktop: Fixed width columns
  */
-import { useState } from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { TaskCard } from './task-card';
-import type { Task, TaskStatus } from '../types';
-import { cn } from '@/lib/utils';
+} from "@dnd-kit/sortable";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { TaskCard } from "./task-card";
+import type { Task, TaskStatus } from "../types";
+import { cn } from "@/lib/utils";
 
 interface KanbanColumnProps {
   id: TaskStatus;
@@ -45,14 +45,14 @@ export function KanbanColumn({
   return (
     <div
       className={cn(
-        'flex flex-col glass-kanban-column',
+        "flex flex-col glass-kanban-column",
         // Mobile vertical: full width
         // Mobile horizontal / Tablet / Desktop: fixed width
         isMobileVertical
-          ? 'w-full min-w-full'
-          : 'min-w-[280px] max-w-[320px] shrink-0',
+          ? "w-full min-w-full"
+          : "min-w-[280px] max-w-[320px] shrink-0",
         // Tablet: ensure proper sizing for horizontal scroll
-        'md:min-w-[280px] md:max-w-[320px] md:shrink-0',
+        "md:min-w-[280px] md:max-w-[320px] md:shrink-0",
         color
       )}
     >
@@ -61,12 +61,13 @@ export function KanbanColumn({
         type="button"
         onClick={() => isMobileVertical && setIsCollapsed(!isCollapsed)}
         className={cn(
-          'flex items-center justify-between p-3 border-b border-[var(--glass-border)]',
+          "flex items-center justify-between p-3 border-b border-[var(--glass-border)]",
           // Ensure 44px minimum touch target on mobile (Requirements 27.4)
-          'min-h-[44px]',
+          "min-h-[44px]",
           // Only make clickable on mobile vertical view
-          isMobileVertical && 'cursor-pointer hover:bg-white/10 dark:hover:bg-black/10 transition-colors',
-          !isMobileVertical && 'cursor-default'
+          isMobileVertical &&
+            "cursor-pointer hover:bg-white/10 dark:hover:bg-black/10 transition-colors",
+          !isMobileVertical && "cursor-default"
         )}
         aria-expanded={!isCollapsed}
         aria-controls={`column-${id}-content`}
@@ -96,12 +97,12 @@ export function KanbanColumn({
         id={`column-${id}-content`}
         ref={setNodeRef}
         className={cn(
-          'flex-1 p-2 space-y-2 transition-all duration-200',
+          "flex-1 p-2 space-y-2 transition-all duration-200",
           // Minimum height for drop target
-          'min-h-[100px] md:min-h-[200px]',
-          isOver && 'bg-blue-50/50 dark:bg-blue-900/30',
+          "min-h-[100px] md:min-h-[200px]",
+          isOver && "bg-blue-50/50 dark:bg-blue-900/30",
           // Collapse on mobile vertical view
-          isMobileVertical && isCollapsed && 'hidden md:block'
+          isMobileVertical && isCollapsed && "hidden md:block"
         )}
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>

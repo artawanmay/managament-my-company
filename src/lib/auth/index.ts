@@ -1,7 +1,7 @@
 /**
  * Authentication library exports
  */
-export { hashPassword, verifyPassword } from './password';
+export { hashPassword, verifyPassword } from "./password";
 export {
   createSession,
   validateSession,
@@ -12,7 +12,7 @@ export {
   generateSessionId,
   generateCsrfToken,
   type SessionData,
-} from './session';
+} from "./session";
 export {
   csrfMiddleware,
   validateCsrfRequest,
@@ -22,7 +22,7 @@ export {
   setCsrfCookie,
   CSRF_HEADER,
   type CsrfValidationResult,
-} from './csrf';
+} from "./csrf";
 export {
   recordFailedAttempt,
   isLocked,
@@ -32,7 +32,7 @@ export {
   unlockAccount,
   setRedisClient,
   LOCKOUT_CONFIG,
-} from './lockout';
+} from "./lockout";
 export {
   // Types
   type Role,
@@ -59,7 +59,7 @@ export {
   setDatabase,
   resetDatabase,
   getDatabase,
-} from './permissions';
+} from "./permissions";
 
 // Authorization middleware
 export {
@@ -85,4 +85,4 @@ export {
   type ProjectAccessResult,
   type ProjectAccessError,
   type ProjectAccessMiddlewareResult,
-} from './middleware';
+} from "./middleware";

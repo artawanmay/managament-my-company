@@ -7,8 +7,8 @@
  * 30 minutes have passed.
  * **Validates: Requirements 1.3, 18.3**
  */
-import { describe, it, beforeEach, afterAll } from 'vitest';
-import * as fc from 'fast-check';
+import { describe, it, beforeEach, afterAll } from "vitest";
+import * as fc from "fast-check";
 import {
   recordFailedAttempt,
   isLocked,
@@ -18,8 +18,8 @@ import {
   unlockAccount,
   setRedisClient,
   LOCKOUT_CONFIG,
-} from '@/lib/auth/lockout';
-import { getMockRedisClient, resetMockRedis } from '../setup/mock-redis';
+} from "@/lib/auth/lockout";
+import { getMockRedisClient, resetMockRedis } from "../setup/mock-redis";
 
 const PBT_RUNS = 50;
 const TEST_TIMEOUT = 30000;
@@ -29,7 +29,7 @@ const emailArb = fc
   .tuple(
     fc.stringMatching(/^[a-z0-9]{3,10}$/),
     fc.stringMatching(/^[a-z]{3,8}$/),
-    fc.constantFrom('com', 'org', 'net', 'io')
+    fc.constantFrom("com", "org", "net", "io")
   )
   .map(([local, domain, tld]) => `${local}@${domain}.${tld}`);
 
@@ -43,7 +43,7 @@ const ipArb = fc
   )
   .map(([a, b, c, d]) => `${a}.${b}.${c}.${d}`);
 
-describe('Login Lockout Properties', () => {
+describe("Login Lockout Properties", () => {
   // Set up mock Redis before all tests
   beforeEach(() => {
     // Use mock Redis for testing
@@ -63,7 +63,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - fewer than max attempts does not lock',
+    "Property 4: Login Lockout - fewer than max attempts does not lock",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -96,7 +96,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - exactly max attempts triggers lock',
+    "Property 4: Login Lockout - exactly max attempts triggers lock",
     async () => {
       await fc.assert(
         fc.asyncProperty(emailArb, ipArb, async (email, ip) => {
@@ -124,7 +124,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - locked accounts have remaining time',
+    "Property 4: Login Lockout - locked accounts have remaining time",
     async () => {
       await fc.assert(
         fc.asyncProperty(emailArb, ipArb, async (email, ip) => {
@@ -138,7 +138,10 @@ describe('Login Lockout Properties', () => {
 
           // Should have remaining lockout time
           const remainingTime = await getRemainingLockoutTime(email);
-          return remainingTime > 0 && remainingTime <= LOCKOUT_CONFIG.LOCKOUT_DURATION_SECONDS;
+          return (
+            remainingTime > 0 &&
+            remainingTime <= LOCKOUT_CONFIG.LOCKOUT_DURATION_SECONDS
+          );
         }),
         { numRuns: PBT_RUNS }
       );
@@ -152,7 +155,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - clearing attempts resets counter',
+    "Property 4: Login Lockout - clearing attempts resets counter",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -188,7 +191,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - unlocking removes lockout',
+    "Property 4: Login Lockout - unlocking removes lockout",
     async () => {
       await fc.assert(
         fc.asyncProperty(emailArb, ipArb, async (email, ip) => {
@@ -223,7 +226,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - email case insensitivity',
+    "Property 4: Login Lockout - email case insensitivity",
     async () => {
       await fc.assert(
         fc.asyncProperty(emailArb, ipArb, async (email, ip) => {
@@ -258,7 +261,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - attempt counter increments',
+    "Property 4: Login Lockout - attempt counter increments",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -291,7 +294,7 @@ describe('Login Lockout Properties', () => {
    * **Validates: Requirements 1.3, 18.3**
    */
   it(
-    'Property 4: Login Lockout - returns correct remaining attempts',
+    "Property 4: Login Lockout - returns correct remaining attempts",
     async () => {
       await fc.assert(
         fc.asyncProperty(emailArb, ipArb, async (email, ip) => {
@@ -301,7 +304,8 @@ describe('Login Lockout Properties', () => {
           // Record attempts and check remaining
           for (let i = 0; i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS; i++) {
             const result = await recordFailedAttempt(email, ip);
-            const expectedRemaining = LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - (i + 1);
+            const expectedRemaining =
+              LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - (i + 1);
 
             if (i < LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS - 1) {
               // Not yet locked

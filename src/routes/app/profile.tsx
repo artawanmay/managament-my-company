@@ -2,14 +2,14 @@
  * Profile Page
  * User can view and edit their profile, change password, upload avatar
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { 
-  ProfileInfo, 
-  AvatarUpload, 
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  ProfileInfo,
+  AvatarUpload,
   ChangePasswordForm,
-} from '@/features/profile/components';
+} from "@/features/profile/components";
 
-export const Route = createFileRoute('/app/profile')({
+export const Route = createFileRoute("/app/profile")({
   component: ProfilePage,
 });
 

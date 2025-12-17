@@ -2,14 +2,14 @@
  * React hook for error handling
  * Provides utilities for handling errors in React components
  */
-import { useCallback, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useCallback, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ApiError,
   handleApiError,
   showErrorToast,
   showSuccessToast,
-} from './client';
+} from "./client";
 
 /**
  * Form errors state type
@@ -32,7 +32,7 @@ export function useErrorHandler() {
         showToast: options?.showToast ?? true,
         context: options?.context,
         onAuthError: () => {
-          navigate({ to: '/auth/login' });
+          navigate({ to: "/auth/login" });
         },
         onValidationError: (errors) => {
           setFormErrors(errors);
@@ -147,7 +147,7 @@ export function useFormErrorHandler() {
       setGeneralError(error.message);
       setErrors({});
     } else {
-      setGeneralError('An unexpected error occurred');
+      setGeneralError("An unexpected error occurred");
       setErrors({});
     }
   }, []);

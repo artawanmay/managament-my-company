@@ -22,7 +22,7 @@ export function trackHook(
   value?: unknown,
   previousValue?: unknown
 ): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   const call: HookCall = {
     hookName,
@@ -33,7 +33,7 @@ export function trackHook(
   };
 
   hookHistory.push(call);
-  
+
   // Keep history bounded
   if (hookHistory.length > MAX_HISTORY) {
     hookHistory.shift();
@@ -43,8 +43,10 @@ export function trackHook(
   if (previousValue !== undefined && value !== previousValue) {
     console.log(
       `🪝 [${hookName}] ${componentName}:`,
-      '\n  Previous:', previousValue,
-      '\n  Current:', value
+      "\n  Previous:",
+      previousValue,
+      "\n  Current:",
+      value
     );
   }
 }
@@ -59,12 +61,11 @@ export function createTrackedState<T>(
 ) {
   return (initial: T): [T, (value: T | ((prev: T) => T)) => void] => {
     const [state, setState] = useState(initial);
-    
+
     const trackedSetState = (value: T | ((prev: T) => T)) => {
-      const newValue = typeof value === 'function' 
-        ? (value as (prev: T) => T)(state)
-        : value;
-      
+      const newValue =
+        typeof value === "function" ? (value as (prev: T) => T)(state) : value;
+
       trackHook(`useState:${stateName}`, componentName, newValue, state);
       setState(value);
     };
@@ -81,11 +82,11 @@ export function trackEffect(
   effectName: string,
   deps?: unknown[]
 ): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   console.log(
     `⚡ [useEffect] ${componentName}:${effectName}`,
-    deps ? `deps: ${JSON.stringify(deps)}` : 'no deps'
+    deps ? `deps: ${JSON.stringify(deps)}` : "no deps"
   );
 }
 
@@ -113,14 +114,14 @@ export function findRapidHookCalls(
 ): HookCall[] {
   const now = Date.now();
   const recentCalls = hookHistory.filter(
-    call => call.hookName === hookName && now - call.timestamp < timeWindow
+    (call) => call.hookName === hookName && now - call.timestamp < timeWindow
   );
-  
+
   if (recentCalls.length >= threshold) {
     console.warn(
       `⚠️ [RAPID CALLS] ${hookName} called ${recentCalls.length} times in ${timeWindow}ms`
     );
   }
-  
+
   return recentCalls;
 }

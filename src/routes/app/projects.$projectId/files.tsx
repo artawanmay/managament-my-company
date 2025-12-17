@@ -2,8 +2,8 @@
  * Project Files Page
  * Requirements: 13.1, 13.2, 13.3, 13.4
  */
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +13,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   FilesTable,
   FileUpload,
@@ -23,9 +23,9 @@ import {
   useDeleteFile,
   useDownloadFile,
   type FileItem,
-} from '@/features/files';
+} from "@/features/files";
 
-export const Route = createFileRoute('/app/projects/$projectId/files')({
+export const Route = createFileRoute("/app/projects/$projectId/files")({
   component: ProjectFilesPage,
 });
 
@@ -47,14 +47,15 @@ function ProjectFilesPage() {
     try {
       await uploadFile.mutateAsync({ projectId, file });
       toast({
-        title: 'File uploaded',
+        title: "File uploaded",
         description: `${file.name} has been uploaded successfully.`,
       });
     } catch (error) {
       toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload file',
-        variant: 'destructive',
+        title: "Upload failed",
+        description:
+          error instanceof Error ? error.message : "Failed to upload file",
+        variant: "destructive",
       });
       throw error;
     }
@@ -62,12 +63,16 @@ function ProjectFilesPage() {
 
   const handleDownload = async (file: FileItem) => {
     try {
-      await downloadFile.mutateAsync({ fileId: file.id, fileName: file.fileName });
+      await downloadFile.mutateAsync({
+        fileId: file.id,
+        fileName: file.fileName,
+      });
     } catch (error) {
       toast({
-        title: 'Download failed',
-        description: error instanceof Error ? error.message : 'Failed to download file',
-        variant: 'destructive',
+        title: "Download failed",
+        description:
+          error instanceof Error ? error.message : "Failed to download file",
+        variant: "destructive",
       });
     }
   };
@@ -82,15 +87,16 @@ function ProjectFilesPage() {
     try {
       await deleteFile.mutateAsync({ fileId: deletingFile.id, projectId });
       toast({
-        title: 'File deleted',
+        title: "File deleted",
         description: `${deletingFile.fileName} has been deleted successfully.`,
       });
       setDeletingFile(null);
     } catch (error) {
       toast({
-        title: 'Delete failed',
-        description: error instanceof Error ? error.message : 'Failed to delete file',
-        variant: 'destructive',
+        title: "Delete failed",
+        description:
+          error instanceof Error ? error.message : "Failed to delete file",
+        variant: "destructive",
       });
     }
   };
@@ -105,10 +111,7 @@ function ProjectFilesPage() {
       </div>
 
       {/* File Upload */}
-      <FileUpload
-        onUpload={handleUpload}
-        isUploading={uploadFile.isPending}
-      />
+      <FileUpload onUpload={handleUpload} isUploading={uploadFile.isPending} />
 
       {/* Files Table */}
       <FilesTable
@@ -119,12 +122,16 @@ function ProjectFilesPage() {
       />
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingFile} onOpenChange={(open) => !open && setDeletingFile(null)}>
+      <AlertDialog
+        open={!!deletingFile}
+        onOpenChange={(open) => !open && setDeletingFile(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingFile?.fileName}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{deletingFile?.fileName}
+              &quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

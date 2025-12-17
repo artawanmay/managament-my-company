@@ -2,32 +2,43 @@
  * Users Management Page
  * Requirements: 2.2, 2.3
  */
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { useSession } from '@/features/auth/hooks';
+import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { useSession } from "@/features/auth/hooks";
 import {
   UsersTable,
   CreateUserForm,
   EditUserForm,
   RoleChangeDialog,
   DeleteUserDialog,
-} from '@/features/users/components';
+} from "@/features/users/components";
 import {
   useUsers,
   useCreateUser,
   useUpdateUser,
   useUpdateUserRole,
   useDeleteUser,
-} from '@/features/users/hooks';
-import { ResetPasswordDialog, useResetPassword } from '@/features/profile';
-import type { User, Role, CreateUserInput, UpdateUserInput } from '@/features/users/types';
+} from "@/features/users/hooks";
+import { ResetPasswordDialog, useResetPassword } from "@/features/profile";
+import type {
+  User,
+  Role,
+  CreateUserInput,
+  UpdateUserInput,
+} from "@/features/users/types";
 
-export const Route = createFileRoute('/app/users')({
+export const Route = createFileRoute("/app/users")({
   component: UsersPage,
 });
 
@@ -52,22 +63,22 @@ function UsersPage() {
   const resetPassword = useResetPassword();
 
   // Check if current user can manage users
-  const canManageUsers =
-    currentUser?.role === 'SUPER_ADMIN';
+  const canManageUsers = currentUser?.role === "SUPER_ADMIN";
 
   const handleCreateUser = async (data: CreateUserInput) => {
     try {
       await createUser.mutateAsync(data);
       toast({
-        title: 'User created',
-        description: 'The user has been created successfully.',
+        title: "User created",
+        description: "The user has been created successfully.",
       });
       setCreateDialogOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create user',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to create user",
+        variant: "destructive",
       });
     }
   };
@@ -78,16 +89,17 @@ function UsersPage() {
     try {
       await updateUser.mutateAsync({ userId: selectedUser.id, data });
       toast({
-        title: 'User updated',
-        description: 'The user has been updated successfully.',
+        title: "User updated",
+        description: "The user has been updated successfully.",
       });
       setEditDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update user',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to update user",
+        variant: "destructive",
       });
     }
   };
@@ -96,16 +108,17 @@ function UsersPage() {
     try {
       await updateUserRole.mutateAsync({ userId, data: { role: newRole } });
       toast({
-        title: 'Role changed',
-        description: 'The user role has been changed successfully.',
+        title: "Role changed",
+        description: "The user role has been changed successfully.",
       });
       setRoleDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to change user role',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to change user role",
+        variant: "destructive",
       });
     }
   };
@@ -114,16 +127,17 @@ function UsersPage() {
     try {
       await deleteUser.mutateAsync(userId);
       toast({
-        title: 'User deleted',
-        description: 'The user has been deleted successfully.',
+        title: "User deleted",
+        description: "The user has been deleted successfully.",
       });
       setDeleteDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete user',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete user",
+        variant: "destructive",
       });
     }
   };
@@ -152,16 +166,17 @@ function UsersPage() {
     try {
       await resetPassword.mutateAsync({ userId, newPassword });
       toast({
-        title: 'Password reset',
-        description: 'The user password has been reset successfully.',
+        title: "Password reset",
+        description: "The user password has been reset successfully.",
       });
       setResetPasswordDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to reset password',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to reset password",
+        variant: "destructive",
       });
     }
   };
@@ -200,7 +215,8 @@ function UsersPage() {
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
             <CardDescription>
-              You do not have permission to manage users. Only administrators can access this page.
+              You do not have permission to manage users. Only administrators
+              can access this page.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -215,7 +231,7 @@ function UsersPage() {
           <CardHeader>
             <CardTitle>Error</CardTitle>
             <CardDescription>
-              {error instanceof Error ? error.message : 'Failed to load users'}
+              {error instanceof Error ? error.message : "Failed to load users"}
             </CardDescription>
           </CardHeader>
         </Card>

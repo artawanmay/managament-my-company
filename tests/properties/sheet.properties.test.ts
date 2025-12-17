@@ -8,8 +8,8 @@
  * - Proper aria-labelledby/aria-describedby attributes
  * - Keyboard navigation (Escape to close)
  */
-import { describe, it, expect } from 'vitest';
-import * as fc from 'fast-check';
+import { describe, it, expect } from "vitest";
+import * as fc from "fast-check";
 
 const PBT_RUNS = 100;
 const TEST_TIMEOUT = 30000;
@@ -17,17 +17,17 @@ const TEST_TIMEOUT = 30000;
 /**
  * Since Sheet is built on @radix-ui/react-dialog primitive (same as Dialog),
  * we test that the component configuration ensures accessibility parity.
- * 
+ *
  * The Sheet component uses DialogPrimitive.Content which provides:
  * - Focus trap via Radix's FocusScope
  * - aria-labelledby linked to DialogPrimitive.Title
  * - aria-describedby linked to DialogPrimitive.Description
  * - Escape key handling via Radix's DismissableLayer
- * 
+ *
  * These tests verify the structural properties that ensure accessibility.
  */
 
-describe('Sheet Accessibility Properties', () => {
+describe("Sheet Accessibility Properties", () => {
   /**
    * **Feature: slide-panel-forms, Property 2: Accessibility feature parity with Dialog**
    * *For any* Sheet configuration with title and description, the component structure
@@ -35,24 +35,28 @@ describe('Sheet Accessibility Properties', () => {
    * **Validates: Requirements 5.2**
    */
   it(
-    'Property 2: Sheet structure supports aria-labelledby/aria-describedby linking',
+    "Property 2: Sheet structure supports aria-labelledby/aria-describedby linking",
     () => {
       // Test that for any valid title/description combination,
       // the Sheet component structure allows proper ARIA linking
       fc.assert(
         fc.property(
-          fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
-          fc.string({ minLength: 1, maxLength: 500 }).filter(s => s.trim().length > 0),
+          fc
+            .string({ minLength: 1, maxLength: 100 })
+            .filter((s) => s.trim().length > 0),
+          fc
+            .string({ minLength: 1, maxLength: 500 })
+            .filter((s) => s.trim().length > 0),
           (title, description) => {
             // The Sheet uses DialogPrimitive.Title and DialogPrimitive.Description
             // which automatically generate and link aria-labelledby/aria-describedby
             // This test verifies the structural requirement is met
-            
+
             // Title must be non-empty for aria-labelledby to be meaningful
             const hasValidTitle = title.trim().length > 0;
             // Description must be non-empty for aria-describedby to be meaningful
             const hasValidDescription = description.trim().length > 0;
-            
+
             // Both must be valid for proper accessibility
             return hasValidTitle && hasValidDescription;
           }
@@ -70,7 +74,7 @@ describe('Sheet Accessibility Properties', () => {
    * **Validates: Requirements 5.2**
    */
   it(
-    'Property 2: Sheet keyboard navigation supports Escape key close',
+    "Property 2: Sheet keyboard navigation supports Escape key close",
     () => {
       // Test that Escape key is always recognized as a close trigger
       // regardless of other key combinations pressed before it
@@ -78,17 +82,27 @@ describe('Sheet Accessibility Properties', () => {
         fc.property(
           fc.array(
             fc.constantFrom(
-              'Tab', 'Enter', 'Space', 'ArrowUp', 'ArrowDown', 
-              'ArrowLeft', 'ArrowRight', 'Home', 'End', 'a', 'b', 'c'
+              "Tab",
+              "Enter",
+              "Space",
+              "ArrowUp",
+              "ArrowDown",
+              "ArrowLeft",
+              "ArrowRight",
+              "Home",
+              "End",
+              "a",
+              "b",
+              "c"
             ),
             { minLength: 0, maxLength: 10 }
           ),
           (precedingKeys) => {
             // The Escape key should always trigger close regardless of preceding keys
             // This is handled by Radix's DismissableLayer which Sheet inherits
-            const escapeKey = 'Escape';
+            const escapeKey = "Escape";
             const keySequence = [...precedingKeys, escapeKey];
-            
+
             // Verify Escape is in the sequence and is the final action
             return keySequence[keySequence.length - 1] === escapeKey;
           }
@@ -106,7 +120,7 @@ describe('Sheet Accessibility Properties', () => {
    * **Validates: Requirements 5.2**
    */
   it(
-    'Property 2: Sheet focus trap contains focus within boundary',
+    "Property 2: Sheet focus trap contains focus within boundary",
     () => {
       // Test that for any number of focusable elements,
       // the focus trap logic would keep focus within bounds
@@ -118,10 +132,10 @@ describe('Sheet Accessibility Properties', () => {
             // Simulate focus trap behavior:
             // After any number of Tab presses, focus should remain within [0, numElements-1]
             // This is what Radix's FocusScope provides
-            
+
             // Calculate where focus would land with wrapping
             const focusIndex = tabPresses % numElements;
-            
+
             // Focus should always be within bounds
             return focusIndex >= 0 && focusIndex < numElements;
           }
@@ -139,17 +153,17 @@ describe('Sheet Accessibility Properties', () => {
    * **Validates: Requirements 5.2**
    */
   it(
-    'Property 2: Sheet close button has screen reader accessible text',
+    "Property 2: Sheet close button has screen reader accessible text",
     () => {
       // The Sheet component includes a close button with sr-only "Close" text
       // This test verifies the structural requirement
-      const closeButtonText = 'Close';
-      const srOnlyClass = 'sr-only';
-      
+      const closeButtonText = "Close";
+      const srOnlyClass = "sr-only";
+
       // Verify the close button configuration is accessible
-      expect(closeButtonText).toBe('Close');
-      expect(srOnlyClass).toBe('sr-only');
-      
+      expect(closeButtonText).toBe("Close");
+      expect(srOnlyClass).toBe("sr-only");
+
       // Property: For any Sheet instance, the close button must have this structure
       fc.assert(
         fc.property(
@@ -157,7 +171,9 @@ describe('Sheet Accessibility Properties', () => {
           (_isOpen) => {
             // Regardless of open state, the close button structure should be consistent
             // The sr-only text "Close" should always be present in the component
-            return typeof closeButtonText === 'string' && closeButtonText.length > 0;
+            return (
+              typeof closeButtonText === "string" && closeButtonText.length > 0
+            );
           }
         ),
         { numRuns: PBT_RUNS }
@@ -173,27 +189,24 @@ describe('Sheet Accessibility Properties', () => {
    * **Validates: Requirements 5.2**
    */
   it(
-    'Property 2: All Sheet side variants maintain accessibility features',
+    "Property 2: All Sheet side variants maintain accessibility features",
     () => {
-      const validSides = ['left', 'right', 'top', 'bottom'] as const;
-      
+      const validSides = ["left", "right", "top", "bottom"] as const;
+
       fc.assert(
-        fc.property(
-          fc.constantFrom(...validSides),
-          (side) => {
-            // All side variants use the same DialogPrimitive.Content
-            // which provides identical accessibility features:
-            // - Focus trap
-            // - Escape key handling
-            // - ARIA attributes
-            
-            // Verify the side is valid
-            const isValidSide = validSides.includes(side);
-            
-            // All sides should have the same accessibility behavior
-            return isValidSide;
-          }
-        ),
+        fc.property(fc.constantFrom(...validSides), (side) => {
+          // All side variants use the same DialogPrimitive.Content
+          // which provides identical accessibility features:
+          // - Focus trap
+          // - Escape key handling
+          // - ARIA attributes
+
+          // Verify the side is valid
+          const isValidSide = validSides.includes(side);
+
+          // All sides should have the same accessibility behavior
+          return isValidSide;
+        }),
         { numRuns: PBT_RUNS }
       );
     },

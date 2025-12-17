@@ -2,8 +2,15 @@
  * Activity Log Types
  */
 
-export type EntityType = 'CLIENT' | 'PROJECT' | 'TASK' | 'NOTE' | 'FILE' | 'COMMENT' | 'USER';
-export type Action = 'CREATED' | 'UPDATED' | 'DELETED' | 'MOVED' | 'ARCHIVED';
+export type EntityType =
+  | "CLIENT"
+  | "PROJECT"
+  | "TASK"
+  | "NOTE"
+  | "FILE"
+  | "COMMENT"
+  | "USER";
+export type Action = "CREATED" | "UPDATED" | "DELETED" | "MOVED" | "ARCHIVED";
 
 export interface ActivityMetadata {
   projectId?: string;

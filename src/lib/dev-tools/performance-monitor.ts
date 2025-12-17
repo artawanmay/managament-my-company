@@ -14,11 +14,8 @@ const MAX_LOG = 200;
 /**
  * Measure component render time
  */
-export function measureRender<T>(
-  componentName: string,
-  renderFn: () => T
-): T {
-  if (process.env.NODE_ENV !== 'development') {
+export function measureRender<T>(componentName: string, renderFn: () => T): T {
+  if (process.env.NODE_ENV !== "development") {
     return renderFn();
   }
 
@@ -39,7 +36,8 @@ export function measureRender<T>(
   }
 
   // Warn on slow renders
-  if (renderTime > 16) { // More than one frame (60fps)
+  if (renderTime > 16) {
+    // More than one frame (60fps)
     console.warn(
       `🐢 [SLOW RENDER] ${componentName}: ${renderTime.toFixed(2)}ms`
     );
@@ -52,7 +50,7 @@ export function measureRender<T>(
  * Start a performance mark
  */
 export function startMark(name: string): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
   performance.mark(`${name}-start`);
 }
 
@@ -60,18 +58,18 @@ export function startMark(name: string): void {
  * End a performance mark and log duration
  */
 export function endMark(name: string): number {
-  if (process.env.NODE_ENV !== 'development') return 0;
-  
+  if (process.env.NODE_ENV !== "development") return 0;
+
   performance.mark(`${name}-end`);
   const measure = performance.measure(name, `${name}-start`, `${name}-end`);
-  
+
   console.log(`⏱️ [PERF] ${name}: ${measure.duration.toFixed(2)}ms`);
-  
+
   // Cleanup
   performance.clearMarks(`${name}-start`);
   performance.clearMarks(`${name}-end`);
   performance.clearMeasures(name);
-  
+
   return measure.duration;
 }
 
@@ -84,12 +82,14 @@ export function getPerformanceStats(componentName: string): {
   minRenderTime: number;
   renderCount: number;
 } | null {
-  const entries = performanceLog.filter(e => e.componentName === componentName);
-  
+  const entries = performanceLog.filter(
+    (e) => e.componentName === componentName
+  );
+
   if (entries.length === 0) return null;
-  
-  const times = entries.map(e => e.renderTime);
-  
+
+  const times = entries.map((e) => e.renderTime);
+
   return {
     avgRenderTime: times.reduce((a, b) => a + b, 0) / times.length,
     maxRenderTime: Math.max(...times),
@@ -102,7 +102,7 @@ export function getPerformanceStats(componentName: string): {
  * Get all slow renders (> threshold ms)
  */
 export function getSlowRenders(thresholdMs: number = 16): PerformanceEntry[] {
-  return performanceLog.filter(e => e.renderTime > thresholdMs);
+  return performanceLog.filter((e) => e.renderTime > thresholdMs);
 }
 
 /**
@@ -116,17 +116,17 @@ export function clearPerformanceLog(): void {
  * Log performance summary to console
  */
 export function logPerformanceSummary(): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   const componentStats = new Map<string, number[]>();
-  
-  performanceLog.forEach(entry => {
+
+  performanceLog.forEach((entry) => {
     const times = componentStats.get(entry.componentName) || [];
     times.push(entry.renderTime);
     componentStats.set(entry.componentName, times);
   });
 
-  console.group('📊 Performance Summary');
+  console.group("📊 Performance Summary");
   componentStats.forEach((times, name) => {
     const avg = times.reduce((a, b) => a + b, 0) / times.length;
     const max = Math.max(...times);

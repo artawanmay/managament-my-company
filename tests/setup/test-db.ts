@@ -2,22 +2,22 @@
  * Test database setup utilities
  * Creates an in-memory SQLite database for testing
  */
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/lib/db/schema/index';
-import { sql } from 'drizzle-orm';
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "@/lib/db/schema/index";
+import { sql } from "drizzle-orm";
 
 // Create in-memory SQLite database for testing
 export function createTestDb() {
-  const sqlite = new Database(':memory:');
-  sqlite.pragma('journal_mode = WAL');
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };
 }
 
 // Initialize test database with schema
-export async function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
+export async function initTestDb(db: ReturnType<typeof createTestDb>["db"]) {
   // Create users table
   db.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -45,7 +45,9 @@ export async function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
   `);
 
   // Create index on sessions.user_id
-  db.run(sql`CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`);
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`
+  );
 }
 
 // Clean up test database

@@ -20,6 +20,7 @@ The CSRF token is returned in the login response and should be stored client-sid
 ## Common Response Formats
 
 ### Success Response
+
 ```json
 {
   "data": { ... },
@@ -33,6 +34,7 @@ The CSRF token is returned in the login response and should be stored client-sid
 ```
 
 ### Error Response
+
 ```json
 {
   "error": "Error message",
@@ -45,9 +47,11 @@ The CSRF token is returned in the login response and should be stored client-sid
 ### Authentication
 
 #### POST /api/auth/login
+
 Authenticate user and create session.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -56,6 +60,7 @@ Authenticate user and create session.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -73,19 +78,23 @@ Authenticate user and create session.
 **Error (429):** Account locked
 
 #### POST /api/auth/logout
+
 Invalidate current session.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Response (200):**
+
 ```json
 { "success": true }
 ```
 
 #### GET /api/auth/session
+
 Validate current session and get user info.
 
 **Response (200):**
+
 ```json
 {
   "authenticated": true,
@@ -99,20 +108,24 @@ Validate current session and get user info.
 ### Users
 
 #### GET /api/users
+
 List all users (ADMIN+ only).
 
 **Query Parameters:**
+
 - `search` - Search by name/email
 - `role` - Filter by role
 - `page` - Page number (default: 1)
 - `limit` - Items per page (default: 20)
 
 #### POST /api/users
+
 Create new user (ADMIN+ only).
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "email": "new@example.com",
@@ -123,42 +136,51 @@ Create new user (ADMIN+ only).
 ```
 
 #### GET /api/users/:userId
+
 Get user details.
 
 #### PUT /api/users/:userId
+
 Update user (ADMIN+ only).
 
 **Headers:** `x-csrf-token: <token>`
 
 #### DELETE /api/users/:userId
+
 Delete user (ADMIN+ only).
 
 **Headers:** `x-csrf-token: <token>`
 
 #### PUT /api/users/:userId/role
+
 Change user role (ADMIN+ only).
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 { "role": "MANAGER" }
 ```
 
 #### GET /api/users/me
+
 Get current user profile.
 
 #### PUT /api/users/me
+
 Update current user profile.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### PUT /api/users/me/theme
+
 Update theme preference.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 { "theme": "dark" }
 ```
@@ -168,9 +190,11 @@ Update theme preference.
 ### Clients
 
 #### GET /api/clients
+
 List clients with filtering and sorting.
 
 **Query Parameters:**
+
 - `search` - Search by name/email/PIC
 - `status` - Filter by status (PROSPECT, ACTIVE, INACTIVE, ARCHIVED)
 - `sortBy` - Sort field (name, status, createdAt, updatedAt)
@@ -180,12 +204,14 @@ List clients with filtering and sorting.
 **Required Role:** MEMBER+
 
 #### POST /api/clients
+
 Create new client.
 
 **Headers:** `x-csrf-token: <token>`
 **Required Role:** ADMIN+
 
 **Request:**
+
 ```json
 {
   "name": "Client Name",
@@ -200,15 +226,18 @@ Create new client.
 ```
 
 #### GET /api/clients/:clientId
+
 Get client details.
 
 #### PUT /api/clients/:clientId
+
 Update client.
 
 **Headers:** `x-csrf-token: <token>`
 **Required Role:** ADMIN+
 
 #### DELETE /api/clients/:clientId
+
 Delete client.
 
 **Headers:** `x-csrf-token: <token>`
@@ -219,9 +248,11 @@ Delete client.
 ### Projects
 
 #### GET /api/projects
+
 List projects (filtered by user access).
 
 **Query Parameters:**
+
 - `search` - Search by name/description
 - `status` - Filter by status (PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED, ARCHIVED)
 - `priority` - Filter by priority (LOW, MEDIUM, HIGH, URGENT)
@@ -232,12 +263,14 @@ List projects (filtered by user access).
 **Required Role:** MEMBER+
 
 #### POST /api/projects
+
 Create new project.
 
 **Headers:** `x-csrf-token: <token>`
 **Required Role:** ADMIN+
 
 **Request:**
+
 ```json
 {
   "clientId": "uuid",
@@ -252,34 +285,41 @@ Create new project.
 ```
 
 #### GET /api/projects/:projectId
+
 Get project details.
 
 #### PUT /api/projects/:projectId
+
 Update project.
 
 **Headers:** `x-csrf-token: <token>`
 **Required Role:** ADMIN+ or Project Manager
 
 #### DELETE /api/projects/:projectId
+
 Delete project.
 
 **Headers:** `x-csrf-token: <token>`
 **Required Role:** ADMIN+
 
 #### POST /api/projects/:projectId/archive
+
 Archive project.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### GET /api/projects/:projectId/members
+
 List project members.
 
 #### POST /api/projects/:projectId/members
+
 Add project member.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "userId": "uuid",
@@ -288,14 +328,17 @@ Add project member.
 ```
 
 #### DELETE /api/projects/:projectId/members/:userId
+
 Remove project member.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### GET /api/projects/:projectId/activity
+
 Get project activity log.
 
 #### GET /api/projects/:projectId/files
+
 List project files.
 
 ---
@@ -303,9 +346,11 @@ List project files.
 ### Tasks
 
 #### GET /api/tasks
+
 List tasks with filtering.
 
 **Query Parameters:**
+
 - `search` - Search by title/description
 - `projectId` - Filter by project
 - `status` - Filter by status (BACKLOG, TODO, IN_PROGRESS, IN_REVIEW, DONE)
@@ -314,11 +359,13 @@ List tasks with filtering.
 - `sortBy`, `sortOrder`, `page`, `limit`
 
 #### POST /api/tasks
+
 Create new task.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "projectId": "uuid",
@@ -333,24 +380,29 @@ Create new task.
 ```
 
 #### GET /api/tasks/:taskId
+
 Get task details.
 
 #### PUT /api/tasks/:taskId
+
 Update task.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### DELETE /api/tasks/:taskId
+
 Delete task.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### POST /api/tasks/:taskId/move
+
 Move task (Kanban drag-drop).
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "status": "IN_PROGRESS",
@@ -359,9 +411,11 @@ Move task (Kanban drag-drop).
 ```
 
 #### GET /api/tasks/:taskId/comments
+
 List task comments.
 
 #### POST /api/tasks/:taskId/comments
+
 Add comment to task.
 
 **Headers:** `x-csrf-token: <token>`
@@ -371,19 +425,23 @@ Add comment to task.
 ### Notes
 
 #### GET /api/notes
+
 List notes.
 
 **Query Parameters:**
+
 - `projectId` - Filter by project
 - `clientId` - Filter by client
 - `type` - Filter by type (GENERAL, CREDENTIAL, API_KEY, CONFIG)
 
 #### POST /api/notes
+
 Create note.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "projectId": "uuid",
@@ -395,19 +453,23 @@ Create note.
 ```
 
 #### GET /api/notes/:noteId
+
 Get note details.
 
 #### PUT /api/notes/:noteId
+
 Update note.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### DELETE /api/notes/:noteId
+
 Delete note.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### GET /api/notes/:noteId/secret
+
 View decrypted secret (logged).
 
 **Required Permission:** view_secrets
@@ -417,11 +479,13 @@ View decrypted secret (logged).
 ### Comments
 
 #### PUT /api/comments/:commentId
+
 Update comment.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### DELETE /api/comments/:commentId
+
 Delete comment.
 
 **Headers:** `x-csrf-token: <token>`
@@ -431,14 +495,17 @@ Delete comment.
 ### Tags
 
 #### GET /api/tags
+
 List all tags.
 
 #### POST /api/tags
+
 Create tag.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "name": "Tag Name",
@@ -447,21 +514,25 @@ Create tag.
 ```
 
 #### PUT /api/tags/:tagId
+
 Update tag.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### DELETE /api/tags/:tagId
+
 Delete tag.
 
 **Headers:** `x-csrf-token: <token>`
 
 #### POST /api/tags/:tagId/attach
+
 Attach tag to entity.
 
 **Headers:** `x-csrf-token: <token>`
 
 **Request:**
+
 ```json
 {
   "entityType": "TASK",
@@ -470,6 +541,7 @@ Attach tag to entity.
 ```
 
 #### POST /api/tags/:tagId/detach
+
 Detach tag from entity.
 
 **Headers:** `x-csrf-token: <token>`
@@ -479,12 +551,15 @@ Detach tag from entity.
 ### Files
 
 #### GET /api/files/:fileId
+
 Get file metadata.
 
 #### GET /api/files/:fileId/download
+
 Download file.
 
 #### DELETE /api/files/:fileId
+
 Delete file.
 
 **Headers:** `x-csrf-token: <token>`
@@ -494,13 +569,16 @@ Delete file.
 ### Notifications
 
 #### GET /api/notifications
+
 List user notifications.
 
 **Query Parameters:**
+
 - `unreadOnly` - Show only unread (default: false)
 - `page`, `limit`
 
 #### POST /api/notifications/:notificationId/read
+
 Mark notification as read.
 
 **Headers:** `x-csrf-token: <token>`
@@ -510,13 +588,16 @@ Mark notification as read.
 ### Search
 
 #### GET /api/search
+
 Global search across entities.
 
 **Query Parameters:**
+
 - `q` - Search query (required)
 - `types` - Entity types to search (clients, projects, tasks, notes)
 
 **Response:**
+
 ```json
 {
   "results": {
@@ -533,9 +614,11 @@ Global search across entities.
 ### Dashboard
 
 #### GET /api/dashboard
+
 Get dashboard statistics.
 
 **Response:**
+
 ```json
 {
   "stats": {
@@ -555,9 +638,11 @@ Get dashboard statistics.
 ### Activity
 
 #### GET /api/activity
+
 Get activity log.
 
 **Query Parameters:**
+
 - `entityType` - Filter by entity type
 - `entityId` - Filter by entity ID
 - `page`, `limit`
@@ -567,11 +652,13 @@ Get activity log.
 ### Real-time (SSE)
 
 #### GET /api/realtime/notifications
+
 Server-Sent Events stream for user notifications.
 
 **Response:** SSE stream with notification events.
 
 #### GET /api/realtime/projects/:projectId
+
 Server-Sent Events stream for project updates.
 
 **Response:** SSE stream with task/project update events.
@@ -580,14 +667,14 @@ Server-Sent Events stream for project updates.
 
 ## Error Codes
 
-| Status | Description |
-|--------|-------------|
-| 400 | Bad Request - Invalid input |
-| 401 | Unauthorized - Not authenticated |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource doesn't exist |
-| 429 | Too Many Requests - Rate limited/locked |
-| 500 | Internal Server Error |
+| Status | Description                             |
+| ------ | --------------------------------------- |
+| 400    | Bad Request - Invalid input             |
+| 401    | Unauthorized - Not authenticated        |
+| 403    | Forbidden - Insufficient permissions    |
+| 404    | Not Found - Resource doesn't exist      |
+| 429    | Too Many Requests - Rate limited/locked |
+| 500    | Internal Server Error                   |
 
 ## Rate Limiting
 

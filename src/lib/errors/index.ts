@@ -5,45 +5,45 @@
  * Requirements: 22.6 - WHEN API validation fails THEN the System SHALL return structured error response with field-level details
  * Requirements: 22.7 - WHEN an unexpected error occurs THEN the System SHALL log the error securely without exposing sensitive data to client
  */
-import { json } from '@tanstack/react-start';
-import { z } from 'zod';
+import { json } from "@tanstack/react-start";
+import { z } from "zod";
 
 /**
  * Standard error codes used throughout the application
  */
 export const ErrorCode = {
   // Authentication errors (401)
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  SESSION_EXPIRED: 'SESSION_EXPIRED',
-  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
-  
+  UNAUTHORIZED: "UNAUTHORIZED",
+  SESSION_EXPIRED: "SESSION_EXPIRED",
+  INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
+
   // Authorization errors (403)
-  FORBIDDEN: 'FORBIDDEN',
-  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
-  CSRF_INVALID: 'CSRF_INVALID',
-  
+  FORBIDDEN: "FORBIDDEN",
+  INSUFFICIENT_PERMISSIONS: "INSUFFICIENT_PERMISSIONS",
+  CSRF_INVALID: "CSRF_INVALID",
+
   // Client errors (400)
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  BAD_REQUEST: 'BAD_REQUEST',
-  INVALID_INPUT: 'INVALID_INPUT',
-  
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  BAD_REQUEST: "BAD_REQUEST",
+  INVALID_INPUT: "INVALID_INPUT",
+
   // Not found errors (404)
-  NOT_FOUND: 'NOT_FOUND',
-  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
-  
+  NOT_FOUND: "NOT_FOUND",
+  RESOURCE_NOT_FOUND: "RESOURCE_NOT_FOUND",
+
   // Conflict errors (409)
-  CONFLICT: 'CONFLICT',
-  DUPLICATE_ENTRY: 'DUPLICATE_ENTRY',
-  REFERENTIAL_INTEGRITY: 'REFERENTIAL_INTEGRITY',
-  
+  CONFLICT: "CONFLICT",
+  DUPLICATE_ENTRY: "DUPLICATE_ENTRY",
+  REFERENTIAL_INTEGRITY: "REFERENTIAL_INTEGRITY",
+
   // Rate limiting (429)
-  RATE_LIMITED: 'RATE_LIMITED',
-  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
-  
+  RATE_LIMITED: "RATE_LIMITED",
+  ACCOUNT_LOCKED: "ACCOUNT_LOCKED",
+
   // Server errors (500)
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  DATABASE_ERROR: 'DATABASE_ERROR',
-  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+  INTERNAL_ERROR: "INTERNAL_ERROR",
+  DATABASE_ERROR: "DATABASE_ERROR",
+  SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
 } as const;
 
 export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -72,25 +72,32 @@ export interface ErrorResponse {
  * User-friendly error messages for each error code
  */
 const errorMessages: Record<ErrorCodeType, string> = {
-  [ErrorCode.UNAUTHORIZED]: 'Authentication required',
-  [ErrorCode.SESSION_EXPIRED]: 'Your session has expired. Please log in again.',
-  [ErrorCode.INVALID_CREDENTIALS]: 'Invalid email or password',
-  [ErrorCode.FORBIDDEN]: 'Access denied',
-  [ErrorCode.INSUFFICIENT_PERMISSIONS]: 'You do not have permission to perform this action',
-  [ErrorCode.CSRF_INVALID]: 'Invalid security token. Please refresh the page and try again.',
-  [ErrorCode.VALIDATION_ERROR]: 'Validation failed',
-  [ErrorCode.BAD_REQUEST]: 'Invalid request',
-  [ErrorCode.INVALID_INPUT]: 'Invalid input provided',
-  [ErrorCode.NOT_FOUND]: 'Resource not found',
-  [ErrorCode.RESOURCE_NOT_FOUND]: 'The requested resource was not found',
-  [ErrorCode.CONFLICT]: 'Operation conflicts with existing data',
-  [ErrorCode.DUPLICATE_ENTRY]: 'A record with this information already exists',
-  [ErrorCode.REFERENTIAL_INTEGRITY]: 'Cannot delete this record because it is referenced by other records',
-  [ErrorCode.RATE_LIMITED]: 'Too many requests. Please try again later.',
-  [ErrorCode.ACCOUNT_LOCKED]: 'Account temporarily locked due to too many failed attempts',
-  [ErrorCode.INTERNAL_ERROR]: 'An unexpected error occurred. Please try again later.',
-  [ErrorCode.DATABASE_ERROR]: 'A database error occurred. Please try again later.',
-  [ErrorCode.SERVICE_UNAVAILABLE]: 'Service temporarily unavailable. Please try again later.',
+  [ErrorCode.UNAUTHORIZED]: "Authentication required",
+  [ErrorCode.SESSION_EXPIRED]: "Your session has expired. Please log in again.",
+  [ErrorCode.INVALID_CREDENTIALS]: "Invalid email or password",
+  [ErrorCode.FORBIDDEN]: "Access denied",
+  [ErrorCode.INSUFFICIENT_PERMISSIONS]:
+    "You do not have permission to perform this action",
+  [ErrorCode.CSRF_INVALID]:
+    "Invalid security token. Please refresh the page and try again.",
+  [ErrorCode.VALIDATION_ERROR]: "Validation failed",
+  [ErrorCode.BAD_REQUEST]: "Invalid request",
+  [ErrorCode.INVALID_INPUT]: "Invalid input provided",
+  [ErrorCode.NOT_FOUND]: "Resource not found",
+  [ErrorCode.RESOURCE_NOT_FOUND]: "The requested resource was not found",
+  [ErrorCode.CONFLICT]: "Operation conflicts with existing data",
+  [ErrorCode.DUPLICATE_ENTRY]: "A record with this information already exists",
+  [ErrorCode.REFERENTIAL_INTEGRITY]:
+    "Cannot delete this record because it is referenced by other records",
+  [ErrorCode.RATE_LIMITED]: "Too many requests. Please try again later.",
+  [ErrorCode.ACCOUNT_LOCKED]:
+    "Account temporarily locked due to too many failed attempts",
+  [ErrorCode.INTERNAL_ERROR]:
+    "An unexpected error occurred. Please try again later.",
+  [ErrorCode.DATABASE_ERROR]:
+    "A database error occurred. Please try again later.",
+  [ErrorCode.SERVICE_UNAVAILABLE]:
+    "Service temporarily unavailable. Please try again later.",
 };
 
 /**
@@ -171,10 +178,10 @@ export function errorResponse(
 ): Response {
   const status = errorStatusCodes[code];
   const body = createErrorResponse(code, options);
-  
+
   const headers: HeadersInit = {};
   if (body.retryAfter !== undefined) {
-    headers['Retry-After'] = body.retryAfter.toString();
+    headers["Retry-After"] = body.retryAfter.toString();
   }
 
   return json(body, { status, headers });
@@ -185,7 +192,7 @@ export function errorResponse(
  */
 export function validationErrorResponse(zodError: z.ZodError): Response {
   const details: FieldError[] = zodError.issues.map((issue) => ({
-    field: issue.path.join('.'),
+    field: issue.path.join("."),
     message: issue.message,
     code: issue.code,
   }));
@@ -200,7 +207,7 @@ export function notFoundResponse(resourceType?: string): Response {
   const message = resourceType
     ? `${resourceType} not found`
     : errorMessages[ErrorCode.NOT_FOUND];
-  
+
   return errorResponse(ErrorCode.NOT_FOUND, { message });
 }
 
@@ -241,10 +248,10 @@ export function internalErrorResponse(
   context?: string
 ): Response {
   // Log the actual error securely (server-side only)
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
   const errorStack = error instanceof Error ? error.stack : undefined;
-  
-  console.error(`[${context || 'API'}] Internal error:`, {
+
+  console.error(`[${context || "API"}] Internal error:`, {
     message: errorMessage,
     stack: errorStack,
     timestamp: new Date().toISOString(),
@@ -276,9 +283,9 @@ export function isErrorCode(
   code: ErrorCodeType
 ): response is ErrorResponse {
   return (
-    typeof response === 'object' &&
+    typeof response === "object" &&
     response !== null &&
-    'error' in response &&
+    "error" in response &&
     (response as ErrorResponse).error === code
   );
 }
@@ -288,32 +295,39 @@ export function isErrorCode(
  */
 export function isErrorResponse(response: unknown): response is ErrorResponse {
   return (
-    typeof response === 'object' &&
+    typeof response === "object" &&
     response !== null &&
-    'error' in response &&
-    typeof (response as ErrorResponse).error === 'string' &&
-    'message' in response &&
-    typeof (response as ErrorResponse).message === 'string'
+    "error" in response &&
+    typeof (response as ErrorResponse).error === "string" &&
+    "message" in response &&
+    typeof (response as ErrorResponse).message === "string"
   );
 }
 
 /**
  * Parse database errors and return appropriate error response
  */
-export function handleDatabaseError(error: unknown, context?: string): Response {
-  const errorMessage = error instanceof Error ? error.message : '';
-  
+export function handleDatabaseError(
+  error: unknown,
+  context?: string
+): Response {
+  const errorMessage = error instanceof Error ? error.message : "";
+
   // Check for common database constraint violations
-  if (errorMessage.includes('UNIQUE constraint failed') || 
-      errorMessage.includes('duplicate key')) {
+  if (
+    errorMessage.includes("UNIQUE constraint failed") ||
+    errorMessage.includes("duplicate key")
+  ) {
     return errorResponse(ErrorCode.DUPLICATE_ENTRY);
   }
-  
-  if (errorMessage.includes('FOREIGN KEY constraint failed') ||
-      errorMessage.includes('violates foreign key constraint')) {
+
+  if (
+    errorMessage.includes("FOREIGN KEY constraint failed") ||
+    errorMessage.includes("violates foreign key constraint")
+  ) {
     return errorResponse(ErrorCode.REFERENTIAL_INTEGRITY);
   }
 
   // Log and return generic database error
-  return internalErrorResponse(error, context || 'Database');
+  return internalErrorResponse(error, context || "Database");
 }

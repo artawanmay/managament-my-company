@@ -2,12 +2,17 @@
  * Files API functions
  * Requirements: 13.1, 13.2, 13.3, 13.4
  */
-import type { FileItem, FileListResponse, FileUploadResponse, FileDeleteResponse } from '../types';
+import type {
+  FileItem,
+  FileListResponse,
+  FileUploadResponse,
+  FileDeleteResponse,
+} from "../types";
 
 export interface FilesListParams {
   search?: string;
-  sortBy?: 'fileName' | 'size' | 'mimeType' | 'uploadedAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "fileName" | "size" | "mimeType" | "uploadedAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -23,27 +28,29 @@ export async function fetchFiles(
 ): Promise<FileListResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params.search) searchParams.set('search', params.search);
-  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
-  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  if (params.page) searchParams.set('page', params.page.toString());
-  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set("search", params.search);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.page) searchParams.set("page", params.page.toString());
+  if (params.limit) searchParams.set("limit", params.limit.toString());
 
   const url = `/api/projects/${projectId}/files?${searchParams.toString()}`;
   const headers: HeadersInit = {};
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch files' }));
-    throw new Error(error.error || 'Failed to fetch files');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch files" }));
+    throw new Error(error.error || "Failed to fetch files");
   }
 
   return response.json();
@@ -58,18 +65,20 @@ export async function fetchFile(
 ): Promise<{ data: FileItem }> {
   const headers: HeadersInit = {};
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`/api/files/${fileId}`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch file' }));
-    throw new Error(error.error || 'Failed to fetch file');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch file" }));
+    throw new Error(error.error || "Failed to fetch file");
   }
 
   return response.json();
@@ -85,20 +94,22 @@ export async function uploadFile(
   csrfToken: string
 ): Promise<FileUploadResponse> {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
   const response = await fetch(`/api/projects/${projectId}/files`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'X-CSRF-Token': csrfToken,
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: formData,
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to upload file' }));
-    throw new Error(error.error || 'Failed to upload file');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to upload file" }));
+    throw new Error(error.error || "Failed to upload file");
   }
 
   return response.json();
@@ -115,24 +126,26 @@ export async function downloadFile(
 ): Promise<void> {
   const headers: HeadersInit = {};
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`/api/files/${fileId}/download`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to download file' }));
-    throw new Error(error.error || 'Failed to download file');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to download file" }));
+    throw new Error(error.error || "Failed to download file");
   }
 
   // Create a blob from the response and trigger download
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = fileName;
   document.body.appendChild(a);
@@ -150,17 +163,19 @@ export async function deleteFile(
   csrfToken: string
 ): Promise<FileDeleteResponse> {
   const response = await fetch(`/api/files/${fileId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete file' }));
-    throw new Error(error.error || 'Failed to delete file');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete file" }));
+    throw new Error(error.error || "Failed to delete file");
   }
 
   return response.json();

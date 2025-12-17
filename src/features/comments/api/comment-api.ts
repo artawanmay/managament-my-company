@@ -8,7 +8,7 @@ import type {
   CommentResponse,
   CreateCommentInput,
   UpdateCommentInput,
-} from '../types';
+} from "../types";
 
 /**
  * Fetch comments for a task
@@ -18,21 +18,23 @@ export async function fetchComments(
   csrfToken?: string
 ): Promise<CommentsListResponse> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`/api/tasks/${taskId}/comments`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch comments' }));
-    throw new Error(error.error || 'Failed to fetch comments');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch comments" }));
+    throw new Error(error.error || "Failed to fetch comments");
   }
 
   return response.json();
@@ -48,18 +50,20 @@ export async function createComment(
   csrfToken: string
 ): Promise<CommentResponse> {
   const response = await fetch(`/api/tasks/${taskId}/comments`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to create comment' }));
-    throw new Error(error.error || 'Failed to create comment');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to create comment" }));
+    throw new Error(error.error || "Failed to create comment");
   }
 
   return response.json();
@@ -75,18 +79,20 @@ export async function updateComment(
   csrfToken: string
 ): Promise<{ data: Comment }> {
   const response = await fetch(`/api/comments/${commentId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to update comment' }));
-    throw new Error(error.error || 'Failed to update comment');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to update comment" }));
+    throw new Error(error.error || "Failed to update comment");
   }
 
   return response.json();
@@ -101,17 +107,19 @@ export async function deleteComment(
   csrfToken: string
 ): Promise<{ success: boolean }> {
   const response = await fetch(`/api/comments/${commentId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete comment' }));
-    throw new Error(error.error || 'Failed to delete comment');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete comment" }));
+    throw new Error(error.error || "Failed to delete comment");
   }
 
   return response.json();

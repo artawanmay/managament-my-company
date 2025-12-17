@@ -24,7 +24,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { usePermissions, type SidebarPermission } from "@/hooks/use-permissions";
+import {
+  usePermissions,
+  type SidebarPermission,
+} from "@/hooks/use-permissions";
 
 interface NavItem {
   title: string;
@@ -68,9 +71,7 @@ function NavLink({ item, isCollapsed, isActive, onClick }: NavLinkProps) {
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         "hover:bg-accent hover:text-accent-foreground",
-        isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground",
+        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground",
         isCollapsed && "justify-center px-2"
       )}
     >
@@ -102,9 +103,9 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   // Get visible nav items based on user permissions
   const visibleNavItems: NavItem[] = React.useMemo(() => {
     if (isLoading) return [];
-    
+
     const modules = getVisibleSidebarModules();
-    return modules.map(module => ({
+    return modules.map((module) => ({
       title: module.title,
       href: module.href,
       icon: iconMap[module.title] || LayoutDashboard,
@@ -202,10 +203,7 @@ export function Sidebar() {
       <>
         {/* Backdrop with glass overlay effect */}
         {isOpen && (
-          <div
-            className="fixed inset-0 z-40 glass-overlay"
-            onClick={close}
-          />
+          <div className="fixed inset-0 z-40 glass-overlay" onClick={close} />
         )}
 
         {/* Drawer with glass styling */}
@@ -239,7 +237,9 @@ export function Sidebar() {
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-30 hidden glass-sidebar md:block",
-        isInitialMount ? "no-transition" : "transition-all duration-300 ease-in-out",
+        isInitialMount
+          ? "no-transition"
+          : "transition-all duration-300 ease-in-out",
         isCollapsed ? "w-16" : "w-64"
       )}
     >

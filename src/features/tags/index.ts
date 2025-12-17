@@ -4,7 +4,7 @@
  */
 
 // Components
-export { TagBadge, TagSelector, TagFilter } from './components';
+export { TagBadge, TagSelector, TagFilter } from "./components";
 
 // Hooks
 export {
@@ -14,10 +14,10 @@ export {
   useDeleteTag,
   useAttachTag,
   useDetachTag,
-} from './hooks';
+} from "./hooks";
 
 // API
-export * from './api';
+export * from "./api";
 
 // Types
 export type {
@@ -28,4 +28,4 @@ export type {
   UpdateTagInput,
   AttachTagInput,
   DetachTagInput,
-} from './types';
+} from "./types";

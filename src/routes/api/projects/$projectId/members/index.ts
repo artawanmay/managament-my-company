@@ -6,17 +6,17 @@
  * Requirements:
  * - 4.4: Assign members to project and grant access
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, and } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, and } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   projects,
   projectMembers,
   projectMemberRoleValues,
   users,
   type NewProjectMember,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
@@ -24,17 +24,17 @@ import {
   requireProjectAccess,
   requireProjectManagement,
   handleProjectAccessError,
-} from '@/lib/auth/middleware';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+} from "@/lib/auth/middleware";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for adding a member
 const addMemberSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
-  role: z.enum(projectMemberRoleValues).default('MEMBER'),
+  userId: z.string().uuid("Invalid user ID"),
+  role: z.enum(projectMemberRoleValues).default("MEMBER"),
 });
 
-export const Route = createFileRoute('/api/projects/$projectId/members/')({
+export const Route = createFileRoute("/api/projects/$projectId/members/")({
   server: {
     handlers: {
       /**
@@ -45,7 +45,8 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { projectId } = params;
@@ -73,8 +74,11 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
 
           return json({ data: members });
         } catch (error) {
-          console.error('[GET /api/projects/:projectId/members] Error:', error);
-          return json({ error: 'Failed to fetch project members' }, { status: 500 });
+          console.error("[GET /api/projects/:projectId/members] Error:", error);
+          return json(
+            { error: "Failed to fetch project members" },
+            { status: 500 }
+          );
         }
       },
 
@@ -86,13 +90,17 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { projectId } = params;
 
           // Check project management access
-          const accessCheck = await requireProjectManagement(auth.user, projectId);
+          const accessCheck = await requireProjectManagement(
+            auth.user,
+            projectId
+          );
           const accessError = handleProjectAccessError(accessCheck);
           if (accessError) return accessError;
 
@@ -104,7 +112,7 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
             .limit(1);
 
           if (projectExists.length === 0) {
-            return json({ error: 'Project not found' }, { status: 404 });
+            return json({ error: "Project not found" }, { status: 404 });
           }
 
           const body = await request.json();
@@ -112,7 +120,7 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -125,7 +133,7 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
             .limit(1);
 
           if (userExists.length === 0) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           // Check if user is already a member
@@ -141,7 +149,10 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
             .limit(1);
 
           if (existingMember.length > 0) {
-            return json({ error: 'User is already a member of this project' }, { status: 409 });
+            return json(
+              { error: "User is already a member of this project" },
+              { status: 409 }
+            );
           }
 
           const memberData: NewProjectMember = {
@@ -151,7 +162,10 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
             role: parsed.data.role,
           };
 
-          const result = await db.insert(projectMembers).values(memberData).returning();
+          const result = await db
+            .insert(projectMembers)
+            .values(memberData)
+            .returning();
           const newMember = result[0];
 
           // Fetch user info for response
@@ -177,8 +191,14 @@ export const Route = createFileRoute('/api/projects/$projectId/members/')({
             { status: 201 }
           );
         } catch (error) {
-          console.error('[POST /api/projects/:projectId/members] Error:', error);
-          return json({ error: 'Failed to add project member' }, { status: 500 });
+          console.error(
+            "[POST /api/projects/:projectId/members] Error:",
+            error
+          );
+          return json(
+            { error: "Failed to add project member" },
+            { status: 500 }
+          );
         }
       },
     },

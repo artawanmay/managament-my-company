@@ -2,15 +2,15 @@
  * RoleChangeDialog component for changing user roles
  * Requirements: 2.2, 2.3
  */
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +28,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import type { User, Role } from '../types';
-import { roleValues } from '@/lib/db/schema/users';
+} from "@/components/ui/alert-dialog";
+import type { User, Role } from "../types";
+import { roleValues } from "@/lib/db/schema/users";
 
 interface RoleChangeDialogProps {
   open: boolean;
@@ -55,7 +55,7 @@ export function RoleChangeDialog({
   // Get available roles based on current user's role
   // Only SUPER_ADMIN can manage users (ADMIN role removed)
   const availableRoles = roleValues.filter(() => {
-    if (currentUserRole === 'SUPER_ADMIN') return true;
+    if (currentUserRole === "SUPER_ADMIN") return true;
     return false;
   });
 
@@ -90,14 +90,18 @@ export function RoleChangeDialog({
           <DialogHeader>
             <DialogTitle>Change User Role</DialogTitle>
             <DialogDescription>
-              Change the role for {user.name}. This will affect their permissions in the system.
+              Change the role for {user.name}. This will affect their
+              permissions in the system.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                Current role: <span className="font-medium">{user.role.replace('_', ' ')}</span>
+                Current role:{" "}
+                <span className="font-medium">
+                  {user.role.replace("_", " ")}
+                </span>
               </p>
             </div>
 
@@ -113,7 +117,7 @@ export function RoleChangeDialog({
                 <SelectContent>
                   {availableRoles.map((role) => (
                     <SelectItem key={role} value={role}>
-                      {role.replace('_', ' ')}
+                      {role.replace("_", " ")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -132,7 +136,9 @@ export function RoleChangeDialog({
             </Button>
             <Button
               onClick={handleRoleChange}
-              disabled={isLoading || !selectedRole || selectedRole === user.role}
+              disabled={
+                isLoading || !selectedRole || selectedRole === user.role
+              }
             >
               Change Role
             </Button>
@@ -145,16 +151,19 @@ export function RoleChangeDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change {user.name}'s role from{' '}
-              <span className="font-medium">{user.role.replace('_', ' ')}</span> to{' '}
-              <span className="font-medium">{selectedRole?.replace('_', ' ')}</span>?
-              This action will immediately affect their permissions.
+              Are you sure you want to change {user.name}&apos;s role from{" "}
+              <span className="font-medium">{user.role.replace("_", " ")}</span>{" "}
+              to{" "}
+              <span className="font-medium">
+                {selectedRole?.replace("_", " ")}
+              </span>
+              ? This action will immediately affect their permissions.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm} disabled={isLoading}>
-              {isLoading ? 'Changing...' : 'Confirm'}
+              {isLoading ? "Changing..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

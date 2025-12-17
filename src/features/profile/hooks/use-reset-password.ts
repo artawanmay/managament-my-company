@@ -1,7 +1,7 @@
 /**
  * useResetPassword Hook - Reset user password (SUPER_ADMIN only)
  */
-import { useMutation } from '@tanstack/react-query';
+import { useMutation } from "@tanstack/react-query";
 
 interface ResetPasswordData {
   userId: string;
@@ -9,19 +9,19 @@ interface ResetPasswordData {
 }
 
 async function resetPassword({ userId, newPassword }: ResetPasswordData) {
-  const csrfToken = sessionStorage.getItem('csrf_token');
+  const csrfToken = sessionStorage.getItem("csrf_token");
   const response = await fetch(`/api/users/${userId}/reset-password`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+      "Content-Type": "application/json",
+      ...(csrfToken && { "X-CSRF-Token": csrfToken }),
     },
     body: JSON.stringify({ newPassword }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to reset password');
+    throw new Error(error.error || "Failed to reset password");
   }
 
   return response.json();

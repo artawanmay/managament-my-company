@@ -2,12 +2,18 @@
  * NoteDetail component for displaying note information
  * Requirements: 7.1, 7.7
  */
-import { Key, Server, User, Globe, Calendar } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import type { NoteType } from '@/lib/db/schema';
-import type { Note } from '../types';
+import { Key, Server, User, Globe, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import type { NoteType } from "@/lib/db/schema";
+import type { Note } from "../types";
 
 interface NoteDetailProps {
   note: Note;
@@ -17,11 +23,11 @@ interface NoteDetailProps {
 }
 
 const typeColors: Record<NoteType, string> = {
-  API: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  RDP: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  SSH: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  DB: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  OTHER: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  API: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  RDP: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  SSH: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  DB: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+  OTHER: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
 const typeIcons: Record<NoteType, React.ReactNode> = {
@@ -32,14 +38,19 @@ const typeIcons: Record<NoteType, React.ReactNode> = {
   OTHER: <Key className="h-4 w-4" />,
 };
 
-export function NoteDetail({ note, onViewSecret, onEdit, onDelete }: NoteDetailProps) {
+export function NoteDetail({
+  note,
+  onViewSecret,
+  onEdit,
+  onDelete,
+}: NoteDetailProps) {
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -53,7 +64,10 @@ export function NoteDetail({ note, onViewSecret, onEdit, onDelete }: NoteDetailP
               {note.systemName}
             </CardTitle>
             <CardDescription>
-              <Badge className={typeColors[note.type as NoteType]} variant="outline">
+              <Badge
+                className={typeColors[note.type as NoteType]}
+                variant="outline"
+              >
                 {note.type}
               </Badge>
             </CardDescription>

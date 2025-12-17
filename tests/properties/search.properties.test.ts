@@ -5,29 +5,29 @@
  * **Feature: mmc-app, Property 13: Search Permission Filtering**
  * **Validates: Requirements 11.1, 11.2**
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/lib/db/schema/index';
-import { sql } from 'drizzle-orm';
-import type { Role } from '@/lib/db/schema/users';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "@/lib/db/schema/index";
+import { sql } from "drizzle-orm";
+import type { Role } from "@/lib/db/schema/users";
 
 const PBT_RUNS = 100;
 
 // Arbitrary generators for roles
-const nonAdminRoleArb = fc.constantFrom<Role>('MANAGER', 'MEMBER', 'GUEST');
+const nonAdminRoleArb = fc.constantFrom<Role>("MANAGER", "MEMBER", "GUEST");
 
 // Helper to create test database
 function createTestDb() {
-  const sqlite = new Database(':memory:');
-  sqlite.pragma('journal_mode = WAL');
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
 }
 
 // Initialize test database with required tables
-function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
+function initTestDb(db: ReturnType<typeof createTestDb>["db"]) {
   // Create users table
   db.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -131,10 +131,18 @@ function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
   `);
 
   // Create indexes
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS notes_project_id_idx ON notes(project_id)`);
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS notes_project_id_idx ON notes(project_id)`
+  );
 }
 
 /**
@@ -181,7 +189,7 @@ function getAccessibleProjectIds(
   memberships: ProjectMembership[]
 ): string[] | null {
   // SUPER_ADMIN can access all projects
-  if (user.role === 'SUPER_ADMIN') {
+  if (user.role === "SUPER_ADMIN") {
     return null; // null means all projects
   }
 
@@ -270,13 +278,14 @@ function filterNotes(
     if (note.createdBy === userId) return true;
 
     // User can access notes in accessible projects
-    if (note.projectId && accessibleProjectIds.includes(note.projectId)) return true;
+    if (note.projectId && accessibleProjectIds.includes(note.projectId))
+      return true;
 
     return false;
   });
 }
 
-describe('Search Permission Filtering Properties', () => {
+describe("Search Permission Filtering Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
@@ -294,7 +303,7 @@ describe('Search Permission Filtering Properties', () => {
    * projects that the user has permission to access.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - SUPER_ADMIN can see all matching projects', () => {
+  it("Property 13: Search Permission Filtering - SUPER_ADMIN can see all matching projects", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -302,14 +311,16 @@ describe('Search Permission Filtering Properties', () => {
           fc.record({
             id: fc.uuid(),
             name: fc.string({ minLength: 1, maxLength: 50 }),
-            description: fc.option(fc.string({ maxLength: 100 }), { nil: null }),
+            description: fc.option(fc.string({ maxLength: 100 }), {
+              nil: null,
+            }),
             managerId: fc.uuid(),
           }),
           { minLength: 1, maxLength: 10 }
         ),
         fc.string({ minLength: 1, maxLength: 20 }),
         (userId, projects, searchTerm) => {
-          const user: SearchUser = { id: userId, role: 'SUPER_ADMIN' };
+          const user: SearchUser = { id: userId, role: "SUPER_ADMIN" };
           const accessibleIds = getAccessibleProjectIds(user, projects, []);
 
           // SUPER_ADMIN should have access to all projects (null means all)
@@ -339,7 +350,7 @@ describe('Search Permission Filtering Properties', () => {
    * projects that the user has permission to access.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - ADMIN can see all matching projects', () => {
+  it("Property 13: Search Permission Filtering - ADMIN can see all matching projects", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -347,14 +358,16 @@ describe('Search Permission Filtering Properties', () => {
           fc.record({
             id: fc.uuid(),
             name: fc.string({ minLength: 1, maxLength: 50 }),
-            description: fc.option(fc.string({ maxLength: 100 }), { nil: null }),
+            description: fc.option(fc.string({ maxLength: 100 }), {
+              nil: null,
+            }),
             managerId: fc.uuid(),
           }),
           { minLength: 1, maxLength: 10 }
         ),
         fc.string({ minLength: 1, maxLength: 20 }),
         (userId, projects, _searchTerm) => {
-          const user: SearchUser = { id: userId, role: 'SUPER_ADMIN' };
+          const user: SearchUser = { id: userId, role: "SUPER_ADMIN" };
           const accessibleIds = getAccessibleProjectIds(user, projects, []);
 
           // SUPER_ADMIN should have access to all projects (null means all)
@@ -372,7 +385,7 @@ describe('Search Permission Filtering Properties', () => {
    * *For any* non-admin user without project membership, search should return no projects.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - non-member cannot see projects', () => {
+  it("Property 13: Search Permission Filtering - non-member cannot see projects", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -381,7 +394,9 @@ describe('Search Permission Filtering Properties', () => {
           fc.record({
             id: fc.uuid(),
             name: fc.string({ minLength: 1, maxLength: 50 }),
-            description: fc.option(fc.string({ maxLength: 100 }), { nil: null }),
+            description: fc.option(fc.string({ maxLength: 100 }), {
+              nil: null,
+            }),
             managerId: fc.uuid(),
           }),
           { minLength: 1, maxLength: 10 }
@@ -414,7 +429,7 @@ describe('Search Permission Filtering Properties', () => {
    * *For any* user who is a project member, search should include that project if it matches.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - member can see their projects', () => {
+  it("Property 13: Search Permission Filtering - member can see their projects", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -427,15 +442,25 @@ describe('Search Permission Filtering Properties', () => {
         }),
         (userId, role, project) => {
           const user: SearchUser = { id: userId, role };
-          const memberships: ProjectMembership[] = [{ projectId: project.id, userId }];
+          const memberships: ProjectMembership[] = [
+            { projectId: project.id, userId },
+          ];
 
-          const accessibleIds = getAccessibleProjectIds(user, [project], memberships);
+          const accessibleIds = getAccessibleProjectIds(
+            user,
+            [project],
+            memberships
+          );
 
           // User should have access to the project they're a member of
           expect(accessibleIds).toContain(project.id);
 
           // Search for the project name should return it
-          const results = filterProjects([project], project.name, accessibleIds);
+          const results = filterProjects(
+            [project],
+            project.name,
+            accessibleIds
+          );
           expect(results).toHaveLength(1);
           expect(results[0]!.id).toBe(project.id);
 
@@ -451,7 +476,7 @@ describe('Search Permission Filtering Properties', () => {
    * *For any* user who is a project manager, search should include that project if it matches.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - manager can see their managed projects', () => {
+  it("Property 13: Search Permission Filtering - manager can see their managed projects", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -460,7 +485,7 @@ describe('Search Permission Filtering Properties', () => {
         fc.option(fc.string({ maxLength: 100 }), { nil: null }),
         (userId, role, projectName, projectDescription) => {
           const project: SearchableProject = {
-            id: 'project-1',
+            id: "project-1",
             name: projectName,
             description: projectDescription,
             managerId: userId, // User is the manager
@@ -485,7 +510,7 @@ describe('Search Permission Filtering Properties', () => {
    * tasks from projects that the user has permission to access.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - tasks filtered by project access', () => {
+  it("Property 13: Search Permission Filtering - tasks filtered by project access", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -494,16 +519,21 @@ describe('Search Permission Filtering Properties', () => {
           fc.record({
             id: fc.uuid(),
             title: fc.string({ minLength: 1, maxLength: 50 }),
-            description: fc.option(fc.string({ maxLength: 100 }), { nil: null }),
-            projectId: fc.constantFrom('project-accessible', 'project-inaccessible'),
+            description: fc.option(fc.string({ maxLength: 100 }), {
+              nil: null,
+            }),
+            projectId: fc.constantFrom(
+              "project-accessible",
+              "project-inaccessible"
+            ),
           }),
           { minLength: 1, maxLength: 10 }
         ),
         (_userId, _role, tasks) => {
-          const accessibleProjectIds = ['project-accessible'];
+          const accessibleProjectIds = ["project-accessible"];
 
           // Filter tasks
-          const results = filterTasks(tasks, '', accessibleProjectIds);
+          const results = filterTasks(tasks, "", accessibleProjectIds);
 
           // All results should be from accessible projects
           for (const task of results) {
@@ -512,7 +542,7 @@ describe('Search Permission Filtering Properties', () => {
 
           // No results should be from inaccessible projects
           const inaccessibleResults = results.filter(
-            (t) => t.projectId === 'project-inaccessible'
+            (t) => t.projectId === "project-inaccessible"
           );
           expect(inaccessibleResults).toHaveLength(0);
 
@@ -529,7 +559,7 @@ describe('Search Permission Filtering Properties', () => {
    * notes from projects that the user has permission to access, or notes they created.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - notes filtered by project access or ownership', () => {
+  it("Property 13: Search Permission Filtering - notes filtered by project access or ownership", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -539,7 +569,7 @@ describe('Search Permission Filtering Properties', () => {
             id: fc.uuid(),
             systemName: fc.string({ minLength: 1, maxLength: 50 }),
             projectId: fc.option(
-              fc.constantFrom('project-accessible', 'project-inaccessible'),
+              fc.constantFrom("project-accessible", "project-inaccessible"),
               { nil: null }
             ),
             createdBy: fc.uuid(),
@@ -547,10 +577,10 @@ describe('Search Permission Filtering Properties', () => {
           { minLength: 1, maxLength: 10 }
         ),
         (userId, _role, notes) => {
-          const accessibleProjectIds = ['project-accessible'];
+          const accessibleProjectIds = ["project-accessible"];
 
           // Filter notes
-          const results = filterNotes(notes, '', accessibleProjectIds, userId);
+          const results = filterNotes(notes, "", accessibleProjectIds, userId);
 
           // All results should be either:
           // 1. From accessible projects
@@ -575,7 +605,7 @@ describe('Search Permission Filtering Properties', () => {
    * *For any* user, they can always see notes they created regardless of project access.
    * **Validates: Requirements 11.1, 11.2**
    */
-  it('Property 13: Search Permission Filtering - user can see their own notes', () => {
+  it("Property 13: Search Permission Filtering - user can see their own notes", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -583,16 +613,21 @@ describe('Search Permission Filtering Properties', () => {
         fc.string({ minLength: 1, maxLength: 50 }),
         (userId, _role, systemName) => {
           const note: SearchableNote = {
-            id: 'note-1',
+            id: "note-1",
             systemName,
-            projectId: 'project-inaccessible', // User doesn't have access to this project
+            projectId: "project-inaccessible", // User doesn't have access to this project
             createdBy: userId, // But user created the note
           };
 
           const accessibleProjectIds: string[] = []; // No project access
 
           // Filter notes - should still find the note because user created it
-          const results = filterNotes([note], systemName, accessibleProjectIds, userId);
+          const results = filterNotes(
+            [note],
+            systemName,
+            accessibleProjectIds,
+            userId
+          );
 
           expect(results).toHaveLength(1);
           expect(results[0]!.id).toBe(note.id);
@@ -609,7 +644,7 @@ describe('Search Permission Filtering Properties', () => {
    * Search results should only include items that match the search term.
    * **Validates: Requirements 11.1**
    */
-  it('Property 13: Search Permission Filtering - results match search term', () => {
+  it("Property 13: Search Permission Filtering - results match search term", () => {
     fc.assert(
       fc.property(
         fc.uuid(),
@@ -617,14 +652,16 @@ describe('Search Permission Filtering Properties', () => {
           fc.record({
             id: fc.uuid(),
             name: fc.string({ minLength: 1, maxLength: 50 }),
-            description: fc.option(fc.string({ maxLength: 100 }), { nil: null }),
+            description: fc.option(fc.string({ maxLength: 100 }), {
+              nil: null,
+            }),
             managerId: fc.uuid(),
           }),
           { minLength: 1, maxLength: 10 }
         ),
         fc.string({ minLength: 3, maxLength: 10 }),
         (userId, projects, searchTerm) => {
-          const user: SearchUser = { id: userId, role: 'SUPER_ADMIN' };
+          const user: SearchUser = { id: userId, role: "SUPER_ADMIN" };
           const accessibleIds = getAccessibleProjectIds(user, projects, []);
 
           const results = filterProjects(projects, searchTerm, accessibleIds);

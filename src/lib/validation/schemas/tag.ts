@@ -2,15 +2,15 @@
  * Tag validation schemas
  * Requirements: 14.1, 14.2, 14.3, 14.4
  */
-import { z } from 'zod';
-import { taggableTypeValues } from '@/lib/db/schema/taggables';
+import { z } from "zod";
+import { taggableTypeValues } from "@/lib/db/schema/taggables";
 import {
   uuidSchema,
   requiredStringSchema,
   hexColorSchema,
   baseListQuerySchema,
   sortOrderSchema,
-} from './common';
+} from "./common";
 
 // Taggable type enum
 export const taggableTypeSchema = z.enum(taggableTypeValues);
@@ -29,7 +29,7 @@ export const updateTagSchema = z.object({
 
 // Tag list query schema
 export const tagListQuerySchema = baseListQuerySchema.extend({
-  sortBy: z.enum(['name', 'createdAt']).default('name'),
+  sortBy: z.enum(["name", "createdAt"]).default("name"),
   sortOrder: sortOrderSchema,
 });
 

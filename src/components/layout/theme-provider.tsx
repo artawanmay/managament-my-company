@@ -16,9 +16,9 @@ interface ThemeProviderState {
   resolvedTheme: "light" | "dark";
 }
 
-const ThemeProviderContext = React.createContext<ThemeProviderState | undefined>(
-  undefined
-);
+const ThemeProviderContext = React.createContext<
+  ThemeProviderState | undefined
+>(undefined);
 
 export function ThemeProvider({
   children,
@@ -30,11 +30,15 @@ export function ThemeProvider({
     return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
   });
 
-  const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">(() => {
-    // Read the initial resolved theme from the DOM (set by inline script in __root.tsx)
-    if (typeof window === "undefined") return "light";
-    return window.document.documentElement.classList.contains("dark") ? "dark" : "light";
-  });
+  const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">(
+    () => {
+      // Read the initial resolved theme from the DOM (set by inline script in __root.tsx)
+      if (typeof window === "undefined") return "light";
+      return window.document.documentElement.classList.contains("dark")
+        ? "dark"
+        : "light";
+    }
+  );
 
   React.useEffect(() => {
     const root = window.document.documentElement;
@@ -72,15 +76,15 @@ export function ThemeProvider({
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
       const root = window.document.documentElement;
-      
+
       // Disable transitions during theme change
       root.classList.add("no-transition");
-      
+
       root.classList.remove("light", "dark");
       const newTheme = e.matches ? "dark" : "light";
       root.classList.add(newTheme);
       setResolvedTheme(newTheme);
-      
+
       // Re-enable transitions after DOM update
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {

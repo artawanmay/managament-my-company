@@ -7,25 +7,17 @@
  * - 8.4: Update comment message and mark as edited
  * - 8.5: Remove comment after confirmation
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, and } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import {
-  comments,
-  tasks,
-  projects,
-  projectMembers,
-} from '@/lib/db/schema';
-import {
-  requireAuthWithCsrf,
-  handleAuthError,
-} from '@/lib/auth/middleware';
-import { z } from 'zod';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, and } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { comments, tasks, projects, projectMembers } from "@/lib/db/schema";
+import { requireAuthWithCsrf, handleAuthError } from "@/lib/auth/middleware";
+import { z } from "zod";
 
 // Zod schema for updating a comment
 const updateCommentSchema = z.object({
-  message: z.string().min(1, 'Message is required').max(5000),
+  message: z.string().min(1, "Message is required").max(5000),
 });
 
 /**
@@ -36,7 +28,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN') {
+  if (userRole === "SUPER_ADMIN") {
     return true;
   }
 
@@ -67,7 +59,7 @@ async function hasTaskAccess(
   return memberResult.length > 0;
 }
 
-export const Route = createFileRoute('/api/comments/$commentId')({
+export const Route = createFileRoute("/api/comments/$commentId")({
   server: {
     handlers: {
       /**
@@ -78,7 +70,8 @@ export const Route = createFileRoute('/api/comments/$commentId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { commentId } = params;
@@ -96,12 +89,15 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           const comment = commentResult[0];
           if (!comment) {
-            return json({ error: 'Comment not found' }, { status: 404 });
+            return json({ error: "Comment not found" }, { status: 404 });
           }
 
           // Only the comment author can edit their comment (Requirement 8.4)
           if (comment.userId !== auth.user.id) {
-            return json({ error: 'Only the comment author can edit this comment' }, { status: 403 });
+            return json(
+              { error: "Only the comment author can edit this comment" },
+              { status: 403 }
+            );
           }
 
           // Fetch task to verify project access
@@ -113,13 +109,17 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           const task = taskResult[0];
           if (!task) {
-            return json({ error: 'Task not found' }, { status: 404 });
+            return json({ error: "Task not found" }, { status: 404 });
           }
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(
+            auth.user.id,
+            auth.user.role,
+            task.projectId
+          );
           if (!hasAccess) {
-            return json({ error: 'Access denied' }, { status: 403 });
+            return json({ error: "Access denied" }, { status: 403 });
           }
 
           const body = await request.json();
@@ -127,7 +127,7 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -147,8 +147,8 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           return json({ data: updatedComment });
         } catch (error) {
-          console.error('[PUT /api/comments/:commentId] Error:', error);
-          return json({ error: 'Failed to update comment' }, { status: 500 });
+          console.error("[PUT /api/comments/:commentId] Error:", error);
+          return json({ error: "Failed to update comment" }, { status: 500 });
         }
       },
 
@@ -160,7 +160,8 @@ export const Route = createFileRoute('/api/comments/$commentId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { commentId } = params;
@@ -178,7 +179,7 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           const comment = commentResult[0];
           if (!comment) {
-            return json({ error: 'Comment not found' }, { status: 404 });
+            return json({ error: "Comment not found" }, { status: 404 });
           }
 
           // Fetch task to verify project access
@@ -190,29 +191,39 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           const task = taskResult[0];
           if (!task) {
-            return json({ error: 'Task not found' }, { status: 404 });
+            return json({ error: "Task not found" }, { status: 404 });
           }
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(
+            auth.user.id,
+            auth.user.role,
+            task.projectId
+          );
           if (!hasAccess) {
-            return json({ error: 'Access denied' }, { status: 403 });
+            return json({ error: "Access denied" }, { status: 403 });
           }
 
           // Only the comment author or admins can delete (Requirement 8.5)
           const isAuthor = comment.userId === auth.user.id;
-          const isAdmin = auth.user.role === 'SUPER_ADMIN';
+          const isAdmin = auth.user.role === "SUPER_ADMIN";
 
           if (!isAuthor && !isAdmin) {
-            return json({ error: 'Only the comment author or SUPER_ADMIN can delete this comment' }, { status: 403 });
+            return json(
+              {
+                error:
+                  "Only the comment author or SUPER_ADMIN can delete this comment",
+              },
+              { status: 403 }
+            );
           }
 
           await db.delete(comments).where(eq(comments.id, commentId));
 
           return json({ success: true });
         } catch (error) {
-          console.error('[DELETE /api/comments/:commentId] Error:', error);
-          return json({ error: 'Failed to delete comment' }, { status: 500 });
+          console.error("[DELETE /api/comments/:commentId] Error:", error);
+          return json({ error: "Failed to delete comment" }, { status: 500 });
         }
       },
     },

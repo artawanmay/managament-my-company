@@ -3,19 +3,19 @@
  * POST /api/profile/avatar - Upload avatar image
  * DELETE /api/profile/avatar - Remove avatar
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite } from '@/lib/db/schema/users';
-import { requireAuthWithCsrf, handleAuthError } from '@/lib/auth/middleware';
-import * as fs from 'fs';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite } from "@/lib/db/schema/users";
+import { requireAuthWithCsrf, handleAuthError } from "@/lib/auth/middleware";
+import * as fs from "fs";
+import * as path from "path";
+import { randomUUID } from "crypto";
 
-const UPLOAD_DIR = 'uploads/avatars';
+const UPLOAD_DIR = "uploads/avatars";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 // Ensure upload directory exists
 function ensureUploadDir() {
@@ -26,7 +26,7 @@ function ensureUploadDir() {
   return dir;
 }
 
-export const Route = createFileRoute('/api/profile/avatar')({
+export const Route = createFileRoute("/api/profile/avatar")({
   server: {
     handlers: {
       /**
@@ -36,30 +36,37 @@ export const Route = createFileRoute('/api/profile/avatar')({
       POST: async ({ request }) => {
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const formData = await request.formData();
-          const file = formData.get('avatar') as File | null;
+          const file = formData.get("avatar") as File | null;
 
           if (!file) {
-            return json({ error: 'No file uploaded' }, { status: 400 });
+            return json({ error: "No file uploaded" }, { status: 400 });
           }
 
           // Validate file type
           if (!ALLOWED_TYPES.includes(file.type)) {
-            return json({ error: 'Invalid file type. Allowed: JPEG, PNG, GIF, WebP' }, { status: 400 });
+            return json(
+              { error: "Invalid file type. Allowed: JPEG, PNG, GIF, WebP" },
+              { status: 400 }
+            );
           }
 
           // Validate file size
           if (file.size > MAX_FILE_SIZE) {
-            return json({ error: 'File too large. Maximum size is 5MB' }, { status: 400 });
+            return json(
+              { error: "File too large. Maximum size is 5MB" },
+              { status: 400 }
+            );
           }
 
           // Get file extension
-          const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+          const ext = file.name.split(".").pop()?.toLowerCase() || "png";
           const fileName = `${auth.user.id}-${randomUUID()}.${ext}`;
-          
+
           // Ensure upload directory exists
           const uploadDir = ensureUploadDir();
           const filePath = path.join(uploadDir, fileName);
@@ -72,7 +79,7 @@ export const Route = createFileRoute('/api/profile/avatar')({
             .limit(1);
 
           const oldAvatarUrl = userResult[0]?.avatarUrl;
-          if (oldAvatarUrl && oldAvatarUrl.startsWith('/uploads/avatars/')) {
+          if (oldAvatarUrl && oldAvatarUrl.startsWith("/uploads/avatars/")) {
             const oldFilePath = path.join(process.cwd(), oldAvatarUrl);
             if (fs.existsSync(oldFilePath)) {
               fs.unlinkSync(oldFilePath);
@@ -93,10 +100,13 @@ export const Route = createFileRoute('/api/profile/avatar')({
             })
             .where(eq(usersSqlite.id, auth.user.id));
 
-          return json({ data: { avatarUrl }, message: 'Avatar uploaded successfully' });
+          return json({
+            data: { avatarUrl },
+            message: "Avatar uploaded successfully",
+          });
         } catch (error) {
-          console.error('[POST /api/profile/avatar] Error:', error);
-          return json({ error: 'Failed to upload avatar' }, { status: 500 });
+          console.error("[POST /api/profile/avatar] Error:", error);
+          return json({ error: "Failed to upload avatar" }, { status: 500 });
         }
       },
 
@@ -107,7 +117,8 @@ export const Route = createFileRoute('/api/profile/avatar')({
       DELETE: async ({ request }) => {
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           // Get current avatar
@@ -120,7 +131,7 @@ export const Route = createFileRoute('/api/profile/avatar')({
           const avatarUrl = userResult[0]?.avatarUrl;
 
           // Delete file if it's a local upload
-          if (avatarUrl && avatarUrl.startsWith('/uploads/avatars/')) {
+          if (avatarUrl && avatarUrl.startsWith("/uploads/avatars/")) {
             const filePath = path.join(process.cwd(), avatarUrl);
             if (fs.existsSync(filePath)) {
               fs.unlinkSync(filePath);
@@ -136,10 +147,13 @@ export const Route = createFileRoute('/api/profile/avatar')({
             })
             .where(eq(usersSqlite.id, auth.user.id));
 
-          return json({ success: true, message: 'Avatar removed successfully' });
+          return json({
+            success: true,
+            message: "Avatar removed successfully",
+          });
         } catch (error) {
-          console.error('[DELETE /api/profile/avatar] Error:', error);
-          return json({ error: 'Failed to remove avatar' }, { status: 500 });
+          console.error("[DELETE /api/profile/avatar] Error:", error);
+          return json({ error: "Failed to remove avatar" }, { status: 500 });
         }
       },
     },

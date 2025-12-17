@@ -2,9 +2,9 @@
  * Hook for downloading a file
  * Requirements: 13.3
  */
-import { useMutation } from '@tanstack/react-query';
-import { downloadFile } from '../api';
-import { useSession } from '@/features/auth/hooks';
+import { useMutation } from "@tanstack/react-query";
+import { downloadFile } from "../api";
+import { useSession } from "@/features/auth/hooks";
 
 interface DownloadFileParams {
   fileId: string;

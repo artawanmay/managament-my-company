@@ -2,10 +2,10 @@
  * TagSelector component
  * Allows selecting and attaching tags to entities
  */
-import * as React from 'react';
-import { Check, ChevronsUpDown, Plus, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import * as React from "react";
+import { Check, ChevronsUpDown, Plus, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,14 +13,18 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTags, useAttachTag, useDetachTag } from '../hooks';
-import { TagBadge } from './tag-badge';
-import type { Tag } from '../types';
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useTags, useAttachTag, useDetachTag } from "../hooks";
+import { TagBadge } from "./tag-badge";
+import type { Tag } from "../types";
 
 interface TagSelectorProps {
-  entityType: 'TASK' | 'PROJECT' | 'NOTE';
+  entityType: "TASK" | "PROJECT" | "NOTE";
   entityId: string;
   selectedTags: Tag[];
   onTagsChange?: (tags: Tag[]) => void;
@@ -37,7 +41,7 @@ export function TagSelector({
   className,
 }: TagSelectorProps) {
   const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState('');
+  const [search, setSearch] = React.useState("");
 
   const { data: tagsData, isLoading } = useTags({ limit: 100 });
   const attachTag = useAttachTag();
@@ -48,7 +52,8 @@ export function TagSelector({
 
   const filteredTags = availableTags.filter(
     (tag) =>
-      tag.name.toLowerCase().includes(search.toLowerCase()) && !selectedTagIds.has(tag.id)
+      tag.name.toLowerCase().includes(search.toLowerCase()) &&
+      !selectedTagIds.has(tag.id)
   );
 
   const handleSelect = async (tag: Tag) => {
@@ -62,7 +67,7 @@ export function TagSelector({
       });
       onTagsChange?.([...selectedTags, tag]);
     } catch (error) {
-      console.error('Failed to attach tag:', error);
+      console.error("Failed to attach tag:", error);
     }
   };
 
@@ -77,14 +82,14 @@ export function TagSelector({
       });
       onTagsChange?.(selectedTags.filter((t) => t.id !== tag.id));
     } catch (error) {
-      console.error('Failed to detach tag:', error);
+      console.error("Failed to detach tag:", error);
     }
   };
 
   const isProcessing = attachTag.isPending || detachTag.isPending;
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       {/* Selected tags */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -147,7 +152,7 @@ export function TagSelector({
                         onSelect={() => {
                           handleSelect(tag);
                           setOpen(false);
-                          setSearch('');
+                          setSearch("");
                         }}
                         className="flex items-center gap-2"
                       >

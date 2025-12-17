@@ -6,10 +6,15 @@
  * - project:{projectId}:tasks - Task updates for Kanban board
  * - user:{userId}:notifications - User notifications
  *
- * Requirements: 20.1, 20.2
+ * Enhanced with graceful degradation:
+ * - Returns success without publishing when Redis is unavailable
+ * - Logs warning for degraded mode
+ *
+ * Requirements: 1.2, 20.1, 20.2
  */
-import Redis from 'ioredis';
-import { getRedisClient } from './redis';
+import Redis from "ioredis";
+import { getRedisClient } from "./redis";
+import { getFallbackManager } from "./fallback-manager";
 
 // Channel name constants
 export const CHANNELS = {
@@ -19,12 +24,12 @@ export const CHANNELS = {
 
 // Event types for type safety
 export type TaskEventType =
-  | 'TASK_CREATED'
-  | 'TASK_UPDATED'
-  | 'TASK_MOVED'
-  | 'TASK_DELETED';
+  | "TASK_CREATED"
+  | "TASK_UPDATED"
+  | "TASK_MOVED"
+  | "TASK_DELETED";
 
-export type NotificationEventType = 'NOTIFICATION_CREATED';
+export type NotificationEventType = "NOTIFICATION_CREATED";
 
 export interface TaskEvent {
   type: TaskEventType;
@@ -65,7 +70,7 @@ let subscriberClient: Redis | null = null;
  */
 function getSubscriberClient(): Redis {
   if (!subscriberClient) {
-    const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+    const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
     subscriberClient = new Redis(REDIS_URL, {
       maxRetriesPerRequest: 3,
       retryStrategy(times) {
@@ -75,8 +80,8 @@ function getSubscriberClient(): Redis {
       lazyConnect: true,
     });
 
-    subscriberClient.on('error', (err) => {
-      console.error('[Redis Subscriber] Connection error:', err.message);
+    subscriberClient.on("error", (err) => {
+      console.error("[Redis Subscriber] Connection error:", err.message);
     });
   }
 
@@ -85,21 +90,41 @@ function getSubscriberClient(): Redis {
 
 /**
  * Publish a message to a Redis channel
+ * Handles graceful degradation when Redis is unavailable (Requirement 1.2)
  * @param channel - The channel name to publish to
  * @param message - The message object to publish (will be JSON stringified)
+ * @returns Object indicating whether the message was actually published or skipped due to fallback mode
  */
 export async function publish<T extends object>(
   channel: string,
   message: T
-): Promise<void> {
+): Promise<{ published: boolean; fallbackMode: boolean }> {
+  const fallbackManager = getFallbackManager();
+
+  // Check if in fallback mode - return success without publishing (Requirement 1.2)
+  if (fallbackManager.isInFallbackMode()) {
+    console.warn(
+      `[PubSub] Degraded mode - skipping publish to ${channel}. ` +
+        "Redis is unavailable, realtime features are disabled."
+    );
+    return { published: false, fallbackMode: true };
+  }
+
   try {
     const client = getRedisClient();
     const serialized = JSON.stringify(message);
     await client.publish(channel, serialized);
     console.log(`[PubSub] Published to ${channel}:`, message);
+    return { published: true, fallbackMode: false };
   } catch (error) {
-    console.error(`[PubSub] Failed to publish to ${channel}:`, error);
-    throw error;
+    // On publish failure, log warning and return success to allow application to continue
+    // This implements graceful degradation (Requirement 1.2)
+    console.warn(
+      `[PubSub] Failed to publish to ${channel} - Redis unavailable. ` +
+        "Continuing without realtime notification.",
+      error instanceof Error ? error.message : error
+    );
+    return { published: false, fallbackMode: true };
   }
 }
 
@@ -121,7 +146,10 @@ export function subscribe<T extends object>(
         const parsed = JSON.parse(message) as T;
         handler(parsed);
       } catch (error) {
-        console.error(`[PubSub] Failed to parse message from ${channel}:`, error);
+        console.error(
+          `[PubSub] Failed to parse message from ${channel}:`,
+          error
+        );
       }
     }
   };
@@ -132,7 +160,7 @@ export function subscribe<T extends object>(
   });
 
   // Add message listener
-  client.on('message', messageHandler);
+  client.on("message", messageHandler);
 
   console.log(`[PubSub] Subscribed to ${channel}`);
 
@@ -141,22 +169,24 @@ export function subscribe<T extends object>(
     client.unsubscribe(channel).catch((err) => {
       console.error(`[PubSub] Failed to unsubscribe from ${channel}:`, err);
     });
-    client.removeListener('message', messageHandler);
+    client.removeListener("message", messageHandler);
     console.log(`[PubSub] Unsubscribed from ${channel}`);
   };
 }
 
 /**
  * Publish a task event to a project's task channel
+ * Handles graceful degradation when Redis is unavailable
  * @param projectId - The project ID
  * @param event - The task event to publish
+ * @returns Object indicating whether the message was actually published or skipped due to fallback mode
  */
 export async function publishTaskEvent(
   projectId: string,
   event: TaskEvent
-): Promise<void> {
+): Promise<{ published: boolean; fallbackMode: boolean }> {
   const channel = CHANNELS.projectTasks(projectId);
-  await publish(channel, event);
+  return publish(channel, event);
 }
 
 /**
@@ -175,15 +205,17 @@ export function subscribeToTaskEvents(
 
 /**
  * Publish a notification event to a user's notification channel
+ * Handles graceful degradation when Redis is unavailable
  * @param userId - The user ID
  * @param event - The notification event to publish
+ * @returns Object indicating whether the message was actually published or skipped due to fallback mode
  */
 export async function publishNotificationEvent(
   userId: string,
   event: NotificationEvent
-): Promise<void> {
+): Promise<{ published: boolean; fallbackMode: boolean }> {
   const channel = CHANNELS.userNotifications(userId);
-  await publish(channel, event);
+  return publish(channel, event);
 }
 
 /**
@@ -208,6 +240,6 @@ export async function closeSubscriberConnection(): Promise<void> {
   if (subscriberClient) {
     await subscriberClient.quit();
     subscriberClient = null;
-    console.log('[Redis Subscriber] Connection closed gracefully');
+    console.log("[Redis Subscriber] Connection closed gracefully");
   }
 }

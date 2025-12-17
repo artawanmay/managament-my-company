@@ -2,8 +2,8 @@
  * TaskStatusChart Component
  * A pie chart showing task distribution by status
  */
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   PieChart,
   Pie,
@@ -11,8 +11,8 @@ import {
   ResponsiveContainer,
   Legend,
   Tooltip,
-} from 'recharts';
-import type { TaskCounts } from '../types';
+} from "recharts";
+import type { TaskCounts } from "../types";
 
 interface TaskStatusChartProps {
   data: TaskCounts | undefined;
@@ -20,21 +20,21 @@ interface TaskStatusChartProps {
 }
 
 const COLORS = {
-  backlog: '#94a3b8', // slate-400
-  todo: '#60a5fa', // blue-400
-  inProgress: '#fbbf24', // amber-400
-  inReview: '#a78bfa', // violet-400
-  changesRequested: '#f97316', // orange-500
-  done: '#22c55e', // green-500
+  backlog: "#94a3b8", // slate-400
+  todo: "#60a5fa", // blue-400
+  inProgress: "#fbbf24", // amber-400
+  inReview: "#a78bfa", // violet-400
+  changesRequested: "#f97316", // orange-500
+  done: "#22c55e", // green-500
 };
 
 const STATUS_LABELS = {
-  backlog: 'Backlog',
-  todo: 'To Do',
-  inProgress: 'In Progress',
-  inReview: 'In Review',
-  changesRequested: 'Changes Requested',
-  done: 'Done',
+  backlog: "Backlog",
+  todo: "To Do",
+  inProgress: "In Progress",
+  inReview: "In Review",
+  changesRequested: "Changes Requested",
+  done: "Done",
 };
 
 export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
@@ -69,9 +69,21 @@ export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
   const chartData = [
     { name: STATUS_LABELS.backlog, value: data.backlog, color: COLORS.backlog },
     { name: STATUS_LABELS.todo, value: data.todo, color: COLORS.todo },
-    { name: STATUS_LABELS.inProgress, value: data.inProgress, color: COLORS.inProgress },
-    { name: STATUS_LABELS.inReview, value: data.inReview, color: COLORS.inReview },
-    { name: STATUS_LABELS.changesRequested, value: data.changesRequested, color: COLORS.changesRequested },
+    {
+      name: STATUS_LABELS.inProgress,
+      value: data.inProgress,
+      color: COLORS.inProgress,
+    },
+    {
+      name: STATUS_LABELS.inReview,
+      value: data.inReview,
+      color: COLORS.inReview,
+    },
+    {
+      name: STATUS_LABELS.changesRequested,
+      value: data.changesRequested,
+      color: COLORS.changesRequested,
+    },
     { name: STATUS_LABELS.done, value: data.done, color: COLORS.done },
   ].filter((item) => item.value > 0);
 
@@ -101,11 +113,11 @@ export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value) => [value as number, 'Tasks']}
+              formatter={(value) => [value as number, "Tasks"]}
               contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px",
               }}
             />
             <Legend />

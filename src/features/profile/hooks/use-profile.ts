@@ -1,7 +1,7 @@
 /**
  * useProfile Hook - Get current user profile
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
@@ -15,10 +15,10 @@ interface Profile {
 }
 
 async function fetchProfile(): Promise<Profile> {
-  const response = await fetch('/api/profile');
+  const response = await fetch("/api/profile");
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch profile');
+    throw new Error(error.error || "Failed to fetch profile");
   }
   const data = await response.json();
   return data.data;
@@ -26,7 +26,7 @@ async function fetchProfile(): Promise<Profile> {
 
 export function useProfile() {
   return useQuery({
-    queryKey: ['profile'],
+    queryKey: ["profile"],
     queryFn: fetchProfile,
     staleTime: 5 * 60 * 1000,
   });

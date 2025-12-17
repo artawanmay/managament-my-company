@@ -5,9 +5,14 @@
  * Requirements:
  * - 10.1: Log actor, entity type, entity ID, action, metadata, and timestamp
  */
-import { db } from '@/lib/db';
-import { activityLogs, type NewActivityLog, type EntityType, type Action } from '@/lib/db/schema';
-import { randomUUID } from 'crypto';
+import { db } from "@/lib/db";
+import {
+  activityLogs,
+  type NewActivityLog,
+  type EntityType,
+  type Action,
+} from "@/lib/db/schema";
+import { randomUUID } from "crypto";
 
 /**
  * Metadata structure for activity logs
@@ -38,7 +43,9 @@ export interface LogActivityInput {
  * Log a significant action in the system
  * Requirement 10.1: Log actor, entity type, entity ID, action, metadata, and timestamp
  */
-export async function logActivity(input: LogActivityInput): Promise<{ id: string }> {
+export async function logActivity(
+  input: LogActivityInput
+): Promise<{ id: string }> {
   const activityId = randomUUID();
   const activityData: NewActivityLog = {
     id: activityId,
@@ -49,14 +56,19 @@ export async function logActivity(input: LogActivityInput): Promise<{ id: string
     metadata: input.metadata ? JSON.stringify(input.metadata) : null,
   };
 
-  const result = await db.insert(activityLogs).values(activityData).returning({ id: activityLogs.id });
+  const result = await db
+    .insert(activityLogs)
+    .values(activityData)
+    .returning({ id: activityLogs.id });
   return { id: result[0]!.id };
 }
 
 /**
  * Log multiple activities at once (batch insert)
  */
-export async function logActivities(inputs: LogActivityInput[]): Promise<{ count: number }> {
+export async function logActivities(
+  inputs: LogActivityInput[]
+): Promise<{ count: number }> {
   if (inputs.length === 0) {
     return { count: 0 };
   }
@@ -79,12 +91,16 @@ export async function logActivities(inputs: LogActivityInput[]): Promise<{ count
 /**
  * Log client creation
  */
-export async function logClientCreated(actorId: string, clientId: string, clientName: string): Promise<{ id: string }> {
+export async function logClientCreated(
+  actorId: string,
+  clientId: string,
+  clientName: string
+): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'CLIENT',
+    entityType: "CLIENT",
     entityId: clientId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { clientName },
   });
 }
@@ -99,9 +115,9 @@ export async function logClientUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'CLIENT',
+    entityType: "CLIENT",
     entityId: clientId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { changes },
   });
 }
@@ -109,12 +125,16 @@ export async function logClientUpdated(
 /**
  * Log client deletion
  */
-export async function logClientDeleted(actorId: string, clientId: string, clientName: string): Promise<{ id: string }> {
+export async function logClientDeleted(
+  actorId: string,
+  clientId: string,
+  clientName: string
+): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'CLIENT',
+    entityType: "CLIENT",
     entityId: clientId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { clientName },
   });
 }
@@ -130,9 +150,9 @@ export async function logProjectCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'PROJECT',
+    entityType: "PROJECT",
     entityId: projectId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { projectName, clientId },
   });
 }
@@ -147,9 +167,9 @@ export async function logProjectUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'PROJECT',
+    entityType: "PROJECT",
     entityId: projectId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { changes },
   });
 }
@@ -157,12 +177,16 @@ export async function logProjectUpdated(
 /**
  * Log project archival
  */
-export async function logProjectArchived(actorId: string, projectId: string, projectName: string): Promise<{ id: string }> {
+export async function logProjectArchived(
+  actorId: string,
+  projectId: string,
+  projectName: string
+): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'PROJECT',
+    entityType: "PROJECT",
     entityId: projectId,
-    action: 'ARCHIVED',
+    action: "ARCHIVED",
     metadata: { projectName },
   });
 }
@@ -178,9 +202,9 @@ export async function logTaskCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'TASK',
+    entityType: "TASK",
     entityId: taskId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { taskTitle, projectId },
   });
 }
@@ -196,9 +220,9 @@ export async function logTaskUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'TASK',
+    entityType: "TASK",
     entityId: taskId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { projectId, changes },
   });
 }
@@ -215,9 +239,9 @@ export async function logTaskMoved(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'TASK',
+    entityType: "TASK",
     entityId: taskId,
-    action: 'MOVED',
+    action: "MOVED",
     metadata: { projectId, fromStatus, toStatus },
   });
 }
@@ -233,9 +257,9 @@ export async function logTaskDeleted(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'TASK',
+    entityType: "TASK",
     entityId: taskId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { taskTitle, projectId },
   });
 }
@@ -252,9 +276,9 @@ export async function logNoteCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'NOTE',
+    entityType: "NOTE",
     entityId: noteId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { systemName, projectId, clientId },
   });
 }
@@ -269,9 +293,9 @@ export async function logNoteUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'NOTE',
+    entityType: "NOTE",
     entityId: noteId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { changes },
   });
 }
@@ -286,9 +310,9 @@ export async function logNoteDeleted(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'NOTE',
+    entityType: "NOTE",
     entityId: noteId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { systemName },
   });
 }
@@ -304,9 +328,9 @@ export async function logFileCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'FILE',
+    entityType: "FILE",
     entityId: fileId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { fileName, projectId },
   });
 }
@@ -322,9 +346,9 @@ export async function logFileDeleted(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'FILE',
+    entityType: "FILE",
     entityId: fileId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { fileName, projectId },
   });
 }
@@ -340,9 +364,9 @@ export async function logCommentCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'COMMENT',
+    entityType: "COMMENT",
     entityId: commentId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { taskId, projectId },
   });
 }
@@ -357,9 +381,9 @@ export async function logCommentUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'COMMENT',
+    entityType: "COMMENT",
     entityId: commentId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { taskId },
   });
 }
@@ -374,9 +398,9 @@ export async function logCommentDeleted(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'COMMENT',
+    entityType: "COMMENT",
     entityId: commentId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { taskId },
   });
 }
@@ -392,9 +416,9 @@ export async function logUserCreated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'USER',
+    entityType: "USER",
     entityId: userId,
-    action: 'CREATED',
+    action: "CREATED",
     metadata: { userName, userRole },
   });
 }
@@ -409,9 +433,9 @@ export async function logUserUpdated(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'USER',
+    entityType: "USER",
     entityId: userId,
-    action: 'UPDATED',
+    action: "UPDATED",
     metadata: { changes },
   });
 }
@@ -426,12 +450,12 @@ export async function logUserDeleted(
 ): Promise<{ id: string }> {
   return logActivity({
     actorId,
-    entityType: 'USER',
+    entityType: "USER",
     entityId: userId,
-    action: 'DELETED',
+    action: "DELETED",
     metadata: { userName },
   });
 }
 
 // Re-export types for convenience
-export type { EntityType, Action } from '@/lib/db/schema';
+export type { EntityType, Action } from "@/lib/db/schema";

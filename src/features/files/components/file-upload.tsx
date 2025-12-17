@@ -2,12 +2,17 @@
  * FileUpload component with drag-drop functionality
  * Requirements: 13.1 - Validate file type and size before storing
  */
-import { useState, useCallback, useRef } from 'react';
-import { Upload, X, FileIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui';
-import { cn } from '@/lib/utils';
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, formatFileSize, getFileCategory } from '../types';
+import { useState, useCallback, useRef } from "react";
+import { Upload, X, FileIcon, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui";
+import { cn } from "@/lib/utils";
+import {
+  ALLOWED_MIME_TYPES,
+  MAX_FILE_SIZE,
+  formatFileSize,
+  getFileCategory,
+} from "../types";
 
 interface FileUploadProps {
   onUpload: (file: File) => Promise<void>;
@@ -26,7 +31,7 @@ function validateFile(file: File): FileValidationResult {
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return {
       valid: false,
-      error: `File type "${file.type || 'unknown'}" is not allowed. Please upload a supported file type.`,
+      error: `File type "${file.type || "unknown"}" is not allowed. Please upload a supported file type.`,
     };
   }
 
@@ -41,7 +46,12 @@ function validateFile(file: File): FileValidationResult {
   return { valid: true };
 }
 
-export function FileUpload({ onUpload, isUploading, uploadProgress, className }: FileUploadProps) {
+export function FileUpload({
+  onUpload,
+  isUploading,
+  uploadProgress,
+  className,
+}: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -74,26 +84,29 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
       if (validation.valid) {
         setSelectedFile(file);
       } else {
-        setValidationError(validation.error || 'Invalid file');
+        setValidationError(validation.error || "Invalid file");
       }
     }
   }, []);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValidationError(null);
-    setUploadSuccess(false);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValidationError(null);
+      setUploadSuccess(false);
 
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0]!;
-      const validation = validateFile(file);
-      if (validation.valid) {
-        setSelectedFile(file);
-      } else {
-        setValidationError(validation.error || 'Invalid file');
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const file = files[0]!;
+        const validation = validateFile(file);
+        if (validation.valid) {
+          setSelectedFile(file);
+        } else {
+          setValidationError(validation.error || "Invalid file");
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   const handleUpload = useCallback(async () => {
     if (!selectedFile) return;
@@ -104,10 +117,10 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
       setUploadSuccess(true);
       // Reset file input
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     } catch {
-      setValidationError('Failed to upload file. Please try again.');
+      setValidationError("Failed to upload file. Please try again.");
     }
   }, [selectedFile, onUpload]);
 
@@ -116,7 +129,7 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
     setValidationError(null);
     setUploadSuccess(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   }, []);
 
@@ -125,25 +138,25 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
   }, []);
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Drop zone */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'relative rounded-lg border-2 border-dashed p-8 text-center transition-colors',
+          "relative rounded-lg border-2 border-dashed p-8 text-center transition-colors",
           isDragging
-            ? 'border-primary bg-primary/5'
-            : 'border-muted-foreground/25 hover:border-muted-foreground/50',
-          isUploading && 'pointer-events-none opacity-50'
+            ? "border-primary bg-primary/5"
+            : "border-muted-foreground/25 hover:border-muted-foreground/50",
+          isUploading && "pointer-events-none opacity-50"
         )}
       >
         <input
           ref={fileInputRef}
           type="file"
           onChange={handleFileSelect}
-          accept={ALLOWED_MIME_TYPES.join(',')}
+          accept={ALLOWED_MIME_TYPES.join(",")}
           className="hidden"
           disabled={isUploading}
         />
@@ -154,10 +167,12 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
           </div>
           <div>
             <p className="text-lg font-medium">
-              {isDragging ? 'Drop your file here' : 'Drag and drop your file here'}
+              {isDragging
+                ? "Drop your file here"
+                : "Drag and drop your file here"}
             </p>
             <p className="text-sm text-muted-foreground">
-              or{' '}
+              or{" "}
               <button
                 type="button"
                 onClick={handleBrowseClick}
@@ -165,7 +180,7 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
                 disabled={isUploading}
               >
                 browse
-              </button>{' '}
+              </button>{" "}
               to choose a file
             </p>
           </div>
@@ -202,7 +217,8 @@ export function FileUpload({ onUpload, isUploading, uploadProgress, className }:
               <div>
                 <p className="font-medium">{selectedFile.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {getFileCategory(selectedFile.type)} • {formatFileSize(selectedFile.size)}
+                  {getFileCategory(selectedFile.type)} •{" "}
+                  {formatFileSize(selectedFile.size)}
                 </p>
               </div>
             </div>

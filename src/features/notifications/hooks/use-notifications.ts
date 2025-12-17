@@ -2,14 +2,14 @@
  * Hook for fetching notifications for current user
  * Requirements: 9.3, 9.4
  */
-import { useQuery } from '@tanstack/react-query';
-import { fetchNotifications } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotifications } from "../api";
 
 export const notificationsQueryKey = (params?: {
   limit?: number;
   offset?: number;
   unreadOnly?: boolean;
-}) => ['notifications', params] as const;
+}) => ["notifications", params] as const;
 
 export function useNotifications(params?: {
   limit?: number;

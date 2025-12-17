@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -84,7 +85,7 @@ const config: Config = {
           from: { opacity: "1", transform: "translateY(0)" },
           to: { opacity: "0", transform: "translateY(-8px)" },
         },
-        "spin": {
+        spin: {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
@@ -94,11 +95,11 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "page-in": "page-fade-in 0.2s ease-out forwards",
         "page-out": "page-fade-out 0.15s ease-in forwards",
-        "spin": "spin 1s linear infinite",
+        spin: "spin 1s linear infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 };
 
 export default config;

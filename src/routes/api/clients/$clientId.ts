@@ -9,28 +9,44 @@
  * - 3.5: Edit client with validation
  * - 3.6: Delete client with referential integrity check
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { clients, projects, clientStatusValues } from '@/lib/db/schema';
-import { requireAuth, requireAuthWithCsrf, requireRole, handleAuthError, handleRoleError } from '@/lib/auth/middleware';
-import { logClientUpdated, logClientDeleted } from '@/lib/activity';
-import { z } from 'zod';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { clients, projects, clientStatusValues } from "@/lib/db/schema";
+import {
+  requireAuth,
+  requireAuthWithCsrf,
+  requireRole,
+  handleAuthError,
+  handleRoleError,
+} from "@/lib/auth/middleware";
+import { logClientUpdated, logClientDeleted } from "@/lib/activity";
+import { z } from "zod";
 
 // Zod schema for updating a client
 const updateClientSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255).optional(),
+  name: z.string().min(1, "Name is required").max(255).optional(),
   picName: z.string().max(255).optional().nullable(),
-  email: z.string().email('Invalid email').optional().nullable().or(z.literal('')),
+  email: z
+    .string()
+    .email("Invalid email")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   phone: z.string().max(50).optional().nullable(),
   address: z.string().max(500).optional().nullable(),
-  website: z.string().url('Invalid URL').optional().nullable().or(z.literal('')),
+  website: z
+    .string()
+    .url("Invalid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   status: z.enum(clientStatusValues).optional(),
   notes: z.string().optional().nullable(),
 });
 
-export const Route = createFileRoute('/api/clients/$clientId')({
+export const Route = createFileRoute("/api/clients/$clientId")({
   server: {
     handlers: {
       /**
@@ -41,10 +57,11 @@ export const Route = createFileRoute('/api/clients/$clientId')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MEMBER role to view clients
-        const roleCheck = requireRole(auth.user, 'MEMBER');
+        const roleCheck = requireRole(auth.user, "MEMBER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -61,7 +78,7 @@ export const Route = createFileRoute('/api/clients/$clientId')({
           const client = clientResult[0];
 
           if (!client) {
-            return json({ error: 'Client not found' }, { status: 404 });
+            return json({ error: "Client not found" }, { status: 404 });
           }
 
           // Fetch associated projects
@@ -84,8 +101,8 @@ export const Route = createFileRoute('/api/clients/$clientId')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/clients/:clientId] Error:', error);
-          return json({ error: 'Failed to fetch client' }, { status: 500 });
+          console.error("[GET /api/clients/:clientId] Error:", error);
+          return json({ error: "Failed to fetch client" }, { status: 500 });
         }
       },
 
@@ -97,10 +114,11 @@ export const Route = createFileRoute('/api/clients/$clientId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MANAGER role to update clients
-        const roleCheck = requireRole(auth.user, 'MANAGER');
+        const roleCheck = requireRole(auth.user, "MANAGER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -116,7 +134,7 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           const existingClient = existingClientResult[0];
           if (!existingClient) {
-            return json({ error: 'Client not found' }, { status: 404 });
+            return json({ error: "Client not found" }, { status: 404 });
           }
 
           const body = await request.json();
@@ -124,7 +142,7 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -134,14 +152,22 @@ export const Route = createFileRoute('/api/clients/$clientId')({
             updatedAt: new Date(),
           };
 
-          if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-          if (parsed.data.picName !== undefined) updateData.picName = parsed.data.picName;
-          if (parsed.data.email !== undefined) updateData.email = parsed.data.email || null;
-          if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-          if (parsed.data.address !== undefined) updateData.address = parsed.data.address;
-          if (parsed.data.website !== undefined) updateData.website = parsed.data.website || null;
-          if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
-          if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+          if (parsed.data.name !== undefined)
+            updateData.name = parsed.data.name;
+          if (parsed.data.picName !== undefined)
+            updateData.picName = parsed.data.picName;
+          if (parsed.data.email !== undefined)
+            updateData.email = parsed.data.email || null;
+          if (parsed.data.phone !== undefined)
+            updateData.phone = parsed.data.phone;
+          if (parsed.data.address !== undefined)
+            updateData.address = parsed.data.address;
+          if (parsed.data.website !== undefined)
+            updateData.website = parsed.data.website || null;
+          if (parsed.data.status !== undefined)
+            updateData.status = parsed.data.status;
+          if (parsed.data.notes !== undefined)
+            updateData.notes = parsed.data.notes;
 
           const result = await db
             .update(clients)
@@ -153,20 +179,47 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           // Build changes for activity log
           const changes: Record<string, { from: unknown; to: unknown }> = {};
-          if (parsed.data.name !== undefined && parsed.data.name !== existingClient.name) {
+          if (
+            parsed.data.name !== undefined &&
+            parsed.data.name !== existingClient.name
+          ) {
             changes.name = { from: existingClient.name, to: parsed.data.name };
           }
-          if (parsed.data.status !== undefined && parsed.data.status !== existingClient.status) {
-            changes.status = { from: existingClient.status, to: parsed.data.status };
+          if (
+            parsed.data.status !== undefined &&
+            parsed.data.status !== existingClient.status
+          ) {
+            changes.status = {
+              from: existingClient.status,
+              to: parsed.data.status,
+            };
           }
-          if (parsed.data.picName !== undefined && parsed.data.picName !== existingClient.picName) {
-            changes.picName = { from: existingClient.picName, to: parsed.data.picName };
+          if (
+            parsed.data.picName !== undefined &&
+            parsed.data.picName !== existingClient.picName
+          ) {
+            changes.picName = {
+              from: existingClient.picName,
+              to: parsed.data.picName,
+            };
           }
-          if (parsed.data.email !== undefined && (parsed.data.email || null) !== existingClient.email) {
-            changes.email = { from: existingClient.email, to: parsed.data.email || null };
+          if (
+            parsed.data.email !== undefined &&
+            (parsed.data.email || null) !== existingClient.email
+          ) {
+            changes.email = {
+              from: existingClient.email,
+              to: parsed.data.email || null,
+            };
           }
-          if (parsed.data.phone !== undefined && parsed.data.phone !== existingClient.phone) {
-            changes.phone = { from: existingClient.phone, to: parsed.data.phone };
+          if (
+            parsed.data.phone !== undefined &&
+            parsed.data.phone !== existingClient.phone
+          ) {
+            changes.phone = {
+              from: existingClient.phone,
+              to: parsed.data.phone,
+            };
           }
 
           // Log activity if there are changes
@@ -176,8 +229,8 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           return json({ data: updatedClient });
         } catch (error) {
-          console.error('[PUT /api/clients/:clientId] Error:', error);
-          return json({ error: 'Failed to update client' }, { status: 500 });
+          console.error("[PUT /api/clients/:clientId] Error:", error);
+          return json({ error: "Failed to update client" }, { status: 500 });
         }
       },
 
@@ -189,10 +242,11 @@ export const Route = createFileRoute('/api/clients/$clientId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MANAGER role to delete clients
-        const roleCheck = requireRole(auth.user, 'MANAGER');
+        const roleCheck = requireRole(auth.user, "MANAGER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -208,7 +262,7 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           const clientToDelete = existingClientResult[0];
           if (!clientToDelete) {
-            return json({ error: 'Client not found' }, { status: 404 });
+            return json({ error: "Client not found" }, { status: 404 });
           }
 
           // Check for associated projects (referential integrity)
@@ -221,7 +275,8 @@ export const Route = createFileRoute('/api/clients/$clientId')({
           if (associatedProjects.length > 0) {
             return json(
               {
-                error: 'Cannot delete client with associated projects. Please delete or reassign projects first.',
+                error:
+                  "Cannot delete client with associated projects. Please delete or reassign projects first.",
               },
               { status: 409 }
             );
@@ -233,10 +288,13 @@ export const Route = createFileRoute('/api/clients/$clientId')({
           // Log activity
           await logClientDeleted(auth.user.id, clientId, clientToDelete.name);
 
-          return json({ success: true, message: 'Client deleted successfully' });
+          return json({
+            success: true,
+            message: "Client deleted successfully",
+          });
         } catch (error) {
-          console.error('[DELETE /api/clients/:clientId] Error:', error);
-          return json({ error: 'Failed to delete client' }, { status: 500 });
+          console.error("[DELETE /api/clients/:clientId] Error:", error);
+          return json({ error: "Failed to delete client" }, { status: 500 });
         }
       },
     },

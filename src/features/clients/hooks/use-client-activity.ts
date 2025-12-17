@@ -1,7 +1,7 @@
 /**
  * Hook for fetching client activity logs
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 export interface ActivityLog {
   id: string;
@@ -16,13 +16,19 @@ export interface ActivityLog {
   actorAvatarUrl: string | null;
 }
 
-async function fetchClientActivity(clientId: string, limit = 20): Promise<{ data: ActivityLog[] }> {
-  const response = await fetch(`/api/clients/${clientId}/activity?limit=${limit}`, {
-    credentials: 'include',
-  });
+async function fetchClientActivity(
+  clientId: string,
+  limit = 20
+): Promise<{ data: ActivityLog[] }> {
+  const response = await fetch(
+    `/api/clients/${clientId}/activity?limit=${limit}`,
+    {
+      credentials: "include",
+    }
+  );
 
   if (!response.ok) {
-    throw new Error('Failed to fetch activity logs');
+    throw new Error("Failed to fetch activity logs");
   }
 
   return response.json();
@@ -30,7 +36,7 @@ async function fetchClientActivity(clientId: string, limit = 20): Promise<{ data
 
 export function useClientActivity(clientId: string, limit = 20) {
   return useQuery({
-    queryKey: ['client-activity', clientId, limit],
+    queryKey: ["client-activity", clientId, limit],
     queryFn: () => fetchClientActivity(clientId, limit),
     enabled: !!clientId,
   });

@@ -6,24 +6,19 @@
  * - 15.1: Display summary cards for active clients, projects by status, tasks by status, and overdue tasks
  * - 15.2: Show tasks by status distribution and overdue tasks per project
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, sql, ne, and, lt, inArray } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import {
-  clients,
-  projects,
-  tasks,
-  projectMembers,
-} from '@/lib/db/schema';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, sql, ne, and, lt, inArray } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { clients, projects, tasks, projectMembers } from "@/lib/db/schema";
 import {
   requireAuth,
   requireRole,
   handleAuthError,
   handleRoleError,
-} from '@/lib/auth/middleware';
+} from "@/lib/auth/middleware";
 
-export const Route = createFileRoute('/api/dashboard/')({
+export const Route = createFileRoute("/api/dashboard/")({
   server: {
     handlers: {
       /**
@@ -34,10 +29,11 @@ export const Route = createFileRoute('/api/dashboard/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // Require at least MEMBER role to view dashboard
-        const roleCheck = requireRole(auth.user, 'MEMBER');
+        const roleCheck = requireRole(auth.user, "MEMBER");
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -46,7 +42,7 @@ export const Route = createFileRoute('/api/dashboard/')({
 
           // Get accessible project IDs for the user
           let accessibleProjectIds: string[] = [];
-          const isAdmin = auth.user.role === 'SUPER_ADMIN';
+          const isAdmin = auth.user.role === "SUPER_ADMIN";
 
           if (!isAdmin) {
             // Non-admin users: filter by project membership or manager role
@@ -64,7 +60,9 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             const managedProjectIds = managedProjects.map((p) => p.id);
 
-            accessibleProjectIds = [...new Set([...memberProjectIds, ...managedProjectIds])];
+            accessibleProjectIds = [
+              ...new Set([...memberProjectIds, ...managedProjectIds]),
+            ];
           }
 
           // Get client counts (only for admin users)
@@ -86,9 +84,11 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             for (const stat of clientStats) {
               clientCounts.total += stat.count;
-              if (stat.status === 'ACTIVE') clientCounts.active = stat.count;
-              if (stat.status === 'INACTIVE') clientCounts.inactive = stat.count;
-              if (stat.status === 'PROSPECT') clientCounts.prospect = stat.count;
+              if (stat.status === "ACTIVE") clientCounts.active = stat.count;
+              if (stat.status === "INACTIVE")
+                clientCounts.inactive = stat.count;
+              if (stat.status === "PROSPECT")
+                clientCounts.prospect = stat.count;
             }
           }
 
@@ -113,11 +113,14 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             for (const stat of projectStats) {
               projectCounts.total += stat.count;
-              if (stat.status === 'PLANNING') projectCounts.planning = stat.count;
-              if (stat.status === 'ACTIVE') projectCounts.active = stat.count;
-              if (stat.status === 'ON_HOLD') projectCounts.onHold = stat.count;
-              if (stat.status === 'COMPLETED') projectCounts.completed = stat.count;
-              if (stat.status === 'ARCHIVED') projectCounts.archived = stat.count;
+              if (stat.status === "PLANNING")
+                projectCounts.planning = stat.count;
+              if (stat.status === "ACTIVE") projectCounts.active = stat.count;
+              if (stat.status === "ON_HOLD") projectCounts.onHold = stat.count;
+              if (stat.status === "COMPLETED")
+                projectCounts.completed = stat.count;
+              if (stat.status === "ARCHIVED")
+                projectCounts.archived = stat.count;
             }
           } else if (accessibleProjectIds.length > 0) {
             const projectStats = await db
@@ -131,11 +134,14 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             for (const stat of projectStats) {
               projectCounts.total += stat.count;
-              if (stat.status === 'PLANNING') projectCounts.planning = stat.count;
-              if (stat.status === 'ACTIVE') projectCounts.active = stat.count;
-              if (stat.status === 'ON_HOLD') projectCounts.onHold = stat.count;
-              if (stat.status === 'COMPLETED') projectCounts.completed = stat.count;
-              if (stat.status === 'ARCHIVED') projectCounts.archived = stat.count;
+              if (stat.status === "PLANNING")
+                projectCounts.planning = stat.count;
+              if (stat.status === "ACTIVE") projectCounts.active = stat.count;
+              if (stat.status === "ON_HOLD") projectCounts.onHold = stat.count;
+              if (stat.status === "COMPLETED")
+                projectCounts.completed = stat.count;
+              if (stat.status === "ARCHIVED")
+                projectCounts.archived = stat.count;
             }
           }
 
@@ -161,12 +167,14 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             for (const stat of taskStats) {
               taskCounts.total += stat.count;
-              if (stat.status === 'BACKLOG') taskCounts.backlog = stat.count;
-              if (stat.status === 'TODO') taskCounts.todo = stat.count;
-              if (stat.status === 'IN_PROGRESS') taskCounts.inProgress = stat.count;
-              if (stat.status === 'IN_REVIEW') taskCounts.inReview = stat.count;
-              if (stat.status === 'CHANGES_REQUESTED') taskCounts.changesRequested = stat.count;
-              if (stat.status === 'DONE') taskCounts.done = stat.count;
+              if (stat.status === "BACKLOG") taskCounts.backlog = stat.count;
+              if (stat.status === "TODO") taskCounts.todo = stat.count;
+              if (stat.status === "IN_PROGRESS")
+                taskCounts.inProgress = stat.count;
+              if (stat.status === "IN_REVIEW") taskCounts.inReview = stat.count;
+              if (stat.status === "CHANGES_REQUESTED")
+                taskCounts.changesRequested = stat.count;
+              if (stat.status === "DONE") taskCounts.done = stat.count;
             }
           } else if (accessibleProjectIds.length > 0) {
             const taskStats = await db
@@ -180,12 +188,14 @@ export const Route = createFileRoute('/api/dashboard/')({
 
             for (const stat of taskStats) {
               taskCounts.total += stat.count;
-              if (stat.status === 'BACKLOG') taskCounts.backlog = stat.count;
-              if (stat.status === 'TODO') taskCounts.todo = stat.count;
-              if (stat.status === 'IN_PROGRESS') taskCounts.inProgress = stat.count;
-              if (stat.status === 'IN_REVIEW') taskCounts.inReview = stat.count;
-              if (stat.status === 'CHANGES_REQUESTED') taskCounts.changesRequested = stat.count;
-              if (stat.status === 'DONE') taskCounts.done = stat.count;
+              if (stat.status === "BACKLOG") taskCounts.backlog = stat.count;
+              if (stat.status === "TODO") taskCounts.todo = stat.count;
+              if (stat.status === "IN_PROGRESS")
+                taskCounts.inProgress = stat.count;
+              if (stat.status === "IN_REVIEW") taskCounts.inReview = stat.count;
+              if (stat.status === "CHANGES_REQUESTED")
+                taskCounts.changesRequested = stat.count;
+              if (stat.status === "DONE") taskCounts.done = stat.count;
             }
           }
 
@@ -196,12 +206,7 @@ export const Route = createFileRoute('/api/dashboard/')({
             const overdueResult = await db
               .select({ count: sql<number>`count(*)` })
               .from(tasks)
-              .where(
-                and(
-                  lt(tasks.dueDate, now),
-                  ne(tasks.status, 'DONE')
-                )
-              );
+              .where(and(lt(tasks.dueDate, now), ne(tasks.status, "DONE")));
             overdueCount = overdueResult[0]?.count ?? 0;
           } else if (accessibleProjectIds.length > 0) {
             const overdueResult = await db
@@ -211,14 +216,18 @@ export const Route = createFileRoute('/api/dashboard/')({
                 and(
                   inArray(tasks.projectId, accessibleProjectIds),
                   lt(tasks.dueDate, now),
-                  ne(tasks.status, 'DONE')
+                  ne(tasks.status, "DONE")
                 )
               );
             overdueCount = overdueResult[0]?.count ?? 0;
           }
 
           // Get overdue tasks per project (for chart)
-          let overdueByProject: Array<{ projectId: string; projectName: string; count: number }> = [];
+          let overdueByProject: Array<{
+            projectId: string;
+            projectName: string;
+            count: number;
+          }> = [];
 
           if (isAdmin) {
             const overdueStats = await db
@@ -229,12 +238,7 @@ export const Route = createFileRoute('/api/dashboard/')({
               })
               .from(tasks)
               .innerJoin(projects, eq(tasks.projectId, projects.id))
-              .where(
-                and(
-                  lt(tasks.dueDate, now),
-                  ne(tasks.status, 'DONE')
-                )
-              )
+              .where(and(lt(tasks.dueDate, now), ne(tasks.status, "DONE")))
               .groupBy(tasks.projectId, projects.name);
 
             overdueByProject = overdueStats.map((stat) => ({
@@ -255,7 +259,7 @@ export const Route = createFileRoute('/api/dashboard/')({
                 and(
                   inArray(tasks.projectId, accessibleProjectIds),
                   lt(tasks.dueDate, now),
-                  ne(tasks.status, 'DONE')
+                  ne(tasks.status, "DONE")
                 )
               )
               .groupBy(tasks.projectId, projects.name);
@@ -279,8 +283,11 @@ export const Route = createFileRoute('/api/dashboard/')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/dashboard] Error:', error);
-          return json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
+          console.error("[GET /api/dashboard] Error:", error);
+          return json(
+            { error: "Failed to fetch dashboard data" },
+            { status: 500 }
+          );
         }
       },
     },

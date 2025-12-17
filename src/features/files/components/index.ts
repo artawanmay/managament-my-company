@@ -1,2 +1,2 @@
-export { FilesTable } from './files-table';
-export { FileUpload } from './file-upload';
+export { FilesTable } from "./files-table";
+export { FileUpload } from "./file-upload";

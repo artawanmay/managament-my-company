@@ -8,7 +8,32 @@ export {
   getRedisClient,
   closeRedisConnection,
   isRedisAvailable,
-} from './redis';
+  getConnectionState,
+  onConnectionChange,
+  getHealthStatus,
+  executeWithFallback,
+  resetRedisClient,
+  // TLS support
+  isTlsConnection,
+  isTlsCertificateError,
+  configureTls,
+  type RedisHealthStatus,
+  type TlsConfig,
+} from "./redis";
+
+// Fallback store
+export {
+  InMemoryStore,
+  getFallbackStore,
+  resetFallbackStore,
+} from "./fallback-store";
+
+// Fallback manager
+export {
+  FallbackManager,
+  getFallbackManager,
+  resetFallbackManager,
+} from "./fallback-manager";
 
 // Pub/Sub service
 export {
@@ -24,7 +49,7 @@ export {
   type TaskEventType,
   type NotificationEvent,
   type NotificationEventType,
-} from './pubsub';
+} from "./pubsub";
 
 // SSE helpers
 export {
@@ -39,4 +64,26 @@ export {
   getUserConnectionCount,
   getConnectionStats,
   type SSEConnection,
-} from './sse';
+} from "./sse";
+
+// Metrics service
+export {
+  MetricsService,
+  getMetricsService,
+  resetMetricsService,
+  type RedisMetrics,
+  type OperationMetric,
+  type ChannelMetric,
+  type MetricsSummary,
+} from "./metrics";
+
+// Health check service
+export {
+  performHealthCheck,
+  getHealthCheckTimeout,
+  type HealthCheckResponse,
+  type RedisHealthDetails,
+  type DatabaseHealthDetails,
+  type ComponentStatus,
+  type SystemStatus,
+} from "./health";

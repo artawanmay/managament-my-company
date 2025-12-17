@@ -5,13 +5,13 @@
  * Requirements:
  * - 1.4: Invalidate session and redirect to login page
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
 import {
   invalidateSession,
   extractSessionIdFromCookie,
   csrfMiddleware,
-} from '@/lib/auth';
+} from "@/lib/auth";
 
 interface LogoutResponse {
   success: boolean;
@@ -20,9 +20,9 @@ interface LogoutResponse {
 
 // Cookie string to clear the session
 const CLEAR_SESSION_COOKIE =
-  'session_id=; Path=/; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  "session_id=; Path=/; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-export const Route = createFileRoute('/api/auth/logout')({
+export const Route = createFileRoute("/api/auth/logout")({
   server: {
     handlers: {
       POST: async ({ request }) => {
@@ -31,13 +31,16 @@ export const Route = createFileRoute('/api/auth/logout')({
           const csrfResult = await csrfMiddleware(request);
           if (!csrfResult.valid) {
             return json<LogoutResponse>(
-              { success: false, error: csrfResult.error || 'CSRF validation failed' },
+              {
+                success: false,
+                error: csrfResult.error || "CSRF validation failed",
+              },
               { status: 403 }
             );
           }
 
           // Extract session ID from cookie
-          const cookieHeader = request.headers.get('cookie');
+          const cookieHeader = request.headers.get("cookie");
           const sessionId = extractSessionIdFromCookie(cookieHeader);
 
           if (sessionId) {
@@ -51,14 +54,14 @@ export const Route = createFileRoute('/api/auth/logout')({
             {
               status: 200,
               headers: {
-                'Set-Cookie': CLEAR_SESSION_COOKIE,
+                "Set-Cookie": CLEAR_SESSION_COOKIE,
               },
             }
           );
         } catch (error) {
-          console.error('[Logout] Error:', error);
+          console.error("[Logout] Error:", error);
           return json<LogoutResponse>(
-            { success: false, error: 'An unexpected error occurred' },
+            { success: false, error: "An unexpected error occurred" },
             { status: 500 }
           );
         }

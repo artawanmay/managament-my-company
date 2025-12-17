@@ -2,14 +2,14 @@
  * Validation middleware for API routes
  * Requirements: 18.6 - THE System SHALL validate all API inputs using Zod schemas
  */
-import { json } from '@tanstack/react-start';
-import { z } from 'zod';
+import { json } from "@tanstack/react-start";
+import { z } from "zod";
 
 /**
  * Structured validation error response
  */
 export interface ValidationErrorResponse {
-  error: 'VALIDATION_ERROR';
+  error: "VALIDATION_ERROR";
   message: string;
   details: {
     field: string;
@@ -24,10 +24,10 @@ export function createValidationErrorResponse(
   error: z.ZodError<unknown>
 ): ValidationErrorResponse {
   return {
-    error: 'VALIDATION_ERROR',
-    message: 'Validation failed',
+    error: "VALIDATION_ERROR",
+    message: "Validation failed",
     details: error.issues.map((issue) => ({
-      field: issue.path.join('.'),
+      field: issue.path.join("."),
       message: issue.message,
     })),
   };
@@ -42,26 +42,28 @@ export async function validateBody<T>(
   schema: z.ZodSchema<T>
 ): Promise<T> {
   let body: unknown;
-  
+
   try {
     body = await request.json();
   } catch {
     throw json(
       {
-        error: 'VALIDATION_ERROR',
-        message: 'Invalid JSON body',
-        details: [{ field: 'body', message: 'Request body must be valid JSON' }],
+        error: "VALIDATION_ERROR",
+        message: "Invalid JSON body",
+        details: [
+          { field: "body", message: "Request body must be valid JSON" },
+        ],
       } as ValidationErrorResponse,
       { status: 400 }
     );
   }
-  
+
   const result = schema.safeParse(body);
-  
+
   if (!result.success) {
     throw json(createValidationErrorResponse(result.error), { status: 400 });
   }
-  
+
   return result.data;
 }
 
@@ -69,23 +71,20 @@ export async function validateBody<T>(
  * Validate URL query parameters with a Zod schema
  * Returns the validated data or throws a validation error response
  */
-export function validateQuery<T>(
-  request: Request,
-  schema: z.ZodSchema<T>
-): T {
+export function validateQuery<T>(request: Request, schema: z.ZodSchema<T>): T {
   const url = new URL(request.url);
   const params: Record<string, string> = {};
-  
+
   url.searchParams.forEach((value, key) => {
     params[key] = value;
   });
-  
+
   const result = schema.safeParse(params);
-  
+
   if (!result.success) {
     throw json(createValidationErrorResponse(result.error), { status: 400 });
   }
-  
+
   return result.data;
 }
 
@@ -98,11 +97,11 @@ export function validateParams<T>(
   schema: z.ZodSchema<T>
 ): T {
   const result = schema.safeParse(params);
-  
+
   if (!result.success) {
     throw json(createValidationErrorResponse(result.error), { status: 400 });
   }
-  
+
   return result.data;
 }
 
@@ -121,7 +120,7 @@ export interface ValidatedRequest<TBody, TQuery, TParams> {
 export async function validateRequest<
   TBody = unknown,
   TQuery = unknown,
-  TParams = unknown
+  TParams = unknown,
 >(
   request: Request,
   params: Record<string, string>,
@@ -136,19 +135,19 @@ export async function validateRequest<
     query: undefined as TQuery,
     params: undefined as TParams,
   };
-  
+
   if (schemas.params) {
     result.params = validateParams(params, schemas.params);
   }
-  
+
   if (schemas.query) {
     result.query = validateQuery(request, schemas.query);
   }
-  
+
   if (schemas.body) {
     result.body = await validateBody(request, schemas.body);
   }
-  
+
   return result;
 }
 
@@ -180,9 +179,9 @@ export function isValidationError(
   response: unknown
 ): response is ValidationErrorResponse {
   return (
-    typeof response === 'object' &&
+    typeof response === "object" &&
     response !== null &&
-    'error' in response &&
-    (response as ValidationErrorResponse).error === 'VALIDATION_ERROR'
+    "error" in response &&
+    (response as ValidationErrorResponse).error === "VALIDATION_ERROR"
   );
 }

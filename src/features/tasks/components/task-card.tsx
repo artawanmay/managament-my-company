@@ -3,15 +3,15 @@
  * Draggable task card with priority, assignee, and due date info
  * Requirements: 27.4 - Touch-friendly with 44px minimum touch targets
  */
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import type { Task } from '../types';
-import { PRIORITY_CONFIG } from '../types';
-import { cn } from '@/lib/utils';
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar, Clock, AlertCircle } from "lucide-react";
+import type { Task } from "../types";
+import { PRIORITY_CONFIG } from "../types";
+import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
   task: Task;
@@ -34,12 +34,12 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   };
 
   const priorityConfig = PRIORITY_CONFIG[task.priority];
-  
+
   // Format due date
   const formatDueDate = (dateStr: string | null) => {
     if (!dateStr) return null;
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const dueDate = formatDueDate(task.dueDate);
@@ -54,11 +54,11 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       className={cn(
         // Base styling with touch-friendly padding
         // Minimum 44px touch target area (Requirements 27.4)
-        'p-3 min-h-[44px] cursor-grab active:cursor-grabbing glass-task-card',
+        "p-3 min-h-[44px] cursor-grab active:cursor-grabbing glass-task-card",
         // Touch-friendly: larger tap area on mobile
-        'touch-manipulation',
-        isDragging && 'opacity-50 shadow-lg rotate-2',
-        task.isOverdue && 'border-l-4 border-l-red-500'
+        "touch-manipulation",
+        isDragging && "opacity-50 shadow-lg rotate-2",
+        task.isOverdue && "border-l-4 border-l-red-500"
       )}
     >
       {/* Title */}
@@ -76,7 +76,10 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       {/* Meta info */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         {/* Priority badge */}
-        <Badge variant="secondary" className={cn('text-xs', priorityConfig.color)}>
+        <Badge
+          variant="secondary"
+          className={cn("text-xs", priorityConfig.color)}
+        >
           {priorityConfig.label}
         </Badge>
 
@@ -84,10 +87,10 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         {dueDate && (
           <div
             className={cn(
-              'flex items-center gap-1 text-xs',
+              "flex items-center gap-1 text-xs",
               task.isOverdue
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-gray-500 dark:text-gray-400'
+                ? "text-red-600 dark:text-red-400"
+                : "text-gray-500 dark:text-gray-400"
             )}
           >
             {task.isOverdue ? (
@@ -114,7 +117,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           <Avatar className="h-5 w-5">
             <AvatarImage src={task.assignee.avatarUrl || undefined} />
             <AvatarFallback className="text-[10px]">
-              {task.assignee.name?.charAt(0).toUpperCase() || '?'}
+              {task.assignee.name?.charAt(0).toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
           <span className="text-xs text-gray-600 dark:text-gray-300 truncate">

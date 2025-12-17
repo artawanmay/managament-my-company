@@ -2,12 +2,12 @@
  * Property-based tests for permissions system
  * Tests role permission boundaries and project access control
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/lib/db/schema/index';
-import { sql } from 'drizzle-orm';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "@/lib/db/schema/index";
+import { sql } from "drizzle-orm";
 import {
   hasPermission,
   hasEqualOrHigherRole,
@@ -22,7 +22,7 @@ import {
   type Role,
   type PermissionAction,
   type PermissionUser,
-} from '@/lib/auth/permissions';
+} from "@/lib/auth/permissions";
 
 const PBT_RUNS = 100;
 
@@ -31,15 +31,15 @@ const roleArb = fc.constantFrom(...roleValues);
 
 // All permission actions
 const allPermissionActions: PermissionAction[] = [
-  'manage_all_users',
-  'manage_users',
-  'manage_clients',
-  'manage_projects',
-  'manage_assigned_projects',
-  'create_tasks',
-  'edit_tasks',
-  'view_secrets',
-  'read_only',
+  "manage_all_users",
+  "manage_users",
+  "manage_clients",
+  "manage_projects",
+  "manage_assigned_projects",
+  "create_tasks",
+  "edit_tasks",
+  "view_secrets",
+  "read_only",
 ];
 
 const permissionActionArb = fc.constantFrom(...allPermissionActions);
@@ -50,7 +50,7 @@ const permissionUserArb = fc.record({
   role: roleArb,
 });
 
-describe('Role Permission Properties', () => {
+describe("Role Permission Properties", () => {
   /**
    * **Feature: mmc-app, Property 5: Role Permission Boundaries**
    * *For any* user with a given role and any resource action, the permission check
@@ -58,7 +58,7 @@ describe('Role Permission Properties', () => {
    * the role hierarchy (SUPER_ADMIN > ADMIN > MANAGER > MEMBER > GUEST).
    * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6**
    */
-  it('Property 5: Role Permission Boundaries - hasPermission matches permission matrix', () => {
+  it("Property 5: Role Permission Boundaries - hasPermission matches permission matrix", () => {
     fc.assert(
       fc.property(roleArb, permissionActionArb, (role, action) => {
         const result = hasPermission(role, action);
@@ -69,13 +69,12 @@ describe('Role Permission Properties', () => {
     );
   });
 
-
   /**
    * **Feature: mmc-app, Property 5: Role Permission Boundaries**
    * Role hierarchy is transitive: if A >= B and B >= C, then A >= C
    * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6**
    */
-  it('Property 5: Role Permission Boundaries - role hierarchy is transitive', () => {
+  it("Property 5: Role Permission Boundaries - role hierarchy is transitive", () => {
     fc.assert(
       fc.property(roleArb, roleArb, roleArb, (roleA, roleB, roleC) => {
         const aGteB = hasEqualOrHigherRole(roleA, roleB);
@@ -97,7 +96,7 @@ describe('Role Permission Properties', () => {
    * Role hierarchy is reflexive: every role is >= itself
    * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6**
    */
-  it('Property 5: Role Permission Boundaries - role hierarchy is reflexive', () => {
+  it("Property 5: Role Permission Boundaries - role hierarchy is reflexive", () => {
     fc.assert(
       fc.property(roleArb, (role) => {
         return hasEqualOrHigherRole(role, role) === true;
@@ -111,10 +110,10 @@ describe('Role Permission Properties', () => {
    * SUPER_ADMIN has the highest role - it is >= all other roles
    * **Validates: Requirements 2.2**
    */
-  it('Property 5: Role Permission Boundaries - SUPER_ADMIN is highest role', () => {
+  it("Property 5: Role Permission Boundaries - SUPER_ADMIN is highest role", () => {
     fc.assert(
       fc.property(roleArb, (role) => {
-        return hasEqualOrHigherRole('SUPER_ADMIN', role) === true;
+        return hasEqualOrHigherRole("SUPER_ADMIN", role) === true;
       }),
       { numRuns: PBT_RUNS }
     );
@@ -125,10 +124,10 @@ describe('Role Permission Properties', () => {
    * GUEST has the lowest role - all roles are >= GUEST
    * **Validates: Requirements 2.6**
    */
-  it('Property 5: Role Permission Boundaries - GUEST is lowest role', () => {
+  it("Property 5: Role Permission Boundaries - GUEST is lowest role", () => {
     fc.assert(
       fc.property(roleArb, (role) => {
-        return hasEqualOrHigherRole(role, 'GUEST') === true;
+        return hasEqualOrHigherRole(role, "GUEST") === true;
       }),
       { numRuns: PBT_RUNS }
     );
@@ -139,10 +138,10 @@ describe('Role Permission Properties', () => {
    * SUPER_ADMIN can manage any user
    * **Validates: Requirements 2.2**
    */
-  it('Property 5: Role Permission Boundaries - SUPER_ADMIN can manage any user', () => {
+  it("Property 5: Role Permission Boundaries - SUPER_ADMIN can manage any user", () => {
     fc.assert(
       fc.property(fc.uuid(), roleArb, (userId, targetRole) => {
-        const superAdmin: PermissionUser = { id: userId, role: 'SUPER_ADMIN' };
+        const superAdmin: PermissionUser = { id: userId, role: "SUPER_ADMIN" };
         return canManageUser(superAdmin, targetRole) === true;
       }),
       { numRuns: PBT_RUNS }
@@ -154,10 +153,10 @@ describe('Role Permission Properties', () => {
    * MANAGER cannot manage any users (only SUPER_ADMIN can)
    * **Validates: Requirements 3.2, 3.4**
    */
-  it('Property 5: Role Permission Boundaries - MANAGER cannot manage users', () => {
+  it("Property 5: Role Permission Boundaries - MANAGER cannot manage users", () => {
     fc.assert(
       fc.property(fc.uuid(), roleArb, (userId, targetRole) => {
-        const manager: PermissionUser = { id: userId, role: 'MANAGER' };
+        const manager: PermissionUser = { id: userId, role: "MANAGER" };
         return canManageUser(manager, targetRole) === false;
       }),
       { numRuns: PBT_RUNS }
@@ -169,15 +168,20 @@ describe('Role Permission Properties', () => {
    * Roles below ADMIN cannot manage any users
    * **Validates: Requirements 2.4, 2.5, 2.6**
    */
-  it('Property 5: Role Permission Boundaries - lower roles cannot manage users', () => {
-    const lowerRoles: Role[] = ['MANAGER', 'MEMBER', 'GUEST'];
+  it("Property 5: Role Permission Boundaries - lower roles cannot manage users", () => {
+    const lowerRoles: Role[] = ["MANAGER", "MEMBER", "GUEST"];
     const lowerRoleArb = fc.constantFrom(...lowerRoles);
 
     fc.assert(
-      fc.property(fc.uuid(), lowerRoleArb, roleArb, (userId, userRole, targetRole) => {
-        const user: PermissionUser = { id: userId, role: userRole };
-        return canManageUser(user, targetRole) === false;
-      }),
+      fc.property(
+        fc.uuid(),
+        lowerRoleArb,
+        roleArb,
+        (userId, userRole, targetRole) => {
+          const user: PermissionUser = { id: userId, role: userRole };
+          return canManageUser(user, targetRole) === false;
+        }
+      ),
       { numRuns: PBT_RUNS }
     );
   });
@@ -187,11 +191,11 @@ describe('Role Permission Properties', () => {
    * canManageUsers returns true only for SUPER_ADMIN
    * **Validates: Requirements 2.2**
    */
-  it('Property 5: Role Permission Boundaries - only SUPER_ADMIN can manage users', () => {
+  it("Property 5: Role Permission Boundaries - only SUPER_ADMIN can manage users", () => {
     fc.assert(
       fc.property(permissionUserArb, (user) => {
         const canManage = canManageUsers(user);
-        const shouldBeAbleToManage = user.role === 'SUPER_ADMIN';
+        const shouldBeAbleToManage = user.role === "SUPER_ADMIN";
         return canManage === shouldBeAbleToManage;
       }),
       { numRuns: PBT_RUNS }
@@ -203,11 +207,11 @@ describe('Role Permission Properties', () => {
    * GUEST role only has read_only permission
    * **Validates: Requirements 2.6**
    */
-  it('Property 5: Role Permission Boundaries - GUEST only has read_only permission', () => {
+  it("Property 5: Role Permission Boundaries - GUEST only has read_only permission", () => {
     fc.assert(
       fc.property(permissionActionArb, (action) => {
-        const hasIt = hasPermission('GUEST', action);
-        if (action === 'read_only') {
+        const hasIt = hasPermission("GUEST", action);
+        if (action === "read_only") {
           return hasIt === true;
         }
         return hasIt === false;
@@ -221,44 +225,51 @@ describe('Role Permission Properties', () => {
    * Higher roles have superset of permissions of lower roles (except read_only which is GUEST-specific)
    * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6**
    */
-  it('Property 5: Role Permission Boundaries - permission inheritance (excluding read_only)', () => {
+  it("Property 5: Role Permission Boundaries - permission inheritance (excluding read_only)", () => {
     // Permissions that should be inherited (not role-specific like read_only)
     const inheritableActions: PermissionAction[] = [
-      'manage_all_users',
-      'manage_users',
-      'manage_clients',
-      'manage_projects',
-      'manage_assigned_projects',
-      'create_tasks',
-      'edit_tasks',
-      'view_secrets',
+      "manage_all_users",
+      "manage_users",
+      "manage_clients",
+      "manage_projects",
+      "manage_assigned_projects",
+      "create_tasks",
+      "edit_tasks",
+      "view_secrets",
     ];
     const inheritableActionArb = fc.constantFrom(...inheritableActions);
 
     fc.assert(
-      fc.property(roleArb, roleArb, inheritableActionArb, (roleA, roleB, action) => {
-        // If roleA >= roleB and roleB has the permission, then roleA should have it too
-        if (hasEqualOrHigherRole(roleA, roleB) && hasPermission(roleB, action)) {
-          return hasPermission(roleA, action) === true;
+      fc.property(
+        roleArb,
+        roleArb,
+        inheritableActionArb,
+        (roleA, roleB, action) => {
+          // If roleA >= roleB and roleB has the permission, then roleA should have it too
+          if (
+            hasEqualOrHigherRole(roleA, roleB) &&
+            hasPermission(roleB, action)
+          ) {
+            return hasPermission(roleA, action) === true;
+          }
+          return true; // No constraint if premise is false
         }
-        return true; // No constraint if premise is false
-      }),
+      ),
       { numRuns: PBT_RUNS }
     );
   });
 });
 
-
 // Helper to create test database
 function createTestDb() {
-  const sqlite = new Database(':memory:');
-  sqlite.pragma('journal_mode = WAL');
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
 }
 
 // Initialize test database with required tables
-function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
+function initTestDb(db: ReturnType<typeof createTestDb>["db"]) {
   // Create users table
   db.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -321,18 +332,22 @@ function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
   `);
 
   // Create indexes
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`);
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`
+  );
 }
 
-describe('Project Access Control Properties', () => {
+describe("Project Access Control Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
     testDb = createTestDb();
     initTestDb(testDb.db);
     // Inject test database
-    setDatabase(testDb.db as any);
+    setDatabase(testDb.db as unknown as Parameters<typeof setDatabase>[0]);
   });
 
   afterEach(() => {
@@ -341,18 +356,17 @@ describe('Project Access Control Properties', () => {
     testDb.sqlite.close();
   });
 
-
   /**
    * **Feature: mmc-app, Property 6: Project Access Control**
    * *For any* user and project, the user should only have access if they are a
    * SUPER_ADMIN, ADMIN, or a member of that project.
    * **Validates: Requirements 4.2, 4.4, 4.5**
    */
-  it('Property 6: Project Access Control - SUPER_ADMIN can access any project', async () => {
+  it("Property 6: Project Access Control - SUPER_ADMIN can access any project", async () => {
     // Create test data
-    const clientId = 'test-client-1';
-    const projectId = 'test-project-1';
-    const managerId = 'test-manager-1';
+    const clientId = "test-client-1";
+    const projectId = "test-project-1";
+    const managerId = "test-manager-1";
 
     // Insert test client
     testDb.db.run(sql`
@@ -373,7 +387,7 @@ describe('Project Access Control Properties', () => {
 
     await fc.assert(
       fc.asyncProperty(fc.uuid(), async (userId) => {
-        const superAdmin: PermissionUser = { id: userId, role: 'SUPER_ADMIN' };
+        const superAdmin: PermissionUser = { id: userId, role: "SUPER_ADMIN" };
         const canAccess = await canAccessProject(superAdmin, projectId);
         return canAccess === true;
       }),
@@ -386,11 +400,11 @@ describe('Project Access Control Properties', () => {
    * MANAGER without membership cannot access any project (unless they are the project manager)
    * **Validates: Requirements 3.3**
    */
-  it('Property 6: Project Access Control - MANAGER without membership cannot access project', async () => {
+  it("Property 6: Project Access Control - MANAGER without membership cannot access project", async () => {
     // Create test data
-    const clientId = 'test-client-2';
-    const projectId = 'test-project-2';
-    const managerId = 'test-manager-2';
+    const clientId = "test-client-2";
+    const projectId = "test-project-2";
+    const managerId = "test-manager-2";
 
     // Insert test client
     testDb.db.run(sql`
@@ -413,7 +427,7 @@ describe('Project Access Control Properties', () => {
       fc.asyncProperty(fc.uuid(), async (userId) => {
         // Ensure user is not the manager
         fc.pre(userId !== managerId);
-        const manager: PermissionUser = { id: userId, role: 'MANAGER' };
+        const manager: PermissionUser = { id: userId, role: "MANAGER" };
         const canAccess = await canAccessProject(manager, projectId);
         return canAccess === false;
       }),
@@ -426,11 +440,11 @@ describe('Project Access Control Properties', () => {
    * Non-admin users without membership cannot access projects
    * **Validates: Requirements 4.2, 4.4, 4.5**
    */
-  it('Property 6: Project Access Control - non-member cannot access project', async () => {
+  it("Property 6: Project Access Control - non-member cannot access project", async () => {
     // Create test data
-    const clientId = 'test-client-3';
-    const projectId = 'test-project-3';
-    const managerId = 'test-manager-3';
+    const clientId = "test-client-3";
+    const projectId = "test-project-3";
+    const managerId = "test-manager-3";
 
     // Insert test client
     testDb.db.run(sql`
@@ -449,7 +463,7 @@ describe('Project Access Control Properties', () => {
       VALUES (${projectId}, ${clientId}, 'Test Project 3', ${managerId})
     `);
 
-    const nonAdminRoles: Role[] = ['MANAGER', 'MEMBER', 'GUEST'];
+    const nonAdminRoles: Role[] = ["MANAGER", "MEMBER", "GUEST"];
     const nonAdminRoleArb = fc.constantFrom(...nonAdminRoles);
 
     await fc.assert(
@@ -465,18 +479,17 @@ describe('Project Access Control Properties', () => {
     );
   });
 
-
   /**
    * **Feature: mmc-app, Property 6: Project Access Control**
    * Project members can access their assigned projects
    * **Validates: Requirements 4.2, 4.4, 4.5**
    */
-  it('Property 6: Project Access Control - project member can access project', async () => {
+  it("Property 6: Project Access Control - project member can access project", async () => {
     // Create test data
-    const clientId = 'test-client-4';
-    const projectId = 'test-project-4';
-    const managerId = 'test-manager-4';
-    const memberId = 'test-member-4';
+    const clientId = "test-client-4";
+    const projectId = "test-project-4";
+    const managerId = "test-manager-4";
+    const memberId = "test-member-4";
 
     // Insert test client
     testDb.db.run(sql`
@@ -507,7 +520,7 @@ describe('Project Access Control Properties', () => {
       VALUES ('pm-1', ${projectId}, ${memberId}, 'MEMBER')
     `);
 
-    const memberRoles: Role[] = ['MANAGER', 'MEMBER', 'GUEST'];
+    const memberRoles: Role[] = ["MANAGER", "MEMBER", "GUEST"];
     const memberRoleArb = fc.constantFrom(...memberRoles);
 
     await fc.assert(
@@ -525,11 +538,11 @@ describe('Project Access Control Properties', () => {
    * Project manager can access their managed projects
    * **Validates: Requirements 4.2, 4.4, 4.5**
    */
-  it('Property 6: Project Access Control - project manager can access project', async () => {
+  it("Property 6: Project Access Control - project manager can access project", async () => {
     // Create test data
-    const clientId = 'test-client-5';
-    const projectId = 'test-project-5';
-    const managerId = 'test-manager-5';
+    const clientId = "test-client-5";
+    const projectId = "test-project-5";
+    const managerId = "test-manager-5";
 
     // Insert test client
     testDb.db.run(sql`
@@ -548,7 +561,7 @@ describe('Project Access Control Properties', () => {
       VALUES (${projectId}, ${clientId}, 'Test Project 5', ${managerId})
     `);
 
-    const managerRoles: Role[] = ['MANAGER', 'MEMBER', 'GUEST'];
+    const managerRoles: Role[] = ["MANAGER", "MEMBER", "GUEST"];
     const managerRoleArb = fc.constantFrom(...managerRoles);
 
     await fc.assert(
@@ -566,13 +579,13 @@ describe('Project Access Control Properties', () => {
    * isProjectMember returns true only for actual members
    * **Validates: Requirements 4.4, 4.5**
    */
-  it('Property 6: Project Access Control - isProjectMember accuracy', async () => {
+  it("Property 6: Project Access Control - isProjectMember accuracy", async () => {
     // Create test data
-    const clientId = 'test-client-6';
-    const projectId = 'test-project-6';
-    const managerId = 'test-manager-6';
-    const memberId = 'test-member-6';
-    const nonMemberId = 'test-non-member-6';
+    const clientId = "test-client-6";
+    const projectId = "test-project-6";
+    const managerId = "test-manager-6";
+    const memberId = "test-member-6";
+    const nonMemberId = "test-non-member-6";
 
     // Insert test client
     testDb.db.run(sql`

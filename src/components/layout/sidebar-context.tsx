@@ -19,7 +19,7 @@ const SidebarContext = React.createContext<SidebarContextState | undefined>(
 
 const MOBILE_BREAKPOINT = 768;
 const TABLET_BREAKPOINT = 1200;
-const STORAGE_KEY = 'sidebar-collapsed';
+const STORAGE_KEY = "sidebar-collapsed";
 
 /**
  * Reads the stored collapse state from localStorage
@@ -27,7 +27,7 @@ const STORAGE_KEY = 'sidebar-collapsed';
  */
 export function getStoredCollapseState(): boolean | null {
   // Check if we're in a browser environment
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
   try {
@@ -44,7 +44,7 @@ export function getStoredCollapseState(): boolean | null {
  */
 export function setStoredCollapseState(collapsed: boolean): void {
   // Check if we're in a browser environment
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
   try {
@@ -74,7 +74,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     const checkViewport = () => {
       const width = window.innerWidth;
       setIsMobile(width < MOBILE_BREAKPOINT);
-      
+
       // Only auto-collapse if user hasn't set a preference
       if (!hasUserPreference.current) {
         if (width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT) {
@@ -83,12 +83,12 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
           setIsCollapsed(false);
         }
       }
-      
+
       // Close mobile drawer when resizing to desktop
       if (width >= MOBILE_BREAKPOINT) {
         setIsOpen(false);
       }
-      
+
       // Mark viewport as checked
       viewportChecked.current = true;
     };
@@ -138,7 +138,16 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       close,
       setCollapsed,
     }),
-    [isOpen, isCollapsed, isMobile, isInitialMount, toggle, open, close, setCollapsed]
+    [
+      isOpen,
+      isCollapsed,
+      isMobile,
+      isInitialMount,
+      toggle,
+      open,
+      close,
+      setCollapsed,
+    ]
   );
 
   return (

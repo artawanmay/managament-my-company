@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.output
+.tanstack
+
+# Development files
+*.db
+*.db-shm
+*.db-wal
+dev.db*
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Test files
+tests
+test-results
+playwright-report
+coverage
+
+# Documentation
+*.md
+!README.md
+
+# Environment files (use Docker secrets or env vars instead)
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Kiro specs
+.kiro
+
+# Misc
+.husky
+.eslintrc.cjs
+.prettierrc
+.prettierignore
+Dockerfile
+docker-compose*.yml

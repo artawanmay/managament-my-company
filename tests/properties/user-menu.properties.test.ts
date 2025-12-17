@@ -3,8 +3,8 @@
  * **Feature: user-menu-navigation**
  * **Validates: Requirements 1.1, 1.2, 2.1, 2.2, 3.1, 3.2**
  */
-import { describe, it } from 'vitest';
-import * as fc from 'fast-check';
+import { describe, it } from "vitest";
+import * as fc from "fast-check";
 
 const PBT_RUNS = 100;
 const TEST_TIMEOUT = 30000;
@@ -14,7 +14,7 @@ const TEST_TIMEOUT = 30000;
  * These tests verify the structural properties that ensure correct navigation behavior.
  */
 
-describe('UserMenu Navigation Properties', () => {
+describe("UserMenu Navigation Properties", () => {
   /**
    * **Feature: user-menu-navigation, Property 1: Menu navigation targets correct routes**
    * *For any* menu item with a navigation target, clicking that item SHALL result
@@ -22,29 +22,32 @@ describe('UserMenu Navigation Properties', () => {
    * **Validates: Requirements 1.1, 2.1**
    */
   it(
-    'Property 1: Menu navigation targets correct routes',
+    "Property 1: Menu navigation targets correct routes",
     () => {
       // Define the menu items and their expected navigation targets
       const menuNavigationTargets = {
-        profile: '/app/settings',
-        settings: '/app/settings',
+        profile: "/app/settings",
+        settings: "/app/settings",
       } as const;
 
       fc.assert(
         fc.property(
-          fc.constantFrom('profile', 'settings') as fc.Arbitrary<keyof typeof menuNavigationTargets>,
+          fc.constantFrom("profile", "settings") as fc.Arbitrary<
+            keyof typeof menuNavigationTargets
+          >,
           (menuItem) => {
             // For any menu item, the navigation target should be a valid route
             const targetRoute = menuNavigationTargets[menuItem];
-            
+
             // Route must be a non-empty string starting with /
-            const isValidRoute = typeof targetRoute === 'string' && 
-                                 targetRoute.length > 0 && 
-                                 targetRoute.startsWith('/');
-            
+            const isValidRoute =
+              typeof targetRoute === "string" &&
+              targetRoute.length > 0 &&
+              targetRoute.startsWith("/");
+
             // Route must be the settings page for both Profile and Settings
-            const isCorrectTarget = targetRoute === '/app/settings';
-            
+            const isCorrectTarget = targetRoute === "/app/settings";
+
             return isValidRoute && isCorrectTarget;
           }
         ),
@@ -61,24 +64,26 @@ describe('UserMenu Navigation Properties', () => {
    * **Validates: Requirements 1.1, 2.1**
    */
   it(
-    'Property 1: Multiple menu navigations maintain correct targets',
+    "Property 1: Multiple menu navigations maintain correct targets",
     () => {
       const menuNavigationTargets = {
-        profile: '/app/settings',
-        settings: '/app/settings',
+        profile: "/app/settings",
+        settings: "/app/settings",
       } as const;
 
       fc.assert(
         fc.property(
           fc.array(
-            fc.constantFrom('profile', 'settings') as fc.Arbitrary<keyof typeof menuNavigationTargets>,
+            fc.constantFrom("profile", "settings") as fc.Arbitrary<
+              keyof typeof menuNavigationTargets
+            >,
             { minLength: 1, maxLength: 10 }
           ),
           (clickSequence) => {
             // For any sequence of menu clicks, each should navigate to correct route
             return clickSequence.every((menuItem) => {
               const targetRoute = menuNavigationTargets[menuItem];
-              return targetRoute === '/app/settings';
+              return targetRoute === "/app/settings";
             });
           }
         ),
@@ -95,19 +100,16 @@ describe('UserMenu Navigation Properties', () => {
    * **Validates: Requirements 1.1, 2.1**
    */
   it(
-    'Property 1: Navigation preserves route path integrity',
+    "Property 1: Navigation preserves route path integrity",
     () => {
       fc.assert(
-        fc.property(
-          fc.constantFrom('/app/settings', '/'),
-          (routePath) => {
-            // Route path should be preserved exactly as specified
-            const preservedPath = routePath;
-            
-            // Path must match exactly (no trailing slashes added/removed, no encoding changes)
-            return preservedPath === routePath;
-          }
-        ),
+        fc.property(fc.constantFrom("/app/settings", "/"), (routePath) => {
+          // Route path should be preserved exactly as specified
+          const preservedPath = routePath;
+
+          // Path must match exactly (no trailing slashes added/removed, no encoding changes)
+          return preservedPath === routePath;
+        }),
         { numRuns: PBT_RUNS }
       );
     },
@@ -115,7 +117,7 @@ describe('UserMenu Navigation Properties', () => {
   );
 });
 
-describe('UserMenu Logout Properties', () => {
+describe("UserMenu Logout Properties", () => {
   /**
    * **Feature: user-menu-navigation, Property 2: Logout flow completes with redirect**
    * *For any* successful logout action, the system SHALL clear the session
@@ -123,11 +125,11 @@ describe('UserMenu Logout Properties', () => {
    * **Validates: Requirements 3.1, 3.2**
    */
   it(
-    'Property 2: Logout flow completes with redirect',
+    "Property 2: Logout flow completes with redirect",
     () => {
       // Define the expected logout flow behavior
-      const logoutRedirectTarget = '/';
-      
+      const logoutRedirectTarget = "/";
+
       fc.assert(
         fc.property(
           fc.boolean(), // Represents logout success state
@@ -135,15 +137,16 @@ describe('UserMenu Logout Properties', () => {
             if (logoutSuccess) {
               // On successful logout, redirect target must be home page
               const redirectTarget = logoutRedirectTarget;
-              
+
               // Redirect must go to root/home page
-              const isCorrectRedirect = redirectTarget === '/';
-              
+              const isCorrectRedirect = redirectTarget === "/";
+
               // Redirect path must be valid
-              const isValidPath = typeof redirectTarget === 'string' && 
-                                  redirectTarget.length > 0 &&
-                                  redirectTarget.startsWith('/');
-              
+              const isValidPath =
+                typeof redirectTarget === "string" &&
+                redirectTarget.length > 0 &&
+                redirectTarget.startsWith("/");
+
               return isCorrectRedirect && isValidPath;
             }
             // If logout fails, no redirect should occur (handled by error handling)
@@ -162,7 +165,7 @@ describe('UserMenu Logout Properties', () => {
    * **Validates: Requirements 3.1, 3.2**
    */
   it(
-    'Property 2: Logout mutation invoked exactly once per click',
+    "Property 2: Logout mutation invoked exactly once per click",
     () => {
       fc.assert(
         fc.property(
@@ -171,7 +174,7 @@ describe('UserMenu Logout Properties', () => {
             // Each click should trigger exactly one mutation call
             // This tests the idempotency of the logout handler
             const expectedMutationCalls = clickCount;
-            
+
             // Mutation calls should equal click count (1:1 mapping)
             return expectedMutationCalls === clickCount;
           }
@@ -189,7 +192,7 @@ describe('UserMenu Logout Properties', () => {
    * **Validates: Requirements 3.1, 3.2**
    */
   it(
-    'Property 2: Logout success triggers navigation callback',
+    "Property 2: Logout success triggers navigation callback",
     () => {
       fc.assert(
         fc.property(
@@ -200,13 +203,13 @@ describe('UserMenu Logout Properties', () => {
           (logoutResponse) => {
             // The onSuccess callback should only trigger navigation when success is true
             const shouldNavigate = logoutResponse.success;
-            const navigationTarget = '/';
-            
+            const navigationTarget = "/";
+
             if (shouldNavigate) {
               // Navigation target must be the home page
-              return navigationTarget === '/';
+              return navigationTarget === "/";
             }
-            
+
             // If not successful, navigation should not occur
             return true;
           }

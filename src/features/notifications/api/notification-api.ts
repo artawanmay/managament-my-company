@@ -6,7 +6,7 @@ import type {
   NotificationsListResponse,
   MarkAsReadResponse,
   MarkAllAsReadResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Fetch notifications for current user
@@ -19,28 +19,30 @@ export async function fetchNotifications(params?: {
   csrfToken?: string;
 }): Promise<NotificationsListResponse> {
   const searchParams = new URLSearchParams();
-  if (params?.limit) searchParams.set('limit', params.limit.toString());
-  if (params?.offset) searchParams.set('offset', params.offset.toString());
-  if (params?.unreadOnly) searchParams.set('unreadOnly', 'true');
+  if (params?.limit) searchParams.set("limit", params.limit.toString());
+  if (params?.offset) searchParams.set("offset", params.offset.toString());
+  if (params?.unreadOnly) searchParams.set("unreadOnly", "true");
 
-  const url = `/api/notifications${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+  const url = `/api/notifications${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (params?.csrfToken) {
-    headers['X-CSRF-Token'] = params.csrfToken;
+    headers["X-CSRF-Token"] = params.csrfToken;
   }
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch notifications' }));
-    throw new Error(error.error || 'Failed to fetch notifications');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch notifications" }));
+    throw new Error(error.error || "Failed to fetch notifications");
   }
 
   return response.json();
@@ -55,17 +57,19 @@ export async function markNotificationAsRead(
   csrfToken: string
 ): Promise<MarkAsReadResponse> {
   const response = await fetch(`/api/notifications/${notificationId}/read`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to mark notification as read' }));
-    throw new Error(error.error || 'Failed to mark notification as read');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to mark notification as read" }));
+    throw new Error(error.error || "Failed to mark notification as read");
   }
 
   return response.json();
@@ -78,18 +82,20 @@ export async function markNotificationAsRead(
 export async function markAllNotificationsAsRead(
   csrfToken: string
 ): Promise<MarkAllAsReadResponse> {
-  const response = await fetch('/api/notifications', {
-    method: 'PUT',
+  const response = await fetch("/api/notifications", {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to mark all notifications as read' }));
-    throw new Error(error.error || 'Failed to mark all notifications as read');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to mark all notifications as read" }));
+    throw new Error(error.error || "Failed to mark all notifications as read");
   }
 
   return response.json();

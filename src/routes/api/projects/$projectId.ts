@@ -7,10 +7,10 @@
  * - 4.2: Display only projects user has permission to access
  * - 4.3: Display project detail with overview, Kanban, tasks, files, notes, activity
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   projects,
   projectStatusValues,
@@ -18,7 +18,7 @@ import {
   projectMembers,
   clients,
   users,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
@@ -26,23 +26,23 @@ import {
   requireProjectAccess,
   requireProjectManagement,
   handleProjectAccessError,
-} from '@/lib/auth/middleware';
-import { logProjectUpdated } from '@/lib/activity';
-import { z } from 'zod';
+} from "@/lib/auth/middleware";
+import { logProjectUpdated } from "@/lib/activity";
+import { z } from "zod";
 
 // Zod schema for updating a project
 const updateProjectSchema = z.object({
-  clientId: z.string().uuid('Invalid client ID').optional(),
-  name: z.string().min(1, 'Name is required').max(255).optional(),
+  clientId: z.string().uuid("Invalid client ID").optional(),
+  name: z.string().min(1, "Name is required").max(255).optional(),
   description: z.string().max(2000).optional().nullable(),
   status: z.enum(projectStatusValues).optional(),
   priority: z.enum(priorityValues).optional(),
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
-  managerId: z.string().uuid('Invalid manager ID').optional(),
+  managerId: z.string().uuid("Invalid manager ID").optional(),
 });
 
-export const Route = createFileRoute('/api/projects/$projectId')({
+export const Route = createFileRoute("/api/projects/$projectId")({
   server: {
     handlers: {
       /**
@@ -53,7 +53,8 @@ export const Route = createFileRoute('/api/projects/$projectId')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { projectId } = params;
@@ -90,7 +91,7 @@ export const Route = createFileRoute('/api/projects/$projectId')({
           const project = projectResult[0];
 
           if (!project) {
-            return json({ error: 'Project not found' }, { status: 404 });
+            return json({ error: "Project not found" }, { status: 404 });
           }
 
           // Fetch project members
@@ -116,8 +117,8 @@ export const Route = createFileRoute('/api/projects/$projectId')({
             },
           });
         } catch (error) {
-          console.error('[GET /api/projects/:projectId] Error:', error);
-          return json({ error: 'Failed to fetch project' }, { status: 500 });
+          console.error("[GET /api/projects/:projectId] Error:", error);
+          return json({ error: "Failed to fetch project" }, { status: 500 });
         }
       },
 
@@ -129,13 +130,17 @@ export const Route = createFileRoute('/api/projects/$projectId')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { projectId } = params;
 
           // Check project management access
-          const accessCheck = await requireProjectManagement(auth.user, projectId);
+          const accessCheck = await requireProjectManagement(
+            auth.user,
+            projectId
+          );
           const accessError = handleProjectAccessError(accessCheck);
           if (accessError) return accessError;
 
@@ -148,7 +153,7 @@ export const Route = createFileRoute('/api/projects/$projectId')({
 
           const existingProject = existingProjectResult[0];
           if (!existingProject) {
-            return json({ error: 'Project not found' }, { status: 404 });
+            return json({ error: "Project not found" }, { status: 404 });
           }
 
           const body = await request.json();
@@ -156,7 +161,7 @@ export const Route = createFileRoute('/api/projects/$projectId')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -170,7 +175,7 @@ export const Route = createFileRoute('/api/projects/$projectId')({
               .limit(1);
 
             if (clientExists.length === 0) {
-              return json({ error: 'Client not found' }, { status: 404 });
+              return json({ error: "Client not found" }, { status: 404 });
             }
           }
 
@@ -183,7 +188,7 @@ export const Route = createFileRoute('/api/projects/$projectId')({
               .limit(1);
 
             if (managerExists.length === 0) {
-              return json({ error: 'Manager not found' }, { status: 404 });
+              return json({ error: "Manager not found" }, { status: 404 });
             }
           }
 
@@ -192,18 +197,28 @@ export const Route = createFileRoute('/api/projects/$projectId')({
             updatedAt: new Date(),
           };
 
-          if (parsed.data.clientId !== undefined) updateData.clientId = parsed.data.clientId;
-          if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-          if (parsed.data.description !== undefined) updateData.description = parsed.data.description;
-          if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
-          if (parsed.data.priority !== undefined) updateData.priority = parsed.data.priority;
+          if (parsed.data.clientId !== undefined)
+            updateData.clientId = parsed.data.clientId;
+          if (parsed.data.name !== undefined)
+            updateData.name = parsed.data.name;
+          if (parsed.data.description !== undefined)
+            updateData.description = parsed.data.description;
+          if (parsed.data.status !== undefined)
+            updateData.status = parsed.data.status;
+          if (parsed.data.priority !== undefined)
+            updateData.priority = parsed.data.priority;
           if (parsed.data.startDate !== undefined) {
-            updateData.startDate = parsed.data.startDate ? new Date(parsed.data.startDate) : null;
+            updateData.startDate = parsed.data.startDate
+              ? new Date(parsed.data.startDate)
+              : null;
           }
           if (parsed.data.endDate !== undefined) {
-            updateData.endDate = parsed.data.endDate ? new Date(parsed.data.endDate) : null;
+            updateData.endDate = parsed.data.endDate
+              ? new Date(parsed.data.endDate)
+              : null;
           }
-          if (parsed.data.managerId !== undefined) updateData.managerId = parsed.data.managerId;
+          if (parsed.data.managerId !== undefined)
+            updateData.managerId = parsed.data.managerId;
 
           const result = await db
             .update(projects)
@@ -215,14 +230,29 @@ export const Route = createFileRoute('/api/projects/$projectId')({
 
           // Build changes for activity log
           const changes: Record<string, { from: unknown; to: unknown }> = {};
-          if (parsed.data.name !== undefined && parsed.data.name !== existingProject.name) {
+          if (
+            parsed.data.name !== undefined &&
+            parsed.data.name !== existingProject.name
+          ) {
             changes.name = { from: existingProject.name, to: parsed.data.name };
           }
-          if (parsed.data.status !== undefined && parsed.data.status !== existingProject.status) {
-            changes.status = { from: existingProject.status, to: parsed.data.status };
+          if (
+            parsed.data.status !== undefined &&
+            parsed.data.status !== existingProject.status
+          ) {
+            changes.status = {
+              from: existingProject.status,
+              to: parsed.data.status,
+            };
           }
-          if (parsed.data.priority !== undefined && parsed.data.priority !== existingProject.priority) {
-            changes.priority = { from: existingProject.priority, to: parsed.data.priority };
+          if (
+            parsed.data.priority !== undefined &&
+            parsed.data.priority !== existingProject.priority
+          ) {
+            changes.priority = {
+              from: existingProject.priority,
+              to: parsed.data.priority,
+            };
           }
 
           // Log activity if there are changes
@@ -232,8 +262,8 @@ export const Route = createFileRoute('/api/projects/$projectId')({
 
           return json({ data: updatedProject });
         } catch (error) {
-          console.error('[PUT /api/projects/:projectId] Error:', error);
-          return json({ error: 'Failed to update project' }, { status: 500 });
+          console.error("[PUT /api/projects/:projectId] Error:", error);
+          return json({ error: "Failed to update project" }, { status: 500 });
         }
       },
     },

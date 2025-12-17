@@ -2,18 +2,18 @@
  * ProjectMembers component for managing project members
  * Requirements: 4.4, 4.5
  */
-import { useState } from 'react';
-import { UserPlus, Trash2, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { UserPlus, Trash2, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +21,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { projectMemberRoleValues } from '@/lib/db/schema';
-import type { ProjectMemberWithUser, ProjectMemberRole } from '../types';
+} from "@/components/ui/dialog";
+import { projectMemberRoleValues } from "@/lib/db/schema";
+import type { ProjectMemberWithUser, ProjectMemberRole } from "../types";
 
 interface UserOption {
   id: string;
@@ -41,17 +41,18 @@ interface ProjectMembersProps {
 }
 
 const roleColors: Record<ProjectMemberRole, string> = {
-  MANAGER: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  MEMBER: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  VIEWER: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  MANAGER:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  MEMBER: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  VIEWER: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
 function getInitials(name: string | null): string {
-  if (!name) return '?';
+  if (!name) return "?";
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -65,8 +66,8 @@ export function ProjectMembers({
   isLoading,
 }: ProjectMembersProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedRole, setSelectedRole] = useState<ProjectMemberRole>('MEMBER');
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedRole, setSelectedRole] = useState<ProjectMemberRole>("MEMBER");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out users who are already members
@@ -80,24 +81,26 @@ export function ProjectMembers({
     try {
       await onAddMember(selectedUserId, selectedRole);
       setAddDialogOpen(false);
-      setSelectedUserId('');
-      setSelectedRole('MEMBER');
+      setSelectedUserId("");
+      setSelectedRole("MEMBER");
     } catch (error) {
-      console.error('Failed to add member:', error);
+      console.error("Failed to add member:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleRemoveMember = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this member from the project?')) {
+    if (
+      !confirm("Are you sure you want to remove this member from the project?")
+    ) {
       return;
     }
 
     try {
       await onRemoveMember(userId);
     } catch (error) {
-      console.error('Failed to remove member:', error);
+      console.error("Failed to remove member:", error);
     }
   };
 
@@ -114,7 +117,9 @@ export function ProjectMembers({
       </div>
 
       {isLoading ? (
-        <div className="text-center text-muted-foreground py-4">Loading members...</div>
+        <div className="text-center text-muted-foreground py-4">
+          Loading members...
+        </div>
       ) : members.length === 0 ? (
         <div className="text-center text-muted-foreground py-8">
           <User className="mx-auto h-12 w-12 opacity-50" />
@@ -130,11 +135,17 @@ export function ProjectMembers({
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={member.userAvatarUrl || undefined} />
-                  <AvatarFallback>{getInitials(member.userName)}</AvatarFallback>
+                  <AvatarFallback>
+                    {getInitials(member.userName)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{member.userName || 'Unknown User'}</p>
-                  <p className="text-sm text-muted-foreground">{member.userEmail}</p>
+                  <p className="font-medium">
+                    {member.userName || "Unknown User"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {member.userEmail}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -185,7 +196,9 @@ export function ProjectMembers({
               <label className="text-sm font-medium">Role</label>
               <Select
                 value={selectedRole}
-                onValueChange={(value) => setSelectedRole(value as ProjectMemberRole)}
+                onValueChange={(value) =>
+                  setSelectedRole(value as ProjectMemberRole)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
@@ -204,8 +217,11 @@ export function ProjectMembers({
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddMember} disabled={!selectedUserId || isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Add Member'}
+            <Button
+              onClick={handleAddMember}
+              disabled={!selectedUserId || isSubmitting}
+            >
+              {isSubmitting ? "Adding..." : "Add Member"}
             </Button>
           </DialogFooter>
         </DialogContent>

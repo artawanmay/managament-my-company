@@ -8,17 +8,17 @@ import type {
   CreateNoteInput,
   UpdateNoteInput,
   SecretViewResponse,
-} from '../types';
+} from "../types";
 
-const API_BASE = '/api/notes';
+const API_BASE = "/api/notes";
 
 export interface NotesListParams {
   search?: string;
   projectId?: string;
   clientId?: string;
   type?: string;
-  sortBy?: 'systemName' | 'type' | 'createdAt' | 'updatedAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "systemName" | "type" | "createdAt" | "updatedAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -32,32 +32,34 @@ export async function fetchNotes(
 ): Promise<NotesListResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params.search) searchParams.set('search', params.search);
-  if (params.projectId) searchParams.set('projectId', params.projectId);
-  if (params.clientId) searchParams.set('clientId', params.clientId);
-  if (params.type) searchParams.set('type', params.type);
-  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
-  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  if (params.page) searchParams.set('page', params.page.toString());
-  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set("search", params.search);
+  if (params.projectId) searchParams.set("projectId", params.projectId);
+  if (params.clientId) searchParams.set("clientId", params.clientId);
+  if (params.type) searchParams.set("type", params.type);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.page) searchParams.set("page", params.page.toString());
+  if (params.limit) searchParams.set("limit", params.limit.toString());
 
   const url = `${API_BASE}?${searchParams.toString()}`;
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch notes' }));
-    throw new Error(error.error || 'Failed to fetch notes');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch notes" }));
+    throw new Error(error.error || "Failed to fetch notes");
   }
 
   return response.json();
@@ -71,21 +73,23 @@ export async function fetchNote(
   csrfToken?: string
 ): Promise<{ data: Note }> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`${API_BASE}/${noteId}`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch note' }));
-    throw new Error(error.error || 'Failed to fetch note');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch note" }));
+    throw new Error(error.error || "Failed to fetch note");
   }
 
   return response.json();
@@ -100,21 +104,23 @@ export async function viewSecret(
   csrfToken?: string
 ): Promise<{ data: SecretViewResponse }> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`${API_BASE}/${noteId}/secret`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to view secret' }));
-    throw new Error(error.error || 'Failed to view secret');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to view secret" }));
+    throw new Error(error.error || "Failed to view secret");
   }
 
   return response.json();
@@ -128,18 +134,20 @@ export async function createNote(
   csrfToken: string
 ): Promise<{ data: Note }> {
   const response = await fetch(API_BASE, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to create note' }));
-    throw new Error(error.error || 'Failed to create note');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to create note" }));
+    throw new Error(error.error || "Failed to create note");
   }
 
   return response.json();
@@ -154,18 +162,20 @@ export async function updateNote(
   csrfToken: string
 ): Promise<{ data: Note }> {
   const response = await fetch(`${API_BASE}/${noteId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to update note' }));
-    throw new Error(error.error || 'Failed to update note');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to update note" }));
+    throw new Error(error.error || "Failed to update note");
   }
 
   return response.json();
@@ -179,17 +189,19 @@ export async function deleteNote(
   csrfToken: string
 ): Promise<{ success: boolean; message: string }> {
   const response = await fetch(`${API_BASE}/${noteId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete note' }));
-    throw new Error(error.error || 'Failed to delete note');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete note" }));
+    throw new Error(error.error || "Failed to delete note");
   }
 
   return response.json();

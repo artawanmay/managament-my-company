@@ -6,17 +6,17 @@
  * - 6.4: Realtime task updates via SSE
  * - 20.1: Broadcast task moves to all project viewers
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { requireAuth, handleAuthError } from '@/lib/auth/middleware';
-import { canAccessProject } from '@/lib/auth/permissions';
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuth, handleAuthError } from "@/lib/auth/middleware";
+import { canAccessProject } from "@/lib/auth/permissions";
 import {
   createSSEResponse,
   registerProjectConnection,
   subscribeToTaskEvents,
   type TaskEvent,
-} from '@/lib/realtime';
+} from "@/lib/realtime";
 
-export const Route = createFileRoute('/api/realtime/projects/$projectId')({
+export const Route = createFileRoute("/api/realtime/projects/$projectId")({
   server: {
     handlers: {
       /**
@@ -31,13 +31,13 @@ export const Route = createFileRoute('/api/realtime/projects/$projectId')({
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
         if (authError || !auth.success) {
-          return authError ?? new Response('Unauthorized', { status: 401 });
+          return authError ?? new Response("Unauthorized", { status: 401 });
         }
 
         // Check project access
         const hasAccess = await canAccessProject(auth.user, projectId);
         if (!hasAccess) {
-          return new Response('Forbidden: No access to this project', {
+          return new Response("Forbidden: No access to this project", {
             status: 403,
           });
         }

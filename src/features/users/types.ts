@@ -2,7 +2,7 @@
  * User feature types
  * Requirements: 2.2, 2.3
  */
-import { type Role } from '@/lib/db/schema/users';
+import { type Role } from "@/lib/db/schema/users";
 
 export type { Role };
 
@@ -19,8 +19,8 @@ export interface User {
 export interface UserListParams {
   search?: string;
   role?: Role;
-  sortBy?: 'name' | 'email' | 'role' | 'createdAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "email" | "role" | "createdAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }

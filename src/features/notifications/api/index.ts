@@ -2,4 +2,4 @@ export {
   fetchNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-} from './notification-api';
+} from "./notification-api";

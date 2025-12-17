@@ -2,33 +2,33 @@
  * Property-based tests for project management
  * Tests member assignment round-trip and archived project exclusion
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/lib/db/schema/index';
-import { sql } from 'drizzle-orm';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "@/lib/db/schema/index";
+import { sql } from "drizzle-orm";
 import {
   isProjectMember,
   canAccessProject,
   setDatabase,
   resetDatabase,
   type PermissionUser,
-} from '@/lib/auth/permissions';
-import { randomUUID } from 'crypto';
+} from "@/lib/auth/permissions";
+import { randomUUID } from "crypto";
 
 const PBT_RUNS = 100;
 
 // Helper to create test database
 function createTestDb() {
-  const sqlite = new Database(':memory:');
-  sqlite.pragma('journal_mode = WAL');
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
 }
 
 // Initialize test database with required tables
-function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
+function initTestDb(db: ReturnType<typeof createTestDb>["db"]) {
   // Create users table
   db.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -91,19 +91,25 @@ function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
   `);
 
   // Create indexes
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`);
-  db.run(sql`CREATE INDEX IF NOT EXISTS projects_status_idx ON projects(status)`);
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`
+  );
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS projects_status_idx ON projects(status)`
+  );
 }
 
-describe('Project Member Assignment Properties', () => {
+describe("Project Member Assignment Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
     testDb = createTestDb();
     initTestDb(testDb.db);
     // Inject test database
-    setDatabase(testDb.db as any);
+    setDatabase(testDb.db as unknown as Parameters<typeof setDatabase>[0]);
   });
 
   afterEach(() => {
@@ -119,10 +125,10 @@ describe('Project Member Assignment Properties', () => {
    * return false.
    * **Validates: Requirements 4.4, 4.5**
    */
-  it('Property 7: Member Assignment Round-Trip - adding member grants access', async () => {
+  it("Property 7: Member Assignment Round-Trip - adding member grants access", async () => {
     // Create base test data
-    const clientId = 'test-client-rt';
-    const managerId = 'test-manager-rt';
+    const clientId = "test-client-rt";
+    const managerId = "test-manager-rt";
 
     // Insert test client
     testDb.db.run(sql`
@@ -135,7 +141,7 @@ describe('Project Member Assignment Properties', () => {
       VALUES (${managerId}, 'manager-rt@test.com', 'hash', 'Manager RT', 'MANAGER')
     `);
 
-    const projectMemberRoles = ['MANAGER', 'MEMBER', 'VIEWER'] as const;
+    const projectMemberRoles = ["MANAGER", "MEMBER", "VIEWER"] as const;
     const projectMemberRoleArb = fc.constantFrom(...projectMemberRoles);
 
     await fc.assert(
@@ -162,7 +168,7 @@ describe('Project Member Assignment Properties', () => {
           `);
 
           // User should NOT have access before being added as member
-          const user: PermissionUser = { id: userId, role: 'MEMBER' };
+          const user: PermissionUser = { id: userId, role: "MEMBER" };
           const accessBefore = await canAccessProject(user, projectId);
 
           // If user is not the manager, they shouldn't have access
@@ -221,12 +227,12 @@ describe('Project Member Assignment Properties', () => {
    * Adding a member is idempotent - adding the same member twice should not cause errors
    * **Validates: Requirements 4.4**
    */
-  it('Property 7: Member Assignment Round-Trip - idempotent member addition', async () => {
+  it("Property 7: Member Assignment Round-Trip - idempotent member addition", async () => {
     // Create base test data
-    const clientId = 'test-client-idem';
-    const projectId = 'test-project-idem';
-    const managerId = 'test-manager-idem';
-    const memberId = 'test-member-idem';
+    const clientId = "test-client-idem";
+    const projectId = "test-project-idem";
+    const managerId = "test-manager-idem";
+    const memberId = "test-member-idem";
 
     // Insert test client
     testDb.db.run(sql`
@@ -258,7 +264,7 @@ describe('Project Member Assignment Properties', () => {
     `);
 
     // Verify member has access
-    const user: PermissionUser = { id: memberId, role: 'MEMBER' };
+    const user: PermissionUser = { id: memberId, role: "MEMBER" };
     const accessAfterFirst = await canAccessProject(user, projectId);
     expect(accessAfterFirst).toBe(true);
 
@@ -280,13 +286,13 @@ describe('Project Member Assignment Properties', () => {
   });
 });
 
-describe('Archived Project Exclusion Properties', () => {
+describe("Archived Project Exclusion Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
     testDb = createTestDb();
     initTestDb(testDb.db);
-    setDatabase(testDb.db as any);
+    setDatabase(testDb.db as unknown as Parameters<typeof setDatabase>[0]);
   });
 
   afterEach(() => {
@@ -300,10 +306,10 @@ describe('Archived Project Exclusion Properties', () => {
    * (only in explicit archived views).
    * **Validates: Requirements 4.6**
    */
-  it('Property 23: Archived Project Exclusion - archived projects excluded from default listing', async () => {
+  it("Property 23: Archived Project Exclusion - archived projects excluded from default listing", async () => {
     // Create base test data
-    const clientId = 'test-client-arch';
-    const managerId = 'test-manager-arch';
+    const clientId = "test-client-arch";
+    const managerId = "test-manager-arch";
 
     // Insert test client
     testDb.db.run(sql`
@@ -316,7 +322,13 @@ describe('Archived Project Exclusion Properties', () => {
       VALUES (${managerId}, 'manager-arch@test.com', 'hash', 'Manager Arch', 'MANAGER')
     `);
 
-    const projectStatuses = ['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'] as const;
+    const projectStatuses = [
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+      "ARCHIVED",
+    ] as const;
     const projectStatusArb = fc.constantFrom(...projectStatuses);
 
     await fc.assert(
@@ -345,14 +357,18 @@ describe('Archived Project Exclusion Properties', () => {
           `) as { id: string; status: string }[];
 
           // If project is archived, it should NOT appear in default list
-          if (status === 'ARCHIVED') {
-            const inDefaultList = defaultListResult.some((p) => p.id === projectId);
+          if (status === "ARCHIVED") {
+            const inDefaultList = defaultListResult.some(
+              (p) => p.id === projectId
+            );
             if (inDefaultList) {
               return false;
             }
           } else {
             // Non-archived projects SHOULD appear in default list
-            const inDefaultList = defaultListResult.some((p) => p.id === projectId);
+            const inDefaultList = defaultListResult.some(
+              (p) => p.id === projectId
+            );
             if (!inDefaultList) {
               return false;
             }
@@ -379,10 +395,10 @@ describe('Archived Project Exclusion Properties', () => {
    * Archiving a project changes its status to ARCHIVED
    * **Validates: Requirements 4.6**
    */
-  it('Property 23: Archived Project Exclusion - archiving changes status correctly', async () => {
+  it("Property 23: Archived Project Exclusion - archiving changes status correctly", async () => {
     // Create base test data
-    const clientId = 'test-client-arch2';
-    const managerId = 'test-manager-arch2';
+    const clientId = "test-client-arch2";
+    const managerId = "test-manager-arch2";
 
     // Insert test client
     testDb.db.run(sql`
@@ -395,7 +411,12 @@ describe('Archived Project Exclusion Properties', () => {
       VALUES (${managerId}, 'manager-arch2@test.com', 'hash', 'Manager Arch2', 'MANAGER')
     `);
 
-    const nonArchivedStatuses = ['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED'] as const;
+    const nonArchivedStatuses = [
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+    ] as const;
     const nonArchivedStatusArb = fc.constantFrom(...nonArchivedStatuses);
 
     await fc.assert(
@@ -441,7 +462,7 @@ describe('Archived Project Exclusion Properties', () => {
             SELECT status FROM projects WHERE id = ${projectId}
           `) as { status: string }[];
 
-          if (projectStatus[0]?.status !== 'ARCHIVED') {
+          if (projectStatus[0]?.status !== "ARCHIVED") {
             return false;
           }
 
@@ -460,11 +481,11 @@ describe('Archived Project Exclusion Properties', () => {
    * Archived projects can still be accessed when explicitly requested
    * **Validates: Requirements 4.6**
    */
-  it('Property 23: Archived Project Exclusion - archived projects accessible when explicitly requested', async () => {
+  it("Property 23: Archived Project Exclusion - archived projects accessible when explicitly requested", async () => {
     // Create base test data
-    const clientId = 'test-client-arch3';
-    const projectId = 'test-project-arch3';
-    const managerId = 'test-manager-arch3';
+    const clientId = "test-client-arch3";
+    const projectId = "test-project-arch3";
+    const managerId = "test-manager-arch3";
 
     // Insert test client
     testDb.db.run(sql`
@@ -491,7 +512,7 @@ describe('Archived Project Exclusion Properties', () => {
     // Archived project should be in the list
     const found = withArchived.find((p) => p.id === projectId);
     expect(found).toBeDefined();
-    expect(found?.status).toBe('ARCHIVED');
+    expect(found?.status).toBe("ARCHIVED");
 
     // Query with includeArchived = false (default)
     const withoutArchived = testDb.db.all(sql`

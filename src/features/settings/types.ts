@@ -6,7 +6,7 @@
  * - 16.4: Profile update
  */
 
-export type ThemePreference = 'light' | 'dark' | 'system';
+export type ThemePreference = "light" | "dark" | "system";
 
 export interface UserProfile {
   id: string;

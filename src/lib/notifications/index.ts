@@ -7,20 +7,24 @@
  * - 9.2: Push notifications to online users via SSE
  * - 20.2: Realtime notification updates
  */
-import { db } from '@/lib/db';
-import { notifications, type NewNotification, type NotificationType } from '@/lib/db/schema';
-import { randomUUID } from 'crypto';
+import { db } from "@/lib/db";
+import {
+  notifications,
+  type NewNotification,
+  type NotificationType,
+} from "@/lib/db/schema";
+import { randomUUID } from "crypto";
 import {
   publishNotificationEvent,
   sendToUser,
   type NotificationEvent,
-} from '@/lib/realtime';
+} from "@/lib/realtime";
 
 /**
  * Notification data structure for entity references
  */
 export interface NotificationData {
-  entityType: 'TASK' | 'PROJECT' | 'COMMENT' | 'CLIENT' | 'NOTE';
+  entityType: "TASK" | "PROJECT" | "COMMENT" | "CLIENT" | "NOTE";
   entityId: string;
   projectId?: string;
   taskId?: string;
@@ -58,11 +62,14 @@ export async function createNotification(
     data: input.data ? JSON.stringify(input.data) : null,
   };
 
-  const result = await db.insert(notifications).values(notificationData).returning({ id: notifications.id });
+  const result = await db
+    .insert(notifications)
+    .values(notificationData)
+    .returning({ id: notifications.id });
 
   // Broadcast notification via SSE (Requirement 9.2, 20.2)
   const notificationEvent: NotificationEvent = {
-    type: 'NOTIFICATION_CREATED',
+    type: "NOTIFICATION_CREATED",
     notificationId,
     userId: input.userId,
     data: {
@@ -80,11 +87,11 @@ export async function createNotification(
     await publishNotificationEvent(input.userId, notificationEvent);
   } catch (err) {
     // Log but don't fail the request if broadcast fails
-    console.error('[Notification] Failed to publish notification event:', err);
+    console.error("[Notification] Failed to publish notification event:", err);
   }
 
   // Also send directly to SSE connections (for same-server connections)
-  sendToUser(input.userId, 'notification', {
+  sendToUser(input.userId, "notification", {
     notificationId,
     userId: input.userId,
     title: input.title,
@@ -135,11 +142,11 @@ export async function createTaskAssignedNotification(params: {
 }): Promise<{ id: string }> {
   return createNotification({
     userId: params.assigneeId,
-    type: 'TASK_ASSIGNED',
-    title: 'New task assigned',
+    type: "TASK_ASSIGNED",
+    title: "New task assigned",
     message: `${params.assignerName} assigned you to task: ${params.taskTitle}`,
     data: {
-      entityType: 'TASK',
+      entityType: "TASK",
       entityId: params.taskId,
       projectId: params.projectId,
       actorId: params.assignerId,
@@ -164,11 +171,11 @@ export async function createTaskMovedNotification(params: {
 }): Promise<{ id: string }> {
   return createNotification({
     userId: params.userId,
-    type: 'TASK_MOVED',
-    title: 'Task status changed',
+    type: "TASK_MOVED",
+    title: "Task status changed",
     message: `${params.moverName} moved task "${params.taskTitle}" from ${params.fromStatus} to ${params.toStatus}`,
     data: {
-      entityType: 'TASK',
+      entityType: "TASK",
       entityId: params.taskId,
       projectId: params.projectId,
       actorId: params.moverId,
@@ -194,11 +201,11 @@ export async function createCommentAddedNotification(params: {
 }): Promise<{ id: string }> {
   return createNotification({
     userId: params.userId,
-    type: 'COMMENT_ADDED',
-    title: 'New comment on task',
+    type: "COMMENT_ADDED",
+    title: "New comment on task",
     message: `${params.commenterName} commented on task: ${params.taskTitle}`,
     data: {
-      entityType: 'COMMENT',
+      entityType: "COMMENT",
       entityId: params.commentId,
       taskId: params.taskId,
       projectId: params.projectId,
@@ -223,11 +230,11 @@ export async function createMentionedNotification(params: {
 }): Promise<{ id: string }> {
   return createNotification({
     userId: params.userId,
-    type: 'MENTIONED',
-    title: 'You were mentioned',
+    type: "MENTIONED",
+    title: "You were mentioned",
     message: `${params.mentionerName} mentioned you in a comment on task: ${params.taskTitle}`,
     data: {
-      entityType: 'COMMENT',
+      entityType: "COMMENT",
       entityId: params.commentId,
       taskId: params.taskId,
       projectId: params.projectId,
@@ -249,14 +256,15 @@ export async function createDeadlineApproachingNotification(params: {
   dueDate: Date;
   daysRemaining: number;
 }): Promise<{ id: string }> {
-  const daysText = params.daysRemaining === 1 ? '1 day' : `${params.daysRemaining} days`;
+  const daysText =
+    params.daysRemaining === 1 ? "1 day" : `${params.daysRemaining} days`;
   return createNotification({
     userId: params.userId,
-    type: 'DEADLINE_APPROACHING',
-    title: 'Deadline approaching',
+    type: "DEADLINE_APPROACHING",
+    title: "Deadline approaching",
     message: `Task "${params.taskTitle}" is due in ${daysText}`,
     data: {
-      entityType: 'TASK',
+      entityType: "TASK",
       entityId: params.taskId,
       projectId: params.projectId,
       dueDate: params.dueDate.toISOString(),

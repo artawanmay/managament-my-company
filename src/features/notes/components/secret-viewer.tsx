@@ -2,9 +2,9 @@
  * SecretViewer component for showing/copying secrets
  * Requirements: 7.3, 7.6, 7.7
  */
-import { useState } from 'react';
-import { Eye, EyeOff, Copy, Check, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Eye, EyeOff, Copy, Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +12,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import type { Note } from '../types';
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import type { Note } from "../types";
 
 interface SecretViewerProps {
   open: boolean;
@@ -46,15 +46,15 @@ export function SecretViewer({
       await navigator.clipboard.writeText(secret);
       setCopied(true);
       toast({
-        title: 'Copied!',
-        description: 'Secret copied to clipboard',
+        title: "Copied!",
+        description: "Secret copied to clipboard",
       });
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       toast({
-        title: 'Failed to copy',
-        description: 'Could not copy to clipboard',
-        variant: 'destructive',
+        title: "Failed to copy",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
       });
     }
   };
@@ -91,7 +91,9 @@ export function SecretViewer({
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <span className="ml-2 text-muted-foreground">Loading secret...</span>
+              <span className="ml-2 text-muted-foreground">
+                Loading secret...
+              </span>
             </div>
           )}
 
@@ -146,11 +148,7 @@ export function SecretViewer({
                         </>
                       )}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopy}
-                    >
+                    <Button variant="ghost" size="sm" onClick={handleCopy}>
                       {copied ? (
                         <>
                           <Check className="mr-1 h-4 w-4 text-green-500" />
@@ -167,7 +165,7 @@ export function SecretViewer({
                 </div>
                 <div className="rounded-md border bg-muted/50 p-3">
                   <pre className="whitespace-pre-wrap break-all font-mono text-sm">
-                    {isVisible ? secret : '••••••••••••••••'}
+                    {isVisible ? secret : "••••••••••••••••"}
                   </pre>
                 </div>
               </div>

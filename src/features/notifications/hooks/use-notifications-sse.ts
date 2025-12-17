@@ -5,10 +5,10 @@
  *
  * Requirements: 9.2, 9.6, 20.3, 20.4
  */
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { notificationsQueryKey } from './use-notifications';
-import type { Notification, NotificationsListResponse } from '../types';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { notificationsQueryKey } from "./use-notifications";
+import type { Notification, NotificationsListResponse } from "../types";
 
 // SSE notification event from the server
 interface NotificationSSEEvent {
@@ -54,8 +54,12 @@ export function useNotificationsSSE({
 }: UseNotificationsSSEOptions = {}): UseNotificationsSSEReturn {
   const queryClient = useQueryClient();
   const eventSourceRef = useRef<EventSource | null>(null);
-  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const [isConnected, setIsConnected] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
@@ -68,22 +72,29 @@ export function useNotificationsSSE({
       const newNotification: Notification = {
         id: event.notificationId,
         userId: event.userId,
-        type: event.type as Notification['type'],
+        type: event.type as Notification["type"],
         title: event.title,
         message: event.message,
-        data: event.entityType || event.entityId
-          ? {
-              entityType: event.entityType as 'TASK' | 'PROJECT' | 'COMMENT' | 'CLIENT' | 'NOTE' | undefined,
-              entityId: event.entityId,
-            }
-          : null,
+        data:
+          event.entityType || event.entityId
+            ? {
+                entityType: event.entityType as
+                  | "TASK"
+                  | "PROJECT"
+                  | "COMMENT"
+                  | "CLIENT"
+                  | "NOTE"
+                  | undefined,
+                entityId: event.entityId,
+              }
+            : null,
         readAt: null,
         createdAt: new Date(event.timestamp),
       };
 
       // Update all notification queries
       queryClient.setQueriesData<NotificationsListResponse>(
-        { queryKey: ['notifications'] },
+        { queryKey: ["notifications"] },
         (oldData) => {
           if (!oldData) return oldData;
 
@@ -100,7 +111,7 @@ export function useNotificationsSSE({
         }
       );
 
-      console.log('[SSE] Added notification to cache:', newNotification.id);
+      console.log("[SSE] Added notification to cache:", newNotification.id);
     },
     [queryClient]
   );
@@ -109,7 +120,7 @@ export function useNotificationsSSE({
   const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) return;
 
-    console.log('[SSE] Starting notifications polling fallback');
+    console.log("[SSE] Starting notifications polling fallback");
     setIsPolling(true);
 
     pollingIntervalRef.current = setInterval(() => {
@@ -125,7 +136,7 @@ export function useNotificationsSSE({
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
       setIsPolling(false);
-      console.log('[SSE] Stopped notifications polling');
+      console.log("[SSE] Stopped notifications polling");
     }
   }, []);
 
@@ -138,15 +149,15 @@ export function useNotificationsSSE({
       eventSourceRef.current.close();
     }
 
-    const url = '/api/realtime/notifications';
-    console.log('[SSE] Connecting to notifications:', url);
+    const url = "/api/realtime/notifications";
+    console.log("[SSE] Connecting to notifications:", url);
 
     try {
       const eventSource = new EventSource(url, { withCredentials: true });
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        console.log('[SSE] Connected to notifications');
+        console.log("[SSE] Connected to notifications");
         setIsConnected(true);
         setError(null);
         setReconnectAttempts(0);
@@ -154,25 +165,25 @@ export function useNotificationsSSE({
       };
 
       // Handle connection event from server
-      eventSource.addEventListener('connected', (e) => {
-        console.log('[SSE] Server confirmed notifications connection:', e.data);
+      eventSource.addEventListener("connected", (e) => {
+        console.log("[SSE] Server confirmed notifications connection:", e.data);
       });
 
       // Handle notification event
-      eventSource.addEventListener('notification', (e) => {
+      eventSource.addEventListener("notification", (e) => {
         try {
           const data = JSON.parse(e.data) as NotificationSSEEvent;
-          console.log('[SSE] Received notification:', data);
+          console.log("[SSE] Received notification:", data);
           addNotificationToCache(data);
         } catch (err) {
-          console.error('[SSE] Failed to parse notification event:', err);
+          console.error("[SSE] Failed to parse notification event:", err);
         }
       });
 
       eventSource.onerror = (e) => {
-        console.error('[SSE] Notifications connection error:', e);
+        console.error("[SSE] Notifications connection error:", e);
         setIsConnected(false);
-        setError(new Error('SSE connection failed'));
+        setError(new Error("SSE connection failed"));
 
         // Close the errored connection
         eventSource.close();
@@ -181,21 +192,29 @@ export function useNotificationsSSE({
         // Attempt reconnection with exponential backoff
         if (reconnectAttempts < maxReconnectAttempts) {
           const delay = reconnectBaseDelay * Math.pow(2, reconnectAttempts);
-          console.log(`[SSE] Reconnecting notifications in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
-          
+          console.log(
+            `[SSE] Reconnecting notifications in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`
+          );
+
           setReconnectAttempts((prev) => prev + 1);
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
         } else {
-          console.log('[SSE] Max reconnection attempts reached, falling back to polling');
+          console.log(
+            "[SSE] Max reconnection attempts reached, falling back to polling"
+          );
           startPolling();
         }
       };
     } catch (err) {
-      console.error('[SSE] Failed to create notifications EventSource:', err);
-      setError(err instanceof Error ? err : new Error('Failed to create SSE connection'));
+      console.error("[SSE] Failed to create notifications EventSource:", err);
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Failed to create SSE connection")
+      );
       startPolling();
     }
   }, [

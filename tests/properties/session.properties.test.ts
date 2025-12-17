@@ -1,25 +1,25 @@
 /**
  * Property-based tests for session management
  */
-import { describe, it, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
+import { describe, it, beforeEach, afterEach } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
 import {
   createSession,
   validateSession,
   invalidateSession,
   generateSessionId,
-} from '@/lib/auth/session';
+} from "@/lib/auth/session";
 
 // Test database setup
 let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -49,7 +49,9 @@ function setupTestDb() {
   `);
 
   // Create index
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`
+  );
 }
 
 function cleanupTestDb() {
@@ -61,7 +63,7 @@ function cleanupTestDb() {
 // UUID generator for test user IDs
 const uuidArbitrary = fc.uuid();
 
-describe('Session Management Properties', () => {
+describe("Session Management Properties", () => {
   beforeEach(() => {
     setupTestDb();
   });
@@ -76,7 +78,7 @@ describe('Session Management Properties', () => {
    * and then validating that session should return the same user ID.
    * **Validates: Requirements 1.1, 1.4**
    */
-  it('Property 1: Authentication Round-Trip - session creation and validation returns same user ID', async () => {
+  it("Property 1: Authentication Round-Trip - session creation and validation returns same user ID", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // First, create a test user
@@ -103,7 +105,7 @@ describe('Session Management Properties', () => {
    * After invalidating a session, validation should return null.
    * **Validates: Requirements 1.1, 1.4**
    */
-  it('Property 1: Authentication Round-Trip - invalidated session returns null', async () => {
+  it("Property 1: Authentication Round-Trip - invalidated session returns null", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // Create a test user
@@ -132,7 +134,7 @@ describe('Session Management Properties', () => {
    * Session should contain a valid CSRF token.
    * **Validates: Requirements 1.1, 1.4**
    */
-  it('Property 1: Authentication Round-Trip - session contains CSRF token', async () => {
+  it("Property 1: Authentication Round-Trip - session contains CSRF token", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // Create a test user
@@ -159,21 +161,24 @@ describe('Session Management Properties', () => {
    * **Feature: mmc-app, Property 2: Session Protection**
    * *For any* protected route and any request without a valid session,
    * the system should redirect to the login page or return 401 Unauthorized.
-   * 
+   *
    * This test validates that:
    * - Random/invalid session IDs return null (unauthenticated)
    * - Non-existent session IDs return null
    * **Validates: Requirements 1.5**
    */
-  it('Property 2: Session Protection - invalid session IDs return null', async () => {
+  it("Property 2: Session Protection - invalid session IDs return null", async () => {
     await fc.assert(
-      fc.asyncProperty(fc.string({ minLength: 1, maxLength: 100 }), async (randomSessionId) => {
-        // Any random string that is not a valid session should return null
-        const validatedSession = await validateSession(randomSessionId, db);
-        
-        // Invalid session should return null (unauthenticated)
-        return validatedSession === null;
-      }),
+      fc.asyncProperty(
+        fc.string({ minLength: 1, maxLength: 100 }),
+        async (randomSessionId) => {
+          // Any random string that is not a valid session should return null
+          const validatedSession = await validateSession(randomSessionId, db);
+
+          // Invalid session should return null (unauthenticated)
+          return validatedSession === null;
+        }
+      ),
       { numRuns: 100 }
     );
   });
@@ -184,15 +189,18 @@ describe('Session Management Properties', () => {
    * the system should return null (unauthenticated).
    * **Validates: Requirements 1.5**
    */
-  it('Property 2: Session Protection - non-existent session IDs return null', async () => {
+  it("Property 2: Session Protection - non-existent session IDs return null", async () => {
     await fc.assert(
       fc.asyncProperty(fc.integer({ min: 1, max: 100 }), async () => {
         // Generate a properly formatted session ID that doesn't exist
         const nonExistentSessionId = generateSessionId();
-        
+
         // Non-existent session should return null
-        const validatedSession = await validateSession(nonExistentSessionId, db);
-        
+        const validatedSession = await validateSession(
+          nonExistentSessionId,
+          db
+        );
+
         return validatedSession === null;
       }),
       { numRuns: 100 }
@@ -204,7 +212,7 @@ describe('Session Management Properties', () => {
    * *For any* expired session, the system should return null (unauthenticated).
    * **Validates: Requirements 1.5**
    */
-  it('Property 2: Session Protection - expired sessions return null', async () => {
+  it("Property 2: Session Protection - expired sessions return null", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // Create a test user
@@ -227,7 +235,7 @@ describe('Session Management Properties', () => {
 
         // Expired session should return null
         const validatedSession = await validateSession(session.id, db);
-        
+
         return validatedSession === null;
       }),
       { numRuns: 100 }

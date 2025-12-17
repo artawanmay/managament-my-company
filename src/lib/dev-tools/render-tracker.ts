@@ -18,13 +18,13 @@ const TIME_WINDOW = 1000; // 1 second window
  * @param props - Current props (optional, for comparison)
  */
 export function trackRender(componentName: string, props?: unknown): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   const now = Date.now();
   const info = renderCounts.get(componentName) || { count: 0, timestamps: [] };
-  
+
   // Clean old timestamps outside time window
-  info.timestamps = info.timestamps.filter(t => now - t < TIME_WINDOW);
+  info.timestamps = info.timestamps.filter((t) => now - t < TIME_WINDOW);
   info.timestamps.push(now);
   info.count++;
 
@@ -32,8 +32,10 @@ export function trackRender(componentName: string, props?: unknown): void {
   if (info.timestamps.length >= LOOP_THRESHOLD) {
     console.error(
       `🔴 [LOOP DETECTED] ${componentName} rendered ${info.timestamps.length} times in ${TIME_WINDOW}ms!`,
-      '\nProps:', props,
-      '\nPrevious props:', info.lastProps
+      "\nProps:",
+      props,
+      "\nPrevious props:",
+      info.lastProps
     );
     // Optionally throw to break the loop
     // throw new Error(`Infinite loop detected in ${componentName}`);
@@ -47,13 +49,13 @@ export function trackRender(componentName: string, props?: unknown): void {
  * Log render with timing info
  */
 export function logRender(componentName: string, reason?: string): void {
-  if (process.env.NODE_ENV !== 'development') return;
-  
+  if (process.env.NODE_ENV !== "development") return;
+
   const info = renderCounts.get(componentName);
   console.log(
     `🔄 [RENDER] ${componentName}`,
     `(#${info?.count || 1})`,
-    reason ? `- ${reason}` : '',
+    reason ? `- ${reason}` : "",
     new Date().toISOString()
   );
 }

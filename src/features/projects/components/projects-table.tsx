@@ -2,7 +2,7 @@
  * ProjectsTable component with TanStack Table
  * Requirements: 4.1, 4.2
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,27 +11,34 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-} from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal, Pencil, Archive, Eye, Calendar } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+} from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  Pencil,
+  Archive,
+  Eye,
+  Calendar,
+} from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { ProjectListItem, ProjectStatus, Priority } from '../types';
-import { projectStatusValues, priorityValues } from '@/lib/db/schema';
+} from "@/components/ui/select";
+import type { ProjectListItem, ProjectStatus, Priority } from "../types";
+import { projectStatusValues, priorityValues } from "@/lib/db/schema";
 
 interface ProjectsTableProps {
   data: ProjectListItem[];
@@ -41,38 +48,48 @@ interface ProjectsTableProps {
 }
 
 const statusColors: Record<ProjectStatus, string> = {
-  PLANNING: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  ON_HOLD: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  COMPLETED: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  ARCHIVED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  PLANNING: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  ON_HOLD:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  COMPLETED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  ARCHIVED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 const priorityColors: Record<Priority, string> = {
-  LOW: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  MEDIUM: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  URGENT: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  LOW: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  MEDIUM: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+  URGENT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 function formatDate(date: Date | null): string {
-  if (!date) return '-';
+  if (!date) return "-";
   return new Date(date).toLocaleDateString();
 }
 
-export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTableProps) {
+export function ProjectsTable({
+  data,
+  onEdit,
+  onArchive,
+  isLoading,
+}: ProjectsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<Priority | 'ALL'>('ALL');
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "ALL">(
+    "ALL"
+  );
+  const [priorityFilter, setPriorityFilter] = useState<Priority | "ALL">("ALL");
 
   const filteredData = useMemo(() => {
     let filtered = data;
-    if (statusFilter !== 'ALL') {
+    if (statusFilter !== "ALL") {
       filtered = filtered.filter((project) => project.status === statusFilter);
     }
-    if (priorityFilter !== 'ALL') {
-      filtered = filtered.filter((project) => project.priority === priorityFilter);
+    if (priorityFilter !== "ALL") {
+      filtered = filtered.filter(
+        (project) => project.priority === priorityFilter
+      );
     }
     return filtered;
   }, [data, statusFilter, priorityFilter]);
@@ -80,11 +97,11 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
   const columns: ColumnDef<ProjectListItem>[] = useMemo(
     () => [
       {
-        accessorKey: 'name',
+        accessorKey: "name",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -96,48 +113,48 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
             params={{ projectId: row.original.id }}
             className="font-medium text-primary hover:underline"
           >
-            {row.getValue('name')}
+            {row.getValue("name")}
           </Link>
         ),
       },
       {
-        accessorKey: 'clientName',
-        header: 'Client',
-        cell: ({ row }) => row.getValue('clientName') || '-',
+        accessorKey: "clientName",
+        header: "Client",
+        cell: ({ row }) => row.getValue("clientName") || "-",
       },
       {
-        accessorKey: 'status',
+        accessorKey: "status",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Status
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const status = row.getValue('status') as ProjectStatus;
+          const status = row.getValue("status") as ProjectStatus;
           return (
             <Badge className={statusColors[status]} variant="outline">
-              {status.replace('_', ' ')}
+              {status.replace("_", " ")}
             </Badge>
           );
         },
       },
       {
-        accessorKey: 'priority',
+        accessorKey: "priority",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Priority
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const priority = row.getValue('priority') as Priority;
+          const priority = row.getValue("priority") as Priority;
           return (
             <Badge className={priorityColors[priority]} variant="outline">
               {priority}
@@ -146,17 +163,17 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
         },
       },
       {
-        accessorKey: 'managerName',
-        header: 'Manager',
-        cell: ({ row }) => row.getValue('managerName') || '-',
+        accessorKey: "managerName",
+        header: "Manager",
+        cell: ({ row }) => row.getValue("managerName") || "-",
       },
       {
-        id: 'dates',
-        header: 'Timeline',
+        id: "dates",
+        header: "Timeline",
         cell: ({ row }) => {
           const start = row.original.startDate;
           const end = row.original.endDate;
-          if (!start && !end) return '-';
+          if (!start && !end) return "-";
           return (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Calendar className="h-3 w-3" />
@@ -166,7 +183,7 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
         },
       },
       {
-        id: 'actions',
+        id: "actions",
         cell: ({ row }) => {
           const project = row.original;
           return (
@@ -179,7 +196,10 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link to="/app/projects/$projectId" params={{ projectId: project.id }}>
+                  <Link
+                    to="/app/projects/$projectId"
+                    params={{ projectId: project.id }}
+                  >
                     <Eye className="mr-2 h-4 w-4" />
                     View
                   </Link>
@@ -190,7 +210,7 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
                     Edit
                   </DropdownMenuItem>
                 )}
-                {onArchive && project.status !== 'ARCHIVED' && (
+                {onArchive && project.status !== "ARCHIVED" && (
                   <DropdownMenuItem
                     onClick={() => onArchive(project)}
                     className="text-destructive"
@@ -242,7 +262,9 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
         <div className="flex gap-2">
           <Select
             value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'ALL')}
+            onValueChange={(value) =>
+              setStatusFilter(value as ProjectStatus | "ALL")
+            }
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Status" />
@@ -251,14 +273,16 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
               <SelectItem value="ALL">All Statuses</SelectItem>
               {projectStatusValues.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status.replace('_', ' ')}
+                  {status.replace("_", " ")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select
             value={priorityFilter}
-            onValueChange={(value) => setPriorityFilter(value as Priority | 'ALL')}
+            onValueChange={(value) =>
+              setPriorityFilter(value as Priority | "ALL")
+            }
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Priority" />
@@ -287,7 +311,10 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -311,7 +338,10 @@ export function ProjectsTable({ data, onEdit, onArchive, isLoading }: ProjectsTa
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-sm">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>

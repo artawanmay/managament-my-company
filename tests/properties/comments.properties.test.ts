@@ -2,17 +2,17 @@
  * Property-based tests for comments system
  * Tests for comment notification creation
  */
-import { describe, it, beforeEach, afterEach, beforeAll } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
+import { describe, it, beforeEach, afterEach, beforeAll } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
 
 // Set up encryption key for tests
 beforeAll(() => {
   if (!process.env.ENCRYPTION_KEY) {
-    process.env.ENCRYPTION_KEY = 'test-encryption-key-for-property-tests-32';
+    process.env.ENCRYPTION_KEY = "test-encryption-key-for-property-tests-32";
   }
 });
 
@@ -21,7 +21,7 @@ let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -136,12 +136,24 @@ function setupTestDb() {
   `);
 
   // Create indexes
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS comments_task_id_idx ON comments(task_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS comments_user_id_idx ON comments(user_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS tasks_assignee_id_idx ON tasks(assignee_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS tasks_reporter_id_idx ON tasks(reporter_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS comments_task_id_idx ON comments(task_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS comments_user_id_idx ON comments(user_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS tasks_assignee_id_idx ON tasks(assignee_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS tasks_reporter_id_idx ON tasks(reporter_id)`
+  );
 }
 
 function cleanupTestDb() {
@@ -154,9 +166,11 @@ function cleanupTestDb() {
 const uuidArbitrary = fc.uuid();
 
 // Role arbitrary (excluding GUEST for comment creation, ADMIN role removed)
-const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'MANAGER', 'MEMBER') as fc.Arbitrary<
-  'SUPER_ADMIN' | 'MANAGER' | 'MEMBER'
->;
+const roleArbitrary = fc.constantFrom(
+  "SUPER_ADMIN",
+  "MANAGER",
+  "MEMBER"
+) as fc.Arbitrary<"SUPER_ADMIN" | "MANAGER" | "MEMBER">;
 
 const PBT_RUNS = 100;
 const TEST_TIMEOUT = 30000;
@@ -195,15 +209,18 @@ function createCommentNotifications(
 
   // Notify mentioned users (Requirement 8.2)
   for (const mentionedUserId of mentionedUserIds) {
-    if (mentionedUserId !== commentAuthorId && !notifiedUserIds.has(mentionedUserId)) {
+    if (
+      mentionedUserId !== commentAuthorId &&
+      !notifiedUserIds.has(mentionedUserId)
+    ) {
       notifications.push({
         id: `notif-mention-${mentionedUserId}-${commentId}`,
         userId: mentionedUserId,
-        type: 'MENTIONED',
-        title: 'You were mentioned in a comment',
+        type: "MENTIONED",
+        title: "You were mentioned in a comment",
         message: `${commentAuthorName} mentioned you in a comment on task: ${taskTitle}`,
         data: JSON.stringify({
-          entityType: 'COMMENT',
+          entityType: "COMMENT",
           entityId: commentId,
           taskId,
           projectId,
@@ -215,15 +232,19 @@ function createCommentNotifications(
   }
 
   // Notify task assignee if not the comment author (Requirement 8.3)
-  if (assigneeId && assigneeId !== commentAuthorId && !notifiedUserIds.has(assigneeId)) {
+  if (
+    assigneeId &&
+    assigneeId !== commentAuthorId &&
+    !notifiedUserIds.has(assigneeId)
+  ) {
     notifications.push({
       id: `notif-assignee-${assigneeId}-${commentId}`,
       userId: assigneeId,
-      type: 'COMMENT_ADDED',
-      title: 'New comment on your task',
+      type: "COMMENT_ADDED",
+      title: "New comment on your task",
       message: `${commentAuthorName} commented on task: ${taskTitle}`,
       data: JSON.stringify({
-        entityType: 'COMMENT',
+        entityType: "COMMENT",
         entityId: commentId,
         taskId,
         projectId,
@@ -238,11 +259,11 @@ function createCommentNotifications(
     notifications.push({
       id: `notif-reporter-${reporterId}-${commentId}`,
       userId: reporterId,
-      type: 'COMMENT_ADDED',
-      title: 'New comment on a task you reported',
+      type: "COMMENT_ADDED",
+      title: "New comment on a task you reported",
       message: `${commentAuthorName} commented on task: ${taskTitle}`,
       data: JSON.stringify({
-        entityType: 'COMMENT',
+        entityType: "COMMENT",
         entityId: commentId,
         taskId,
         projectId,
@@ -255,7 +276,7 @@ function createCommentNotifications(
   return notifications;
 }
 
-describe('Comments Properties', () => {
+describe("Comments Properties", () => {
   beforeEach(() => {
     setupTestDb();
   });
@@ -271,7 +292,7 @@ describe('Comments Properties', () => {
    * **Validates: Requirements 8.2, 8.3**
    */
   it(
-    'Property 20: Comment Notification Creation - assignee and reporter receive notifications',
+    "Property 20: Comment Notification Creation - assignee and reporter receive notifications",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -340,7 +361,7 @@ describe('Comments Properties', () => {
             const notifications = createCommentNotifications(
               commentId,
               commentAuthorId,
-              'Comment Author',
+              "Comment Author",
               taskId,
               taskTitle,
               projectId,
@@ -391,7 +412,7 @@ describe('Comments Properties', () => {
    * **Validates: Requirements 8.2, 8.3**
    */
   it(
-    'Property 20: Comment Notification Creation - mentioned users receive notifications',
+    "Property 20: Comment Notification Creation - mentioned users receive notifications",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -449,7 +470,7 @@ describe('Comments Properties', () => {
             const notifications = createCommentNotifications(
               commentId,
               commentAuthorId,
-              'Comment Author',
+              "Comment Author",
               taskId,
               taskTitle,
               projectId,
@@ -486,7 +507,7 @@ describe('Comments Properties', () => {
    * **Validates: Requirements 8.2, 8.3**
    */
   it(
-    'Property 20: Comment Notification Creation - author does not receive self-notification',
+    "Property 20: Comment Notification Creation - author does not receive self-notification",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -535,7 +556,7 @@ describe('Comments Properties', () => {
             const notifications = createCommentNotifications(
               commentId,
               commentAuthorId,
-              'Comment Author',
+              "Comment Author",
               taskId,
               taskTitle,
               projectId,
@@ -572,7 +593,7 @@ describe('Comments Properties', () => {
    * **Validates: Requirements 8.2, 8.3**
    */
   it(
-    'Property 20: Comment Notification Creation - no duplicate notifications per user',
+    "Property 20: Comment Notification Creation - no duplicate notifications per user",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -631,7 +652,7 @@ describe('Comments Properties', () => {
             const notifications = createCommentNotifications(
               commentId,
               commentAuthorId,
-              'Comment Author',
+              "Comment Author",
               taskId,
               taskTitle,
               projectId,

@@ -5,18 +5,18 @@
  * **Feature: mmc-app, Property 21: Activity Log Completeness**
  * **Validates: Requirements 10.1**
  */
-import { describe, it, beforeEach, afterEach, beforeAll } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
-import { randomUUID } from 'crypto';
+import { describe, it, beforeEach, afterEach, beforeAll } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
+import { randomUUID } from "crypto";
 
 // Set up encryption key for tests
 beforeAll(() => {
   if (!process.env.ENCRYPTION_KEY) {
-    process.env.ENCRYPTION_KEY = 'test-encryption-key-for-property-tests-32';
+    process.env.ENCRYPTION_KEY = "test-encryption-key-for-property-tests-32";
   }
 });
 
@@ -25,7 +25,7 @@ let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -57,8 +57,12 @@ function setupTestDb() {
   `);
 
   // Create indexes
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS activity_logs_actor_id_idx ON activity_logs(actor_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS activity_logs_entity_idx ON activity_logs(entity_type, entity_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS activity_logs_actor_id_idx ON activity_logs(actor_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS activity_logs_entity_idx ON activity_logs(entity_type, entity_id)`
+  );
 }
 
 function cleanupTestDb() {
@@ -71,19 +75,34 @@ function cleanupTestDb() {
 const uuidArbitrary = fc.uuid();
 
 // Entity type arbitrary
-const entityTypeArbitrary = fc.constantFrom('CLIENT', 'PROJECT', 'TASK', 'NOTE', 'FILE', 'COMMENT', 'USER') as fc.Arbitrary<
-  'CLIENT' | 'PROJECT' | 'TASK' | 'NOTE' | 'FILE' | 'COMMENT' | 'USER'
+const entityTypeArbitrary = fc.constantFrom(
+  "CLIENT",
+  "PROJECT",
+  "TASK",
+  "NOTE",
+  "FILE",
+  "COMMENT",
+  "USER"
+) as fc.Arbitrary<
+  "CLIENT" | "PROJECT" | "TASK" | "NOTE" | "FILE" | "COMMENT" | "USER"
 >;
 
 // Action arbitrary
-const actionArbitrary = fc.constantFrom('CREATED', 'UPDATED', 'DELETED', 'MOVED', 'ARCHIVED') as fc.Arbitrary<
-  'CREATED' | 'UPDATED' | 'DELETED' | 'MOVED' | 'ARCHIVED'
->;
+const actionArbitrary = fc.constantFrom(
+  "CREATED",
+  "UPDATED",
+  "DELETED",
+  "MOVED",
+  "ARCHIVED"
+) as fc.Arbitrary<"CREATED" | "UPDATED" | "DELETED" | "MOVED" | "ARCHIVED">;
 
 // Role arbitrary (ADMIN role removed)
-const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'MANAGER', 'MEMBER', 'GUEST') as fc.Arbitrary<
-  'SUPER_ADMIN' | 'MANAGER' | 'MEMBER' | 'GUEST'
->;
+const roleArbitrary = fc.constantFrom(
+  "SUPER_ADMIN",
+  "MANAGER",
+  "MEMBER",
+  "GUEST"
+) as fc.Arbitrary<"SUPER_ADMIN" | "MANAGER" | "MEMBER" | "GUEST">;
 
 const PBT_RUNS = 100;
 const TEST_TIMEOUT = 30000;
@@ -110,7 +129,7 @@ function logActivityToDb(
   return activityId;
 }
 
-describe('Activity Log Properties', () => {
+describe("Activity Log Properties", () => {
   beforeEach(() => {
     setupTestDb();
   });
@@ -126,7 +145,7 @@ describe('Activity Log Properties', () => {
    * **Validates: Requirements 10.1**
    */
   it(
-    'Property 21: Activity Log Completeness - all required fields are present',
+    "Property 21: Activity Log Completeness - all required fields are present",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -136,7 +155,14 @@ describe('Activity Log Properties', () => {
           actionArbitrary, // action
           roleArbitrary, // actorRole
           fc.option(fc.object(), { nil: undefined }), // optional metadata
-          async (actorId, entityId, entityType, action, actorRole, metadata) => {
+          async (
+            actorId,
+            entityId,
+            entityType,
+            action,
+            actorRole,
+            metadata
+          ) => {
             // Create actor user
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
@@ -177,9 +203,16 @@ describe('Activity Log Properties', () => {
             const hasEntityType = log.entity_type === entityType;
             const hasEntityId = log.entity_id === entityId;
             const hasAction = log.action === action;
-            const hasTimestamp = typeof log.created_at === 'number' && log.created_at > 0;
+            const hasTimestamp =
+              typeof log.created_at === "number" && log.created_at > 0;
 
-            return hasActorId && hasEntityType && hasEntityId && hasAction && hasTimestamp;
+            return (
+              hasActorId &&
+              hasEntityType &&
+              hasEntityId &&
+              hasAction &&
+              hasTimestamp
+            );
           }
         ),
         { numRuns: PBT_RUNS }
@@ -194,7 +227,7 @@ describe('Activity Log Properties', () => {
    * **Validates: Requirements 10.1**
    */
   it(
-    'Property 21: Activity Log Completeness - metadata is preserved',
+    "Property 21: Activity Log Completeness - metadata is preserved",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -204,9 +237,15 @@ describe('Activity Log Properties', () => {
           actionArbitrary, // action
           fc.record({
             projectId: fc.option(uuidArbitrary, { nil: undefined }),
-            taskTitle: fc.option(fc.string({ minLength: 1, maxLength: 100 }), { nil: undefined }),
-            fromStatus: fc.option(fc.string({ minLength: 1, maxLength: 50 }), { nil: undefined }),
-            toStatus: fc.option(fc.string({ minLength: 1, maxLength: 50 }), { nil: undefined }),
+            taskTitle: fc.option(fc.string({ minLength: 1, maxLength: 100 }), {
+              nil: undefined,
+            }),
+            fromStatus: fc.option(fc.string({ minLength: 1, maxLength: 50 }), {
+              nil: undefined,
+            }),
+            toStatus: fc.option(fc.string({ minLength: 1, maxLength: 50 }), {
+              nil: undefined,
+            }),
           }), // metadata
           async (actorId, entityId, entityType, action, metadata) => {
             // Create actor user
@@ -252,7 +291,7 @@ describe('Activity Log Properties', () => {
                 return false;
               }
               const storedMetadata = JSON.parse(log.metadata);
-              
+
               // Verify all provided metadata fields are present
               for (const [key, value] of Object.entries(cleanMetadata)) {
                 if (storedMetadata[key] !== value) {
@@ -276,7 +315,7 @@ describe('Activity Log Properties', () => {
    * **Validates: Requirements 10.1**
    */
   it(
-    'Property 21: Activity Log Completeness - logs are queryable by entity',
+    "Property 21: Activity Log Completeness - logs are queryable by entity",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -313,7 +352,10 @@ describe('Activity Log Properties', () => {
 
             // Verify all returned logs have correct entity type and ID
             for (const log of activityLogs) {
-              if (log.entity_type !== entityType || log.entity_id !== entityId) {
+              if (
+                log.entity_type !== entityType ||
+                log.entity_id !== entityId
+              ) {
                 return false;
               }
             }
@@ -333,7 +375,7 @@ describe('Activity Log Properties', () => {
    * **Validates: Requirements 10.1**
    */
   it(
-    'Property 21: Activity Log Completeness - logs are queryable by actor',
+    "Property 21: Activity Log Completeness - logs are queryable by actor",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -355,7 +397,12 @@ describe('Activity Log Properties', () => {
 
             // Log multiple activities by the same actor
             for (const activity of activities) {
-              logActivityToDb(actorId, activity.entityType, activity.entityId, activity.action);
+              logActivityToDb(
+                actorId,
+                activity.entityType,
+                activity.entityId,
+                activity.action
+              );
             }
 
             // Query activities by actor ID
@@ -393,7 +440,7 @@ describe('Activity Log Properties', () => {
    * **Validates: Requirements 10.1**
    */
   it(
-    'Property 21: Activity Log Completeness - each log has unique ID',
+    "Property 21: Activity Log Completeness - each log has unique ID",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -416,7 +463,12 @@ describe('Activity Log Properties', () => {
             // Log multiple activities
             const activityIds: string[] = [];
             for (const activity of activities) {
-              const id = logActivityToDb(actorId, activity.entityType, activity.entityId, activity.action);
+              const id = logActivityToDb(
+                actorId,
+                activity.entityType,
+                activity.entityId,
+                activity.action
+              );
               activityIds.push(id);
             }
 

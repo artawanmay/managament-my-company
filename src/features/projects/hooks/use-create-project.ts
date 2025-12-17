@@ -2,11 +2,11 @@
  * useCreateProject mutation hook
  * Requirements: 4.1
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createProject } from '../api';
-import { projectsQueryKey } from './use-projects';
-import { useSession } from '@/features/auth/hooks';
-import type { CreateProjectInput } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createProject } from "../api";
+import { projectsQueryKey } from "./use-projects";
+import { useSession } from "@/features/auth/hooks";
+import type { CreateProjectInput } from "../types";
 
 export function useCreateProject() {
   const queryClient = useQueryClient();
@@ -15,7 +15,7 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: (data: CreateProjectInput) => {
       if (!csrfToken) {
-        throw new Error('No CSRF token available');
+        throw new Error("No CSRF token available");
       }
       return createProject(data, csrfToken);
     },

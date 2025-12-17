@@ -2,12 +2,12 @@
  * Projects list page
  * Requirements: 4.1, 4.2, 4.6
  */
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { Plus, Archive } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus, Archive } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +15,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   ProjectsTable,
   ProjectForm,
@@ -27,27 +27,31 @@ import {
   type ProjectListItem,
   type CreateProjectInput,
   type UpdateProjectInput,
-} from '@/features/projects';
-import { useClients } from '@/features/clients';
-import { useUsers } from '@/features/users';
+} from "@/features/projects";
+import { useClients } from "@/features/clients";
+import { useUsers } from "@/features/users";
 
-export const Route = createFileRoute('/app/projects/')({
+export const Route = createFileRoute("/app/projects/")({
   component: ProjectsPage,
 });
 
 function ProjectsPage() {
   const { toast } = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectListItem | null>(null);
-  const [archiveProject, setArchiveProject] = useState<ProjectListItem | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectListItem | null>(
+    null
+  );
+  const [archiveProject, setArchiveProject] = useState<ProjectListItem | null>(
+    null
+  );
   const [includeArchived, setIncludeArchived] = useState(false);
 
   const { data, isLoading, error } = useProjects({ includeArchived });
   const { data: clientsData } = useClients();
   const { data: usersData } = useUsers();
   const createMutation = useCreateProject();
-  const updateMutation = useUpdateProject(editingProject?.id || '');
-  const archiveMutation = useArchiveProject(archiveProject?.id || '');
+  const updateMutation = useUpdateProject(editingProject?.id || "");
+  const archiveMutation = useArchiveProject(archiveProject?.id || "");
 
   const handleCreate = () => {
     setEditingProject(null);
@@ -63,28 +67,31 @@ function ProjectsPage() {
     setArchiveProject(project);
   };
 
-  const handleFormSubmit = async (formData: CreateProjectInput | UpdateProjectInput) => {
+  const handleFormSubmit = async (
+    formData: CreateProjectInput | UpdateProjectInput
+  ) => {
     try {
       if (editingProject) {
         await updateMutation.mutateAsync(formData as UpdateProjectInput);
         toast({
-          title: 'Project updated',
-          description: 'The project has been updated successfully.',
+          title: "Project updated",
+          description: "The project has been updated successfully.",
         });
       } else {
         await createMutation.mutateAsync(formData as CreateProjectInput);
         toast({
-          title: 'Project created',
-          description: 'The project has been created successfully.',
+          title: "Project created",
+          description: "The project has been created successfully.",
         });
       }
       setIsFormOpen(false);
       setEditingProject(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -95,15 +102,16 @@ function ProjectsPage() {
     try {
       await archiveMutation.mutateAsync();
       toast({
-        title: 'Project archived',
-        description: 'The project has been archived successfully.',
+        title: "Project archived",
+        description: "The project has been archived successfully.",
       });
       setArchiveProject(null);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -111,20 +119,27 @@ function ProjectsPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-destructive">Error loading projects: {error.message}</p>
+        <p className="text-destructive">
+          Error loading projects: {error.message}
+        </p>
       </div>
     );
   }
 
-  const clients = clientsData?.data?.map((c) => ({ id: c.id, name: c.name })) || [];
-  const users = usersData?.data?.map((u) => ({ id: u.id, name: u.name, email: u.email })) || [];
+  const clients =
+    clientsData?.data?.map((c) => ({ id: c.id, name: c.name })) || [];
+  const users =
+    usersData?.data?.map((u) => ({ id: u.id, name: u.name, email: u.email })) ||
+    [];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">Manage your projects and track progress</p>
+          <p className="text-muted-foreground">
+            Manage your projects and track progress
+          </p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -138,7 +153,10 @@ function ProjectsPage() {
           checked={includeArchived}
           onCheckedChange={(checked) => setIncludeArchived(checked === true)}
         />
-        <Label htmlFor="includeArchived" className="text-sm text-muted-foreground">
+        <Label
+          htmlFor="includeArchived"
+          className="text-sm text-muted-foreground"
+        >
           Show archived projects
         </Label>
       </div>
@@ -161,13 +179,17 @@ function ProjectsPage() {
       />
 
       {/* Archive Confirmation Dialog */}
-      <Dialog open={!!archiveProject} onOpenChange={() => setArchiveProject(null)}>
+      <Dialog
+        open={!!archiveProject}
+        onOpenChange={() => setArchiveProject(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Archive Project</DialogTitle>
             <DialogDescription>
-              Are you sure you want to archive "{archiveProject?.name}"? Archived projects will be
-              hidden from the default view but can still be accessed.
+              Are you sure you want to archive &quot;{archiveProject?.name}
+              &quot;? Archived projects will be hidden from the default view but
+              can still be accessed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -180,7 +202,7 @@ function ProjectsPage() {
               disabled={archiveMutation.isPending}
             >
               <Archive className="mr-2 h-4 w-4" />
-              {archiveMutation.isPending ? 'Archiving...' : 'Archive'}
+              {archiveMutation.isPending ? "Archiving..." : "Archive"}
             </Button>
           </DialogFooter>
         </DialogContent>

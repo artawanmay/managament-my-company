@@ -7,14 +7,14 @@
  * - 16.3: User can change theme preference
  * - 16.4: User can update their profile (name, email)
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import { db } from '@/lib/db';
-import { usersSqlite } from '@/lib/db/schema/users';
-import { requireAuth, requireAuthWithCsrf } from '@/lib/auth/middleware';
-import { logError } from '@/lib/logger';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { usersSqlite } from "@/lib/db/schema/users";
+import { requireAuth, requireAuthWithCsrf } from "@/lib/auth/middleware";
+import { logError } from "@/lib/logger";
 
 // Response type for user profile
 interface UserProfileResponse {
@@ -30,11 +30,15 @@ interface UserProfileResponse {
 
 // Zod schema for profile update
 const updateProfileSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name is too long').optional(),
-  email: z.string().email('Invalid email address').optional(),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name is too long")
+    .optional(),
+  email: z.string().email("Invalid email address").optional(),
 });
 
-export const Route = createFileRoute('/api/users/me/')({
+export const Route = createFileRoute("/api/users/me/")({
   server: {
     handlers: {
       /**
@@ -68,7 +72,7 @@ export const Route = createFileRoute('/api/users/me/')({
           const user = users[0];
 
           if (!user) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           const response: UserProfileResponse = {
@@ -84,8 +88,13 @@ export const Route = createFileRoute('/api/users/me/')({
 
           return json(response);
         } catch (error) {
-          logError('[GET /api/users/me] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to fetch user profile' }, { status: 500 });
+          logError("[GET /api/users/me] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json(
+            { error: "Failed to fetch user profile" },
+            { status: 500 }
+          );
         }
       },
 
@@ -107,7 +116,10 @@ export const Route = createFileRoute('/api/users/me/')({
 
           if (!validation.success) {
             return json(
-              { error: 'Validation failed', details: validation.error.flatten() },
+              {
+                error: "Validation failed",
+                details: validation.error.flatten(),
+              },
               { status: 400 }
             );
           }
@@ -116,7 +128,7 @@ export const Route = createFileRoute('/api/users/me/')({
 
           // Check if there's anything to update
           if (!name && !email) {
-            return json({ error: 'No fields to update' }, { status: 400 });
+            return json({ error: "No fields to update" }, { status: 400 });
           }
 
           // If email is being changed, check for uniqueness
@@ -128,7 +140,10 @@ export const Route = createFileRoute('/api/users/me/')({
               .limit(1);
 
             if (existingUser.length > 0) {
-              return json({ error: 'Email is already in use' }, { status: 409 });
+              return json(
+                { error: "Email is already in use" },
+                { status: 409 }
+              );
             }
           }
 
@@ -165,7 +180,10 @@ export const Route = createFileRoute('/api/users/me/')({
           const user = users[0];
 
           if (!user) {
-            return json({ error: 'User not found after update' }, { status: 500 });
+            return json(
+              { error: "User not found after update" },
+              { status: 500 }
+            );
           }
 
           const response: UserProfileResponse = {
@@ -181,8 +199,13 @@ export const Route = createFileRoute('/api/users/me/')({
 
           return json(response);
         } catch (error) {
-          logError('[PUT /api/users/me] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to update user profile' }, { status: 500 });
+          logError("[PUT /api/users/me] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json(
+            { error: "Failed to update user profile" },
+            { status: 500 }
+          );
         }
       },
     },

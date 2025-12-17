@@ -2,10 +2,10 @@
  * Hook for marking a notification as read
  * Requirement 9.4
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markNotificationAsRead } from '../api';
-import { useSession } from '@/features/auth/hooks';
-import type { NotificationsListResponse, Notification } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { markNotificationAsRead } from "../api";
+import { useSession } from "@/features/auth/hooks";
+import type { NotificationsListResponse, Notification } from "../types";
 
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
@@ -14,22 +14,23 @@ export function useMarkAsRead() {
   return useMutation({
     mutationFn: (notificationId: string) => {
       if (!session.csrfToken) {
-        throw new Error('No CSRF token available');
+        throw new Error("No CSRF token available");
       }
       return markNotificationAsRead(notificationId, session.csrfToken);
     },
     onMutate: async (notificationId) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['notifications'] });
+      await queryClient.cancelQueries({ queryKey: ["notifications"] });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueriesData<NotificationsListResponse>({
-        queryKey: ['notifications'],
-      });
+      const previousData =
+        queryClient.getQueriesData<NotificationsListResponse>({
+          queryKey: ["notifications"],
+        });
 
       // Optimistically update all notification queries
       queryClient.setQueriesData<NotificationsListResponse>(
-        { queryKey: ['notifications'] },
+        { queryKey: ["notifications"] },
         (old) => {
           if (!old) return old;
           return {
@@ -54,7 +55,7 @@ export function useMarkAsRead() {
     },
     onSettled: () => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }

@@ -2,8 +2,8 @@
  * React Hook for render tracking
  * Use this in components to automatically track renders
  */
-import { useEffect, useRef } from 'react';
-import { trackRender, logRender } from './render-tracker';
+import { useEffect, useRef } from "react";
+import { trackRender, logRender } from "./render-tracker";
 
 /**
  * Hook to track component renders
@@ -35,7 +35,7 @@ export function useRenderTracker(
         ...Object.keys(prevProps.current),
       ]);
 
-      allKeys.forEach(key => {
+      allKeys.forEach((key) => {
         if (props[key] !== prevProps.current?.[key]) {
           changedProps.push(key);
         }
@@ -44,7 +44,7 @@ export function useRenderTracker(
       if (changedProps.length > 0 && verbose) {
         console.log(
           `📝 [PROPS CHANGED] ${componentName}:`,
-          changedProps.join(', ')
+          changedProps.join(", ")
         );
       }
     }
@@ -65,7 +65,7 @@ export function useLoopDetector(
 
   const now = Date.now();
   renderTimestamps.current = renderTimestamps.current.filter(
-    t => now - t < TIME_WINDOW
+    (t) => now - t < TIME_WINDOW
   );
   renderTimestamps.current.push(now);
 

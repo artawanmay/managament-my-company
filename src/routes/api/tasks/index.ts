@@ -9,10 +9,10 @@
  * - 5.4: Create notification for assignee when task is assigned
  * - 5.5: Mark tasks as overdue when due date passes
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, like, or, desc, asc, sql, inArray, and } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, like, or, desc, asc, sql, inArray, and } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   tasks,
   taskStatusValues,
@@ -23,28 +23,28 @@ import {
   notifications,
   type NewTask,
   type NewNotification,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
   handleAuthError,
-} from '@/lib/auth/middleware';
-import { logError } from '@/lib/logger';
-import { logTaskCreated } from '@/lib/activity';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+} from "@/lib/auth/middleware";
+import { logError } from "@/lib/logger";
+import { logTaskCreated } from "@/lib/activity";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for creating a task
 const createTaskSchema = z.object({
-  projectId: z.string().uuid('Invalid project ID'),
-  title: z.string().min(1, 'Title is required').max(255),
+  projectId: z.string().uuid("Invalid project ID"),
+  title: z.string().min(1, "Title is required").max(255),
   description: z.string().max(5000).optional().nullable(),
-  status: z.enum(taskStatusValues).default('BACKLOG'),
-  priority: z.enum(priorityValues).default('MEDIUM'),
-  assigneeId: z.string().uuid('Invalid assignee ID').optional().nullable(),
+  status: z.enum(taskStatusValues).default("BACKLOG"),
+  priority: z.enum(priorityValues).default("MEDIUM"),
+  assigneeId: z.string().uuid("Invalid assignee ID").optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   estimatedHours: z.number().min(0).optional().nullable(),
-  linkedNoteId: z.string().uuid('Invalid note ID').optional().nullable(),
+  linkedNoteId: z.string().uuid("Invalid note ID").optional().nullable(),
 });
 
 // Query params schema
@@ -54,14 +54,24 @@ const listQuerySchema = z.object({
   status: z.enum(taskStatusValues).optional(),
   priority: z.enum(priorityValues).optional(),
   assigneeId: z.string().uuid().optional(),
-  includeOverdue: z.enum(['true', 'false']).default('false'),
-  sortBy: z.enum(['title', 'status', 'priority', 'dueDate', 'createdAt', 'updatedAt', 'order']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  includeOverdue: z.enum(["true", "false"]).default("false"),
+  sortBy: z
+    .enum([
+      "title",
+      "status",
+      "priority",
+      "dueDate",
+      "createdAt",
+      "updatedAt",
+      "order",
+    ])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
 });
 
-export const Route = createFileRoute('/api/tasks/')({
+export const Route = createFileRoute("/api/tasks/")({
   server: {
     handlers: {
       /**
@@ -72,45 +82,61 @@ export const Route = createFileRoute('/api/tasks/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           // Parse query parameters
           const url = new URL(request.url);
           const queryParams = {
-            search: url.searchParams.get('search') || undefined,
-            projectId: url.searchParams.get('projectId') || undefined,
-            status: url.searchParams.get('status') || undefined,
-            priority: url.searchParams.get('priority') || undefined,
-            assigneeId: url.searchParams.get('assigneeId') || undefined,
-            includeOverdue: url.searchParams.get('includeOverdue') || 'false',
-            sortBy: url.searchParams.get('sortBy') || 'createdAt',
-            sortOrder: url.searchParams.get('sortOrder') || 'desc',
-            page: url.searchParams.get('page') || '1',
-            limit: url.searchParams.get('limit') || '20',
+            search: url.searchParams.get("search") || undefined,
+            projectId: url.searchParams.get("projectId") || undefined,
+            status: url.searchParams.get("status") || undefined,
+            priority: url.searchParams.get("priority") || undefined,
+            assigneeId: url.searchParams.get("assigneeId") || undefined,
+            includeOverdue: url.searchParams.get("includeOverdue") || "false",
+            sortBy: url.searchParams.get("sortBy") || "createdAt",
+            sortOrder: url.searchParams.get("sortOrder") || "desc",
+            page: url.searchParams.get("page") || "1",
+            limit: url.searchParams.get("limit") || "20",
           };
 
           const parsed = listQuerySchema.safeParse(queryParams);
           if (!parsed.success) {
             return json(
-              { error: 'Invalid query parameters', details: parsed.error.flatten() },
+              {
+                error: "Invalid query parameters",
+                details: parsed.error.flatten(),
+              },
               { status: 400 }
             );
           }
 
-          const { search, projectId, status, priority, assigneeId, sortBy, sortOrder, page, limit } = parsed.data;
+          const {
+            search,
+            projectId,
+            status,
+            priority,
+            assigneeId,
+            sortBy,
+            sortOrder,
+            page,
+            limit,
+          } = parsed.data;
           const offset = (page - 1) * limit;
 
           // Get accessible project IDs for the user
           let accessibleProjectIds: string[] = [];
 
-          if (auth.user.role === 'SUPER_ADMIN') {
+          if (auth.user.role === "SUPER_ADMIN") {
             // SUPER_ADMIN users can see all tasks
             if (projectId) {
               accessibleProjectIds = [projectId];
             } else {
               // Get all project IDs
-              const allProjects = await db.select({ id: projects.id }).from(projects);
+              const allProjects = await db
+                .select({ id: projects.id })
+                .from(projects);
               accessibleProjectIds = allProjects.map((p) => p.id);
             }
           } else {
@@ -129,12 +155,17 @@ export const Route = createFileRoute('/api/tasks/')({
 
             const managedProjectIds = managedProjects.map((p) => p.id);
 
-            accessibleProjectIds = [...new Set([...memberProjectIds, ...managedProjectIds])];
+            accessibleProjectIds = [
+              ...new Set([...memberProjectIds, ...managedProjectIds]),
+            ];
 
             // If specific project requested, verify access
             if (projectId) {
               if (!accessibleProjectIds.includes(projectId)) {
-                return json({ error: 'Access denied to this project' }, { status: 403 });
+                return json(
+                  { error: "Access denied to this project" },
+                  { status: 403 }
+                );
               }
               accessibleProjectIds = [projectId];
             }
@@ -182,7 +213,7 @@ export const Route = createFileRoute('/api/tasks/')({
             order: tasks.order,
           }[sortBy];
 
-          const orderFn = sortOrder === 'asc' ? asc : desc;
+          const orderFn = sortOrder === "asc" ? asc : desc;
 
           // Query tasks with joins
           const taskList = await db
@@ -217,7 +248,8 @@ export const Route = createFileRoute('/api/tasks/')({
           const now = new Date();
           const tasksWithOverdue = taskList.map((task) => ({
             ...task,
-            isOverdue: task.dueDate && task.dueDate < now && task.status !== 'DONE',
+            isOverdue:
+              task.dueDate && task.dueDate < now && task.status !== "DONE",
           }));
 
           // Get total count
@@ -237,8 +269,10 @@ export const Route = createFileRoute('/api/tasks/')({
             },
           });
         } catch (error) {
-          logError('[GET /api/tasks] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to fetch tasks' }, { status: 500 });
+          logError("[GET /api/tasks] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json({ error: "Failed to fetch tasks" }, { status: 500 });
         }
       },
 
@@ -250,7 +284,8 @@ export const Route = createFileRoute('/api/tasks/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const body = await request.json();
@@ -258,7 +293,7 @@ export const Route = createFileRoute('/api/tasks/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -271,12 +306,12 @@ export const Route = createFileRoute('/api/tasks/')({
             .limit(1);
 
           if (projectResult.length === 0) {
-            return json({ error: 'Project not found' }, { status: 404 });
+            return json({ error: "Project not found" }, { status: 404 });
           }
 
           // Check project access for non-admin users
           const projectData = projectResult[0]!;
-          if (auth.user.role !== 'SUPER_ADMIN') {
+          if (auth.user.role !== "SUPER_ADMIN") {
             const isManager = projectData.managerId === auth.user.id;
             const isMember = await db
               .select({ id: projectMembers.id })
@@ -290,7 +325,10 @@ export const Route = createFileRoute('/api/tasks/')({
               .limit(1);
 
             if (!isManager && isMember.length === 0) {
-              return json({ error: 'Access denied to this project' }, { status: 403 });
+              return json(
+                { error: "Access denied to this project" },
+                { status: 403 }
+              );
             }
           }
 
@@ -303,7 +341,7 @@ export const Route = createFileRoute('/api/tasks/')({
               .limit(1);
 
             if (assigneeExists.length === 0) {
-              return json({ error: 'Assignee not found' }, { status: 404 });
+              return json({ error: "Assignee not found" }, { status: 404 });
             }
           }
 
@@ -338,18 +376,26 @@ export const Route = createFileRoute('/api/tasks/')({
           const newTask = result[0]!;
 
           // Log activity
-          await logTaskCreated(auth.user.id, newTask.id, newTask.title, parsed.data.projectId);
+          await logTaskCreated(
+            auth.user.id,
+            newTask.id,
+            newTask.title,
+            parsed.data.projectId
+          );
 
           // Create notification for assignee if different from creator (Requirement 5.4)
-          if (parsed.data.assigneeId && parsed.data.assigneeId !== auth.user.id) {
+          if (
+            parsed.data.assigneeId &&
+            parsed.data.assigneeId !== auth.user.id
+          ) {
             const notificationData: NewNotification = {
               id: randomUUID(),
               userId: parsed.data.assigneeId,
-              type: 'TASK_ASSIGNED',
-              title: 'New Task Assigned',
+              type: "TASK_ASSIGNED",
+              title: "New Task Assigned",
               message: `You have been assigned to task: ${parsed.data.title}`,
               data: JSON.stringify({
-                entityType: 'TASK',
+                entityType: "TASK",
                 entityId: newTask.id,
                 projectId: parsed.data.projectId,
                 assignedBy: auth.user.id,
@@ -361,8 +407,10 @@ export const Route = createFileRoute('/api/tasks/')({
 
           return json({ data: newTask }, { status: 201 });
         } catch (error) {
-          logError('[POST /api/tasks] Error', { error: error instanceof Error ? error.message : String(error) });
-          return json({ error: 'Failed to create task' }, { status: 500 });
+          logError("[POST /api/tasks] Error", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return json({ error: "Failed to create task" }, { status: 500 });
         }
       },
     },

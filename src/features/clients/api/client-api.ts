@@ -9,9 +9,9 @@ import type {
   CreateClientInput,
   UpdateClientInput,
   Client,
-} from '../types';
+} from "../types";
 
-const API_BASE = '/api/clients';
+const API_BASE = "/api/clients";
 
 /**
  * Fetch clients with search, filter, and sort
@@ -22,30 +22,32 @@ export async function fetchClients(
 ): Promise<ClientListResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params.search) searchParams.set('search', params.search);
-  if (params.status) searchParams.set('status', params.status);
-  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
-  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  if (params.page) searchParams.set('page', params.page.toString());
-  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set("search", params.search);
+  if (params.status) searchParams.set("status", params.status);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.page) searchParams.set("page", params.page.toString());
+  if (params.limit) searchParams.set("limit", params.limit.toString());
 
   const url = `${API_BASE}?${searchParams.toString()}`;
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch clients' }));
-    throw new Error(error.error || 'Failed to fetch clients');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch clients" }));
+    throw new Error(error.error || "Failed to fetch clients");
   }
 
   return response.json();
@@ -59,21 +61,23 @@ export async function fetchClient(
   csrfToken?: string
 ): Promise<{ data: ClientWithProjects }> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(`${API_BASE}/${clientId}`, {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch client' }));
-    throw new Error(error.error || 'Failed to fetch client');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch client" }));
+    throw new Error(error.error || "Failed to fetch client");
   }
 
   return response.json();
@@ -87,18 +91,20 @@ export async function createClient(
   csrfToken: string
 ): Promise<{ data: Client }> {
   const response = await fetch(API_BASE, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to create client' }));
-    throw new Error(error.error || 'Failed to create client');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to create client" }));
+    throw new Error(error.error || "Failed to create client");
   }
 
   return response.json();
@@ -113,18 +119,20 @@ export async function updateClient(
   csrfToken: string
 ): Promise<{ data: Client }> {
   const response = await fetch(`${API_BASE}/${clientId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to update client' }));
-    throw new Error(error.error || 'Failed to update client');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to update client" }));
+    throw new Error(error.error || "Failed to update client");
   }
 
   return response.json();
@@ -138,17 +146,19 @@ export async function deleteClient(
   csrfToken: string
 ): Promise<{ success: boolean; message: string }> {
   const response = await fetch(`${API_BASE}/${clientId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete client' }));
-    throw new Error(error.error || 'Failed to delete client');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete client" }));
+    throw new Error(error.error || "Failed to delete client");
   }
 
   return response.json();

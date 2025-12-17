@@ -6,24 +6,30 @@
  * - 1.2: Error display for invalid credentials
  * - 1.3: Error display for lockout
  */
-import * as React from 'react';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
+import * as React from "react";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle, Loader2, Lock, Mail } from "lucide-react";
 
 // Zod schema for login form validation
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
   password: z
     .string()
-    .min(1, 'Password is required')
-    .min(6, 'Password must be at least 6 characters'),
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters"),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
@@ -47,13 +53,16 @@ export function LoginForm({
   lockoutMinutes = null,
 }: LoginFormProps) {
   const [formData, setFormData] = React.useState<LoginFormData>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [formErrors, setFormErrors] = React.useState<FormErrors>({});
   const [touched, setTouched] = React.useState<Record<string, boolean>>({});
 
-  const validateField = (name: keyof LoginFormData, value: string): string | undefined => {
+  const validateField = (
+    name: keyof LoginFormData,
+    value: string
+  ): string | undefined => {
     const fieldSchema = loginSchema.shape[name];
     const result = fieldSchema.safeParse(value);
     return result.success ? undefined : result.error.issues[0]?.message;
@@ -124,8 +133,11 @@ export function LoginForm({
               <div>
                 {isLocked ? (
                   <span>
-                    Account is temporarily locked. Please try again in{' '}
-                    <strong>{lockoutMinutes} minute{lockoutMinutes !== 1 ? 's' : ''}</strong>.
+                    Account is temporarily locked. Please try again in{" "}
+                    <strong>
+                      {lockoutMinutes} minute{lockoutMinutes !== 1 ? "s" : ""}
+                    </strong>
+                    .
                   </span>
                 ) : (
                   <span>{error}</span>
@@ -148,7 +160,7 @@ export function LoginForm({
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isLoading || isLocked}
-                className={`pl-10 ${formErrors.email ? 'border-destructive' : ''}`}
+                className={`pl-10 ${formErrors.email ? "border-destructive" : ""}`}
                 autoComplete="email"
                 autoFocus
               />
@@ -172,7 +184,7 @@ export function LoginForm({
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isLoading || isLocked}
-                className={`pl-10 ${formErrors.password ? 'border-destructive' : ''}`}
+                className={`pl-10 ${formErrors.password ? "border-destructive" : ""}`}
                 autoComplete="current-password"
               />
             </div>
@@ -193,7 +205,7 @@ export function LoginForm({
                 Signing in...
               </>
             ) : (
-              'Sign in'
+              "Sign in"
             )}
           </Button>
         </form>

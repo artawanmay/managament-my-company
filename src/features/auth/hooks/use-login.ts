@@ -4,9 +4,9 @@
  * Requirements:
  * - 1.1: Login mutation with TanStack Query
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { login } from '../api/auth-api';
-import type { LoginRequest, LoginResponse } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { login } from "../api/auth-api";
+import type { LoginRequest, LoginResponse } from "../types";
 
 interface UseLoginOptions {
   onSuccess?: (data: LoginResponse) => void;
@@ -21,10 +21,10 @@ export function useLogin(options?: UseLoginOptions) {
     onSuccess: (data) => {
       if (data.success) {
         // Invalidate session query to refetch user data
-        queryClient.invalidateQueries({ queryKey: ['session'] });
+        queryClient.invalidateQueries({ queryKey: ["session"] });
         // Store CSRF token in memory for subsequent requests
         if (data.csrfToken) {
-          sessionStorage.setItem('csrf_token', data.csrfToken);
+          sessionStorage.setItem("csrf_token", data.csrfToken);
         }
       }
       options?.onSuccess?.(data);

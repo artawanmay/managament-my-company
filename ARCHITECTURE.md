@@ -6,15 +6,15 @@ MMC App is a full-stack project management application built with modern web tec
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, TanStack Router, TanStack Query |
-| UI Components | Radix UI, Tailwind CSS, shadcn/ui |
-| Backend | TanStack Start (SSR), Node.js |
-| Database | SQLite (dev) / PostgreSQL (prod) with Drizzle ORM |
-| Real-time | Server-Sent Events (SSE), Redis Pub/Sub |
-| Authentication | Session-based with CSRF protection |
-| Testing | Vitest, fast-check (PBT), Playwright (E2E) |
+| Layer          | Technology                                        |
+| -------------- | ------------------------------------------------- |
+| Frontend       | React 18, TanStack Router, TanStack Query         |
+| UI Components  | Radix UI, Tailwind CSS, shadcn/ui                 |
+| Backend        | TanStack Start (SSR), Node.js                     |
+| Database       | SQLite (dev) / PostgreSQL (prod) with Drizzle ORM |
+| Real-time      | Server-Sent Events (SSE), Redis Pub/Sub           |
+| Authentication | Session-based with CSRF protection                |
+| Testing        | Vitest, fast-check (PBT), Playwright (E2E)        |
 
 ## Project Structure
 

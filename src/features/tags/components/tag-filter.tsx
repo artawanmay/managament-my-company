@@ -2,10 +2,10 @@
  * TagFilter component
  * Allows filtering lists by tags
  */
-import * as React from 'react';
-import { Check, ChevronsUpDown, Filter, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import * as React from "react";
+import { Check, ChevronsUpDown, Filter, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,11 +13,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTags } from '../hooks';
-import { TagBadge } from './tag-badge';
-import type { Tag } from '../types';
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useTags } from "../hooks";
+import { TagBadge } from "./tag-badge";
+import type { Tag } from "../types";
 
 interface TagFilterProps {
   selectedTagIds: string[];
@@ -25,16 +29,22 @@ interface TagFilterProps {
   className?: string;
 }
 
-export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilterProps) {
+export function TagFilter({
+  selectedTagIds,
+  onTagsChange,
+  className,
+}: TagFilterProps) {
   const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState('');
+  const [search, setSearch] = React.useState("");
 
   const { data: tagsData, isLoading } = useTags({ limit: 100 });
 
   const availableTags = tagsData?.data ?? [];
   const selectedTagIdsSet = new Set(selectedTagIds);
 
-  const selectedTags = availableTags.filter((tag) => selectedTagIdsSet.has(tag.id));
+  const selectedTags = availableTags.filter((tag) =>
+    selectedTagIdsSet.has(tag.id)
+  );
 
   const filteredTags = availableTags.filter((tag) =>
     tag.name.toLowerCase().includes(search.toLowerCase())
@@ -53,7 +63,7 @@ export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilter
   };
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn("flex items-center gap-2", className)}>
       {/* Selected tag badges */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -84,17 +94,18 @@ export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilter
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'h-8 justify-between text-xs',
-              selectedTagIds.length > 0 && 'border-primary'
+              "h-8 justify-between text-xs",
+              selectedTagIds.length > 0 && "border-primary"
             )}
           >
             <Filter className="mr-2 h-3 w-3" />
             {selectedTagIds.length > 0 ? (
               <span>
-                {selectedTagIds.length} tag{selectedTagIds.length > 1 ? 's' : ''} selected
+                {selectedTagIds.length} tag
+                {selectedTagIds.length > 1 ? "s" : ""} selected
               </span>
             ) : (
-              'Filter by tags'
+              "Filter by tags"
             )}
             <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
           </Button>
@@ -125,13 +136,15 @@ export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilter
                       >
                         <div
                           className={cn(
-                            'flex h-4 w-4 items-center justify-center rounded border',
+                            "flex h-4 w-4 items-center justify-center rounded border",
                             selectedTagIdsSet.has(tag.id)
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-muted'
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-muted"
                           )}
                         >
-                          {selectedTagIdsSet.has(tag.id) && <Check className="h-3 w-3" />}
+                          {selectedTagIdsSet.has(tag.id) && (
+                            <Check className="h-3 w-3" />
+                          )}
                         </div>
                         <span
                           className="h-3 w-3 rounded-full"

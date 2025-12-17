@@ -2,7 +2,7 @@
  * NotesTable component with TanStack Table
  * Requirements: 7.1, 7.7
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,26 +11,34 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-} from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Key, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+} from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Key,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { noteTypeValues, type NoteType } from '@/lib/db/schema';
-import type { Note } from '../types';
+} from "@/components/ui/select";
+import { noteTypeValues, type NoteType } from "@/lib/db/schema";
+import type { Note } from "../types";
 
 interface NotesTableProps {
   data: Note[];
@@ -42,56 +50,67 @@ interface NotesTableProps {
 }
 
 const typeColors: Record<NoteType, string> = {
-  API: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  RDP: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  SSH: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  DB: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  OTHER: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  API: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  RDP: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  SSH: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  DB: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+  OTHER: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
-export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret, isLoading }: NotesTableProps) {
+export function NotesTable({
+  data,
+  onEdit,
+  onDelete,
+  onViewSecret,
+  onFetchSecret,
+  isLoading,
+}: NotesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState<NoteType | 'ALL'>('ALL');
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState<NoteType | "ALL">("ALL");
   // Track which secrets are visible (by note id)
-  const [visibleSecrets, setVisibleSecrets] = useState<Record<string, string | null>>({});
-  const [loadingSecrets, setLoadingSecrets] = useState<Record<string, boolean>>({});
+  const [visibleSecrets, setVisibleSecrets] = useState<
+    Record<string, string | null>
+  >({});
+  const [loadingSecrets, setLoadingSecrets] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const filteredData = useMemo(() => {
-    if (typeFilter === 'ALL') return data;
+    if (typeFilter === "ALL") return data;
     return data.filter((note) => note.type === typeFilter);
   }, [data, typeFilter]);
 
   const columns: ColumnDef<Note>[] = useMemo(
     () => [
       {
-        accessorKey: 'systemName',
+        accessorKey: "systemName",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             System Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="font-medium">{row.getValue('systemName')}</span>
+          <span className="font-medium">{row.getValue("systemName")}</span>
         ),
       },
       {
-        accessorKey: 'type',
+        accessorKey: "type",
         header: ({ column }) => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Type
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const type = row.getValue('type') as NoteType;
+          const type = row.getValue("type") as NoteType;
           return (
             <Badge className={typeColors[type]} variant="outline">
               {type}
@@ -100,23 +119,23 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
         },
       },
       {
-        accessorKey: 'host',
-        header: 'Host',
-        cell: ({ row }) => row.getValue('host') || '-',
+        accessorKey: "host",
+        header: "Host",
+        cell: ({ row }) => row.getValue("host") || "-",
       },
       {
-        accessorKey: 'port',
-        header: 'Port',
-        cell: ({ row }) => row.getValue('port') || '-',
+        accessorKey: "port",
+        header: "Port",
+        cell: ({ row }) => row.getValue("port") || "-",
       },
       {
-        accessorKey: 'username',
-        header: 'Username',
-        cell: ({ row }) => row.getValue('username') || '-',
+        accessorKey: "username",
+        header: "Username",
+        cell: ({ row }) => row.getValue("username") || "-",
       },
       {
-        id: 'secret',
-        header: 'Secret',
+        id: "secret",
+        header: "Secret",
         cell: ({ row }) => {
           const note = row.original;
           const isVisible = visibleSecrets[note.id] !== undefined;
@@ -151,9 +170,11 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
                 {isLoadingSecret ? (
                   <span className="text-xs">Loading...</span>
                 ) : isVisible && secretValue ? (
-                  <span className="text-foreground break-all">{secretValue}</span>
+                  <span className="text-foreground break-all">
+                    {secretValue}
+                  </span>
                 ) : (
-                  '••••••••'
+                  "••••••••"
                 )}
               </span>
               {onFetchSecret && (
@@ -163,7 +184,7 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
                   className="h-6 w-6 p-0"
                   onClick={handleToggleSecret}
                   disabled={isLoadingSecret}
-                  title={isVisible ? 'Hide secret' : 'Show secret'}
+                  title={isVisible ? "Hide secret" : "Show secret"}
                 >
                   {isVisible ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -177,7 +198,7 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
         },
       },
       {
-        id: 'actions',
+        id: "actions",
         cell: ({ row }) => {
           const note = row.original;
           return (
@@ -216,7 +237,14 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
         },
       },
     ],
-    [onEdit, onDelete, onViewSecret, onFetchSecret, visibleSecrets, loadingSecrets]
+    [
+      onEdit,
+      onDelete,
+      onViewSecret,
+      onFetchSecret,
+      visibleSecrets,
+      loadingSecrets,
+    ]
   );
 
   const table = useReactTable({
@@ -252,7 +280,7 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
         />
         <Select
           value={typeFilter}
-          onValueChange={(value) => setTypeFilter(value as NoteType | 'ALL')}
+          onValueChange={(value) => setTypeFilter(value as NoteType | "ALL")}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by type" />
@@ -280,7 +308,10 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -304,7 +335,10 @@ export function NotesTable({ data, onEdit, onDelete, onViewSecret, onFetchSecret
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-sm">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>

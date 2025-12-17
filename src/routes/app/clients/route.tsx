@@ -2,9 +2,9 @@
  * Clients layout route
  * Provides layout wrapper for clients pages
  */
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/app/clients')({
+export const Route = createFileRoute("/app/clients")({
   component: ClientsLayout,
 });
 

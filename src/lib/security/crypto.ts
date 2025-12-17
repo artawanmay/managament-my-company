@@ -7,10 +7,10 @@ import {
   createDecipheriv,
   randomBytes,
   scryptSync,
-} from 'crypto';
+} from "crypto";
 
 // AES-256-GCM configuration
-const ALGORITHM = 'aes-256-gcm';
+const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96 bits recommended for GCM
 const AUTH_TAG_LENGTH = 16; // 128 bits
 const SALT_LENGTH = 16; // 128 bits for key derivation
@@ -25,8 +25,8 @@ function getEncryptionKey(salt: Buffer): Buffer {
 
   if (!envKey) {
     throw new Error(
-      'ENCRYPTION_KEY environment variable is not set. ' +
-        'Please set a secure encryption key in your environment.'
+      "ENCRYPTION_KEY environment variable is not set. " +
+        "Please set a secure encryption key in your environment."
     );
   }
 
@@ -40,9 +40,9 @@ function getEncryptionKey(salt: Buffer): Buffer {
  * @returns Base64 encoded string containing salt, IV, auth tag, and ciphertext
  */
 export function encryptSecret(plaintext: string): string {
-  if (plaintext === '') {
+  if (plaintext === "") {
     // Handle empty string case - still encrypt it
-    plaintext = '';
+    plaintext = "";
   }
 
   // Generate random salt and IV
@@ -58,7 +58,7 @@ export function encryptSecret(plaintext: string): string {
   });
 
   const encrypted = Buffer.concat([
-    cipher.update(plaintext, 'utf8'),
+    cipher.update(plaintext, "utf8"),
     cipher.final(),
   ]);
 
@@ -68,7 +68,7 @@ export function encryptSecret(plaintext: string): string {
   // Format: [salt (16 bytes)][iv (12 bytes)][authTag (16 bytes)][ciphertext]
   const combined = Buffer.concat([salt, iv, authTag, encrypted]);
 
-  return combined.toString('base64');
+  return combined.toString("base64");
 }
 
 /**
@@ -79,11 +79,11 @@ export function encryptSecret(plaintext: string): string {
  */
 export function decryptSecret(ciphertext: string): string {
   try {
-    const combined = Buffer.from(ciphertext, 'base64');
+    const combined = Buffer.from(ciphertext, "base64");
 
     // Minimum length check: salt + iv + authTag = 44 bytes
     if (combined.length < SALT_LENGTH + IV_LENGTH + AUTH_TAG_LENGTH) {
-      throw new Error('Invalid ciphertext: too short');
+      throw new Error("Invalid ciphertext: too short");
     }
 
     // Extract components
@@ -111,13 +111,16 @@ export function decryptSecret(ciphertext: string): string {
       decipher.final(),
     ]);
 
-    return decrypted.toString('utf8');
+    return decrypted.toString("utf8");
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Invalid ciphertext')) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Invalid ciphertext")
+    ) {
       throw error;
     }
     throw new Error(
-      'Decryption failed: invalid ciphertext, wrong key, or data has been tampered with'
+      "Decryption failed: invalid ciphertext, wrong key, or data has been tampered with"
     );
   }
 }

@@ -12,7 +12,7 @@ export interface Tag {
 export interface Taggable {
   id: string;
   tagId: string;
-  taggableType: 'TASK' | 'PROJECT' | 'NOTE';
+  taggableType: "TASK" | "PROJECT" | "NOTE";
   taggableId: string;
 }
 
@@ -31,11 +31,11 @@ export interface UpdateTagInput {
 }
 
 export interface AttachTagInput {
-  taggableType: 'TASK' | 'PROJECT' | 'NOTE';
+  taggableType: "TASK" | "PROJECT" | "NOTE";
   taggableId: string;
 }
 
 export interface DetachTagInput {
-  taggableType: 'TASK' | 'PROJECT' | 'NOTE';
+  taggableType: "TASK" | "PROJECT" | "NOTE";
   taggableId: string;
 }

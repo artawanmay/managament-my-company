@@ -5,12 +5,12 @@
  * Requirements:
  * - 1.5: Validate current session and return user info
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite } from '@/lib/db/schema/users';
-import { refreshSession, extractSessionIdFromCookie } from '@/lib/auth';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite } from "@/lib/db/schema/users";
+import { refreshSession, extractSessionIdFromCookie } from "@/lib/auth";
 
 interface SessionResponse {
   authenticated: boolean;
@@ -28,15 +28,15 @@ interface SessionResponse {
 
 // Cookie string to clear the session
 const CLEAR_SESSION_COOKIE =
-  'session_id=; Path=/; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  "session_id=; Path=/; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-export const Route = createFileRoute('/api/auth/session')({
+export const Route = createFileRoute("/api/auth/session")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         try {
           // Extract session ID from cookie
-          const cookieHeader = request.headers.get('cookie');
+          const cookieHeader = request.headers.get("cookie");
           const sessionId = extractSessionIdFromCookie(cookieHeader);
 
           if (!sessionId) {
@@ -52,7 +52,7 @@ export const Route = createFileRoute('/api/auth/session')({
               { authenticated: false },
               {
                 headers: {
-                  'Set-Cookie': CLEAR_SESSION_COOKIE,
+                  "Set-Cookie": CLEAR_SESSION_COOKIE,
                 },
               }
             );
@@ -80,7 +80,7 @@ export const Route = createFileRoute('/api/auth/session')({
               { authenticated: false },
               {
                 headers: {
-                  'Set-Cookie': CLEAR_SESSION_COOKIE,
+                  "Set-Cookie": CLEAR_SESSION_COOKIE,
                 },
               }
             );
@@ -90,9 +90,15 @@ export const Route = createFileRoute('/api/auth/session')({
           const headers: Record<string, string> = {};
 
           // If session was refreshed, update the cookie
-          if (session.expiresAt.getTime() > Date.now() + 6 * 24 * 60 * 60 * 1000) {
+          if (
+            session.expiresAt.getTime() >
+            Date.now() + 6 * 24 * 60 * 60 * 1000
+          ) {
             // Session was refreshed (more than 6 days remaining means it was extended)
-            headers['Set-Cookie'] = createSessionCookie(session.id, session.expiresAt);
+            headers["Set-Cookie"] = createSessionCookie(
+              session.id,
+              session.expiresAt
+            );
           }
 
           // Return authenticated session info
@@ -113,7 +119,7 @@ export const Route = createFileRoute('/api/auth/session')({
             Object.keys(headers).length > 0 ? { headers } : undefined
           );
         } catch (error) {
-          console.error('[Session] Error:', error);
+          console.error("[Session] Error:", error);
           return json<SessionResponse>({ authenticated: false });
         }
       },
@@ -134,9 +140,9 @@ function createSessionCookie(sessionId: string, expiresAt: Date): string {
   ];
 
   // Add Secure flag in production
-  if (process.env.NODE_ENV === 'production') {
-    cookieOptions.push('Secure');
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.push("Secure");
   }
 
-  return cookieOptions.join('; ');
+  return cookieOptions.join("; ");
 }

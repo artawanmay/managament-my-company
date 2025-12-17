@@ -1,0 +1,126 @@
+# Docker Compose configuration for MMC Application
+# Orchestrates PostgreSQL, Redis, Application, and Nginx services
+# Requirements: 4.1, 4.2, 4.3, 4.4
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mmc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mmc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mmc_password}
+      POSTGRES_DB: ${POSTGRES_DB:-mmc}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mmc} -d ${POSTGRES_DB:-mmc}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mmc-network
+
+  # =============================================================================
+  # Redis Cache and PubSub
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: mmc-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - mmc-network
+
+  # =============================================================================
+  # MMC Application
+  # =============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mmc-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mmc}:${POSTGRES_PASSWORD:-mmc_password}@postgres:5432/${POSTGRES_DB:-mmc}
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: ${SESSION_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      FILE_STORAGE_PATH: /app/uploads
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - mmc-network
+
+  # =============================================================================
+  # Nginx Reverse Proxy
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: mmc-nginx
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/error-pages:/usr/share/nginx/html/error-pages:ro
+      # Uncomment for SSL certificates
+      # - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mmc-network
+
+# =============================================================================
+# Named Volumes for Data Persistence
+# =============================================================================
+volumes:
+  pg_data:
+    name: mmc-pg-data
+  redis_data:
+    name: mmc-redis-data
+  uploads:
+    name: mmc-uploads
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+networks:
+  mmc-network:
+    name: mmc-network
+    driver: bridge

@@ -2,38 +2,38 @@
  * Property-based tests for task management
  * Tests task status grouping, task move updates status, and overdue detection
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/lib/db/schema/index';
-import { sql } from 'drizzle-orm';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "@/lib/db/schema/index";
+import { sql } from "drizzle-orm";
 
 const PBT_RUNS = 100;
 
 // Task status values (Kanban columns)
 const taskStatusValues = [
-  'BACKLOG',
-  'TODO',
-  'IN_PROGRESS',
-  'IN_REVIEW',
-  'CHANGES_REQUESTED',
-  'DONE',
+  "BACKLOG",
+  "TODO",
+  "IN_PROGRESS",
+  "IN_REVIEW",
+  "CHANGES_REQUESTED",
+  "DONE",
 ] as const;
 type TaskStatus = (typeof taskStatusValues)[number];
 
-const priorityValues = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const;
+const priorityValues = ["LOW", "MEDIUM", "HIGH", "URGENT"] as const;
 
 // Helper to create test database
 function createTestDb() {
-  const sqlite = new Database(':memory:');
-  sqlite.pragma('journal_mode = WAL');
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
 }
 
 // Initialize test database with required tables
-function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
+function initTestDb(db: ReturnType<typeof createTestDb>["db"]) {
   // Create users table
   db.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -105,7 +105,9 @@ function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
   `);
 
   // Create indexes
-  db.run(sql`CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`);
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS tasks_project_id_idx ON tasks(project_id)`
+  );
   db.run(sql`CREATE INDEX IF NOT EXISTS tasks_status_idx ON tasks(status)`);
   db.run(sql`CREATE INDEX IF NOT EXISTS tasks_due_date_idx ON tasks(due_date)`);
 }
@@ -116,13 +118,16 @@ function initTestDb(db: ReturnType<typeof createTestDb>['db']) {
 function groupTasksByStatus(
   tasks: Array<{ id: string; status: string; title: string }>
 ): Map<string, Array<{ id: string; status: string; title: string }>> {
-  const groups = new Map<string, Array<{ id: string; status: string; title: string }>>();
-  
+  const groups = new Map<
+    string,
+    Array<{ id: string; status: string; title: string }>
+  >();
+
   // Initialize all columns
   for (const status of taskStatusValues) {
     groups.set(status, []);
   }
-  
+
   // Group tasks
   for (const task of tasks) {
     const group = groups.get(task.status);
@@ -130,7 +135,7 @@ function groupTasksByStatus(
       group.push(task);
     }
   }
-  
+
   return groups;
 }
 
@@ -138,7 +143,7 @@ function groupTasksByStatus(
  * Helper function to move a task to a new status (simulates Kanban drag-drop)
  */
 function moveTask(
-  db: ReturnType<typeof createTestDb>['db'],
+  db: ReturnType<typeof createTestDb>["db"],
   taskId: string,
   newStatus: TaskStatus,
   newOrder: number
@@ -155,12 +160,12 @@ function moveTask(
  */
 function isTaskOverdue(dueDate: number | null, status: string): boolean {
   if (!dueDate) return false;
-  if (status === 'DONE') return false;
+  if (status === "DONE") return false;
   const now = Math.floor(Date.now() / 1000);
   return dueDate < now;
 }
 
-describe('Task Status Grouping Properties', () => {
+describe("Task Status Grouping Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
@@ -178,11 +183,11 @@ describe('Task Status Grouping Properties', () => {
    * where each task's status matches its column identifier.
    * **Validates: Requirements 6.1**
    */
-  it('Property 15: Task Status Grouping - tasks grouped by status match column', async () => {
+  it("Property 15: Task Status Grouping - tasks grouped by status match column", async () => {
     // Create base test data
-    const clientId = 'test-client-grp';
-    const projectId = 'test-project-grp';
-    const managerId = 'test-manager-grp';
+    const clientId = "test-client-grp";
+    const projectId = "test-project-grp";
+    const managerId = "test-manager-grp";
 
     // Insert test client
     testDb.db.run(sql`
@@ -266,22 +271,22 @@ describe('Task Status Grouping Properties', () => {
    * All 6 Kanban columns should exist even when empty
    * **Validates: Requirements 6.1**
    */
-  it('Property 15: Task Status Grouping - all columns exist even when empty', () => {
+  it("Property 15: Task Status Grouping - all columns exist even when empty", () => {
     // Create empty task list
     const emptyTasks: Array<{ id: string; status: string; title: string }> = [];
-    
+
     // Group tasks
     const groupedTasks = groupTasksByStatus(emptyTasks);
-    
+
     // Verify all 6 columns exist
     expect(groupedTasks.size).toBe(6);
-    expect(groupedTasks.has('BACKLOG')).toBe(true);
-    expect(groupedTasks.has('TODO')).toBe(true);
-    expect(groupedTasks.has('IN_PROGRESS')).toBe(true);
-    expect(groupedTasks.has('IN_REVIEW')).toBe(true);
-    expect(groupedTasks.has('CHANGES_REQUESTED')).toBe(true);
-    expect(groupedTasks.has('DONE')).toBe(true);
-    
+    expect(groupedTasks.has("BACKLOG")).toBe(true);
+    expect(groupedTasks.has("TODO")).toBe(true);
+    expect(groupedTasks.has("IN_PROGRESS")).toBe(true);
+    expect(groupedTasks.has("IN_REVIEW")).toBe(true);
+    expect(groupedTasks.has("CHANGES_REQUESTED")).toBe(true);
+    expect(groupedTasks.has("DONE")).toBe(true);
+
     // All columns should be empty
     for (const [, tasks] of groupedTasks) {
       expect(tasks.length).toBe(0);
@@ -289,7 +294,7 @@ describe('Task Status Grouping Properties', () => {
   });
 });
 
-describe('Task Move Updates Status Properties', () => {
+describe("Task Move Updates Status Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
@@ -307,11 +312,11 @@ describe('Task Move Updates Status Properties', () => {
    * should update the task's status to match the column.
    * **Validates: Requirements 6.2**
    */
-  it('Property 16: Task Move Updates Status - moving task updates status', async () => {
+  it("Property 16: Task Move Updates Status - moving task updates status", async () => {
     // Create base test data
-    const clientId = 'test-client-move';
-    const projectId = 'test-project-move';
-    const managerId = 'test-manager-move';
+    const clientId = "test-client-move";
+    const projectId = "test-project-move";
+    const managerId = "test-manager-move";
 
     // Insert test client
     testDb.db.run(sql`
@@ -386,12 +391,12 @@ describe('Task Move Updates Status Properties', () => {
    * Moving a task to the same status should preserve the status
    * **Validates: Requirements 6.2**
    */
-  it('Property 16: Task Move Updates Status - moving to same status is idempotent', async () => {
+  it("Property 16: Task Move Updates Status - moving to same status is idempotent", async () => {
     // Create base test data
-    const clientId = 'test-client-move2';
-    const projectId = 'test-project-move2';
-    const managerId = 'test-manager-move2';
-    const taskId = 'test-task-move2';
+    const clientId = "test-client-move2";
+    const projectId = "test-project-move2";
+    const managerId = "test-manager-move2";
+    const taskId = "test-task-move2";
 
     // Insert test client
     testDb.db.run(sql`
@@ -417,19 +422,19 @@ describe('Task Move Updates Status Properties', () => {
     `);
 
     // Move to same status with different order
-    moveTask(testDb.db, taskId, 'IN_PROGRESS', 10);
+    moveTask(testDb.db, taskId, "IN_PROGRESS", 10);
 
     // Verify status unchanged, order updated
     const result = testDb.db.all(sql`
       SELECT status, task_order FROM tasks WHERE id = ${taskId}
     `) as Array<{ status: string; task_order: number }>;
 
-    expect(result[0]?.status).toBe('IN_PROGRESS');
+    expect(result[0]?.status).toBe("IN_PROGRESS");
     expect(result[0]?.task_order).toBe(10);
   });
 });
 
-describe('Overdue Task Detection Properties', () => {
+describe("Overdue Task Detection Properties", () => {
   let testDb: ReturnType<typeof createTestDb>;
 
   beforeEach(() => {
@@ -447,8 +452,14 @@ describe('Overdue Task Detection Properties', () => {
    * the task should be marked as overdue in query results.
    * **Validates: Requirements 5.5**
    */
-  it('Property 17: Overdue Task Detection - past due date with non-DONE status is overdue', async () => {
-    const nonDoneStatuses = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'CHANGES_REQUESTED'] as const;
+  it("Property 17: Overdue Task Detection - past due date with non-DONE status is overdue", async () => {
+    const nonDoneStatuses = [
+      "BACKLOG",
+      "TODO",
+      "IN_PROGRESS",
+      "IN_REVIEW",
+      "CHANGES_REQUESTED",
+    ] as const;
     const nonDoneStatusArb = fc.constantFrom(...nonDoneStatuses);
 
     await fc.assert(
@@ -458,7 +469,7 @@ describe('Overdue Task Detection Properties', () => {
         async (daysInPast, status) => {
           // Calculate past due date (Unix timestamp)
           const now = Math.floor(Date.now() / 1000);
-          const pastDueDate = now - (daysInPast * 24 * 60 * 60);
+          const pastDueDate = now - daysInPast * 24 * 60 * 60;
 
           // Check if task is overdue
           const isOverdue = isTaskOverdue(pastDueDate, status);
@@ -476,17 +487,17 @@ describe('Overdue Task Detection Properties', () => {
    * Tasks with DONE status are never overdue regardless of due date
    * **Validates: Requirements 5.5**
    */
-  it('Property 17: Overdue Task Detection - DONE tasks are never overdue', async () => {
+  it("Property 17: Overdue Task Detection - DONE tasks are never overdue", async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.integer({ min: 1, max: 365 }), // days in the past
         async (daysInPast) => {
           // Calculate past due date (Unix timestamp)
           const now = Math.floor(Date.now() / 1000);
-          const pastDueDate = now - (daysInPast * 24 * 60 * 60);
+          const pastDueDate = now - daysInPast * 24 * 60 * 60;
 
           // Check if DONE task is overdue
-          const isOverdue = isTaskOverdue(pastDueDate, 'DONE');
+          const isOverdue = isTaskOverdue(pastDueDate, "DONE");
 
           // DONE tasks should never be overdue
           return isOverdue === false;
@@ -501,7 +512,7 @@ describe('Overdue Task Detection Properties', () => {
    * Tasks with future due dates are never overdue
    * **Validates: Requirements 5.5**
    */
-  it('Property 17: Overdue Task Detection - future due dates are not overdue', async () => {
+  it("Property 17: Overdue Task Detection - future due dates are not overdue", async () => {
     const taskStatusArb = fc.constantFrom(...taskStatusValues);
 
     await fc.assert(
@@ -511,7 +522,7 @@ describe('Overdue Task Detection Properties', () => {
         async (daysInFuture, status) => {
           // Calculate future due date (Unix timestamp)
           const now = Math.floor(Date.now() / 1000);
-          const futureDueDate = now + (daysInFuture * 24 * 60 * 60);
+          const futureDueDate = now + daysInFuture * 24 * 60 * 60;
 
           // Check if task is overdue
           const isOverdue = isTaskOverdue(futureDueDate, status);
@@ -529,20 +540,17 @@ describe('Overdue Task Detection Properties', () => {
    * Tasks without due dates are never overdue
    * **Validates: Requirements 5.5**
    */
-  it('Property 17: Overdue Task Detection - tasks without due dates are not overdue', async () => {
+  it("Property 17: Overdue Task Detection - tasks without due dates are not overdue", async () => {
     const taskStatusArb = fc.constantFrom(...taskStatusValues);
 
     await fc.assert(
-      fc.asyncProperty(
-        taskStatusArb,
-        async (status) => {
-          // Check if task without due date is overdue
-          const isOverdue = isTaskOverdue(null, status);
+      fc.asyncProperty(taskStatusArb, async (status) => {
+        // Check if task without due date is overdue
+        const isOverdue = isTaskOverdue(null, status);
 
-          // Tasks without due dates should not be overdue
-          return isOverdue === false;
-        }
-      ),
+        // Tasks without due dates should not be overdue
+        return isOverdue === false;
+      }),
       { numRuns: PBT_RUNS }
     );
   });
@@ -552,12 +560,12 @@ describe('Overdue Task Detection Properties', () => {
    * Completing an overdue task removes the overdue flag
    * **Validates: Requirements 5.5**
    */
-  it('Property 17: Overdue Task Detection - completing task removes overdue flag', async () => {
+  it("Property 17: Overdue Task Detection - completing task removes overdue flag", async () => {
     // Create base test data
-    const clientId = 'test-client-od';
-    const projectId = 'test-project-od';
-    const managerId = 'test-manager-od';
-    const taskId = 'test-task-od';
+    const clientId = "test-client-od";
+    const projectId = "test-project-od";
+    const managerId = "test-manager-od";
+    const taskId = "test-task-od";
 
     // Insert test client
     testDb.db.run(sql`
@@ -578,7 +586,7 @@ describe('Overdue Task Detection Properties', () => {
 
     // Calculate past due date
     const now = Math.floor(Date.now() / 1000);
-    const pastDueDate = now - (7 * 24 * 60 * 60); // 7 days ago
+    const pastDueDate = now - 7 * 24 * 60 * 60; // 7 days ago
 
     // Insert overdue task
     testDb.db.run(sql`
@@ -591,7 +599,12 @@ describe('Overdue Task Detection Properties', () => {
       SELECT status, due_date FROM tasks WHERE id = ${taskId}
     `) as Array<{ status: string; due_date: number }>;
 
-    expect(isTaskOverdue(beforeComplete[0]?.due_date ?? null, beforeComplete[0]?.status ?? '')).toBe(true);
+    expect(
+      isTaskOverdue(
+        beforeComplete[0]?.due_date ?? null,
+        beforeComplete[0]?.status ?? ""
+      )
+    ).toBe(true);
 
     // Complete the task
     testDb.db.run(sql`
@@ -603,6 +616,11 @@ describe('Overdue Task Detection Properties', () => {
       SELECT status, due_date FROM tasks WHERE id = ${taskId}
     `) as Array<{ status: string; due_date: number }>;
 
-    expect(isTaskOverdue(afterComplete[0]?.due_date ?? null, afterComplete[0]?.status ?? '')).toBe(false);
+    expect(
+      isTaskOverdue(
+        afterComplete[0]?.due_date ?? null,
+        afterComplete[0]?.status ?? ""
+      )
+    ).toBe(false);
   });
 });

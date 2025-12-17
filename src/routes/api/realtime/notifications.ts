@@ -6,16 +6,16 @@
  * - 9.2: Push notifications to online users via SSE
  * - 20.2: Realtime notification updates
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { requireAuth, handleAuthError } from '@/lib/auth/middleware';
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuth, handleAuthError } from "@/lib/auth/middleware";
 import {
   createSSEResponse,
   registerUserConnection,
   subscribeToNotificationEvents,
   type NotificationEvent,
-} from '@/lib/realtime';
+} from "@/lib/realtime";
 
-export const Route = createFileRoute('/api/realtime/notifications')({
+export const Route = createFileRoute("/api/realtime/notifications")({
   server: {
     handlers: {
       /**
@@ -28,7 +28,7 @@ export const Route = createFileRoute('/api/realtime/notifications')({
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
         if (authError || !auth.success) {
-          return authError ?? new Response('Unauthorized', { status: 401 });
+          return authError ?? new Response("Unauthorized", { status: 401 });
         }
 
         const userId = auth.user.id;
@@ -46,7 +46,7 @@ export const Route = createFileRoute('/api/realtime/notifications')({
               userId,
               (event: NotificationEvent) => {
                 // Forward the notification to the SSE client
-                connection.send('notification', {
+                connection.send("notification", {
                   notificationId: event.notificationId,
                   userId: event.userId,
                   title: event.data.title,

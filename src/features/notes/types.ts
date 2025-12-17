@@ -1,9 +1,9 @@
 /**
  * Notes feature types
  */
-import type { NoteType } from '@/lib/db/schema';
+import type { NoteType } from "@/lib/db/schema";
 
-export type { NoteType } from '@/lib/db/schema';
+export type { NoteType } from "@/lib/db/schema";
 
 export interface Note {
   id: string;

@@ -6,19 +6,29 @@
  * - 16.2: Dark theme with black and blue styling
  * - 16.3: Theme preference persisted and applied immediately
  */
-import * as React from 'react';
-import { Monitor, Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTheme } from '@/components/layout/theme-provider';
-import { useToast } from '@/hooks/use-toast';
-import { useUpdateTheme } from '../hooks';
-import type { ThemePreference } from '../types';
+import * as React from "react";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useTheme } from "@/components/layout/theme-provider";
+import { useToast } from "@/hooks/use-toast";
+import { useUpdateTheme } from "../hooks";
+import type { ThemePreference } from "../types";
 
-const themes: { value: ThemePreference; label: string; icon: React.ReactNode }[] = [
-  { value: 'light', label: 'Light', icon: <Sun className="h-4 w-4" /> },
-  { value: 'dark', label: 'Dark', icon: <Moon className="h-4 w-4" /> },
-  { value: 'system', label: 'System', icon: <Monitor className="h-4 w-4" /> },
+const themes: {
+  value: ThemePreference;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { value: "light", label: "Light", icon: <Sun className="h-4 w-4" /> },
+  { value: "dark", label: "Dark", icon: <Moon className="h-4 w-4" /> },
+  { value: "system", label: "System", icon: <Monitor className="h-4 w-4" /> },
 ];
 
 export function ThemeSwitcher() {
@@ -37,9 +47,12 @@ export function ThemeSwitcher() {
       // Revert on error
       setTheme(theme as ThemePreference);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save theme preference',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save theme preference",
+        variant: "destructive",
       });
     }
   };
@@ -49,7 +62,7 @@ export function ThemeSwitcher() {
       <CardHeader>
         <CardTitle>Appearance</CardTitle>
         <CardDescription>
-          Customize how the application looks. Currently using{' '}
+          Customize how the application looks. Currently using{" "}
           <span className="font-medium">{resolvedTheme}</span> mode.
         </CardDescription>
       </CardHeader>
@@ -58,7 +71,7 @@ export function ThemeSwitcher() {
           {themes.map((t) => (
             <Button
               key={t.value}
-              variant={theme === t.value ? 'default' : 'outline'}
+              variant={theme === t.value ? "default" : "outline"}
               className="flex-1"
               onClick={() => handleThemeChange(t.value)}
               disabled={updateTheme.isPending}

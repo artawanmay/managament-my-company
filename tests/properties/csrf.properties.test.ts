@@ -1,27 +1,27 @@
 /**
  * Property-based tests for CSRF protection
  */
-import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
-import { createSession, validateCsrfToken } from '@/lib/auth/session';
+import { describe, it, beforeEach, afterEach, expect } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
+import { createSession, validateCsrfToken } from "@/lib/auth/session";
 import {
   validateCsrfRequest,
   requiresCsrfProtection,
   extractSessionIdFromCookie,
   extractCsrfToken,
   CSRF_HEADER,
-} from '@/lib/auth/csrf';
+} from "@/lib/auth/csrf";
 
 // Test database setup
 let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -50,7 +50,9 @@ function setupTestDb() {
     )
   `);
 
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id)`
+  );
 }
 
 function cleanupTestDb() {
@@ -65,10 +67,13 @@ const uuidArbitrary = fc.uuid();
 // Hex string generator (simpler than stringMatching)
 const hexStringArbitrary = (length: number) =>
   fc
-    .array(fc.integer({ min: 0, max: 15 }), { minLength: length, maxLength: length })
-    .map((arr) => arr.map((n) => n.toString(16)).join(''));
+    .array(fc.integer({ min: 0, max: 15 }), {
+      minLength: length,
+      maxLength: length,
+    })
+    .map((arr) => arr.map((n) => n.toString(16)).join(""));
 
-describe('CSRF Protection Properties', () => {
+describe("CSRF Protection Properties", () => {
   beforeEach(() => {
     setupTestDb();
   });
@@ -83,7 +88,7 @@ describe('CSRF Protection Properties', () => {
    * rejected if the CSRF token is missing or invalid.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - valid token is accepted', async () => {
+  it("Property 3: CSRF Token Validation - valid token is accepted", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // Create a test user
@@ -96,7 +101,11 @@ describe('CSRF Protection Properties', () => {
         const session = await createSession(userId, db);
 
         // Validate with correct CSRF token
-        const isValid = await validateCsrfToken(session.id, session.csrfToken, db);
+        const isValid = await validateCsrfToken(
+          session.id,
+          session.csrfToken,
+          db
+        );
 
         return isValid === true;
       }),
@@ -109,26 +118,30 @@ describe('CSRF Protection Properties', () => {
    * Invalid CSRF token should be rejected.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - invalid token is rejected', async () => {
+  it("Property 3: CSRF Token Validation - invalid token is rejected", async () => {
     await fc.assert(
-      fc.asyncProperty(uuidArbitrary, hexStringArbitrary(64), async (userId, wrongToken) => {
-        // Create a test user
-        db.run(sql`
+      fc.asyncProperty(
+        uuidArbitrary,
+        hexStringArbitrary(64),
+        async (userId, wrongToken) => {
+          // Create a test user
+          db.run(sql`
           INSERT INTO users (id, email, password_hash, name, role)
           VALUES (${userId}, ${`test-${userId}@example.com`}, 'hash', 'Test User', 'MEMBER')
         `);
 
-        // Create a session
-        const session = await createSession(userId, db);
+          // Create a session
+          const session = await createSession(userId, db);
 
-        // Skip if the random token happens to match (extremely unlikely)
-        fc.pre(wrongToken !== session.csrfToken);
+          // Skip if the random token happens to match (extremely unlikely)
+          fc.pre(wrongToken !== session.csrfToken);
 
-        // Validate with wrong CSRF token
-        const isValid = await validateCsrfToken(session.id, wrongToken, db);
+          // Validate with wrong CSRF token
+          const isValid = await validateCsrfToken(session.id, wrongToken, db);
 
-        return isValid === false;
-      }),
+          return isValid === false;
+        }
+      ),
       { numRuns: 100 }
     );
   });
@@ -138,7 +151,7 @@ describe('CSRF Protection Properties', () => {
    * Missing CSRF token should be rejected.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - missing token is rejected', async () => {
+  it("Property 3: CSRF Token Validation - missing token is rejected", async () => {
     await fc.assert(
       fc.asyncProperty(uuidArbitrary, async (userId) => {
         // Create a test user
@@ -153,7 +166,7 @@ describe('CSRF Protection Properties', () => {
         // Validate with null CSRF token
         const result = await validateCsrfRequest(session.id, null, db);
 
-        return result.valid === false && result.error === 'CSRF token missing';
+        return result.valid === false && result.error === "CSRF token missing";
       }),
       { numRuns: 100 }
     );
@@ -164,13 +177,13 @@ describe('CSRF Protection Properties', () => {
    * Missing session should be rejected.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - missing session is rejected', async () => {
+  it("Property 3: CSRF Token Validation - missing session is rejected", async () => {
     await fc.assert(
       fc.asyncProperty(hexStringArbitrary(64), async (csrfToken) => {
         // Validate with null session
         const result = await validateCsrfRequest(null, csrfToken, db);
 
-        return result.valid === false && result.error === 'No session found';
+        return result.valid === false && result.error === "No session found";
       }),
       { numRuns: 100 }
     );
@@ -181,9 +194,9 @@ describe('CSRF Protection Properties', () => {
    * Mutation methods require CSRF protection.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - mutation methods require protection', () => {
-    const mutationMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-    const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  it("Property 3: CSRF Token Validation - mutation methods require protection", () => {
+    const mutationMethods = ["POST", "PUT", "PATCH", "DELETE"];
+    const safeMethods = ["GET", "HEAD", "OPTIONS"];
 
     // All mutation methods should require protection
     for (const method of mutationMethods) {
@@ -203,7 +216,7 @@ describe('CSRF Protection Properties', () => {
    * Session ID extraction from cookies works correctly.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - session ID extraction from cookies', () => {
+  it("Property 3: CSRF Token Validation - session ID extraction from cookies", () => {
     fc.assert(
       fc.property(hexStringArbitrary(64), (sessionId) => {
         const cookieHeader = `session_id=${sessionId}; other_cookie=value`;
@@ -219,7 +232,7 @@ describe('CSRF Protection Properties', () => {
    * CSRF token extraction from headers works correctly.
    * **Validates: Requirements 1.6, 18.2**
    */
-  it('Property 3: CSRF Token Validation - CSRF token extraction from headers', () => {
+  it("Property 3: CSRF Token Validation - CSRF token extraction from headers", () => {
     fc.assert(
       fc.property(hexStringArbitrary(64), (csrfToken) => {
         // Test with Headers object

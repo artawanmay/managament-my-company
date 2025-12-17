@@ -8,10 +8,10 @@
  * - 8.2: Parse @username mentions and create notifications for mentioned users
  * - 8.3: Notify task assignee and reporter if they are not the comment author
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, and, desc } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, and, desc } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   comments,
   tasks,
@@ -21,18 +21,18 @@ import {
   notifications,
   type NewComment,
   type NewNotification,
-} from '@/lib/db/schema';
+} from "@/lib/db/schema";
 import {
   requireAuth,
   requireAuthWithCsrf,
   handleAuthError,
-} from '@/lib/auth/middleware';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+} from "@/lib/auth/middleware";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for creating a comment
 const createCommentSchema = z.object({
-  message: z.string().min(1, 'Message is required').max(5000),
+  message: z.string().min(1, "Message is required").max(5000),
   attachments: z.array(z.string().url()).optional().nullable(),
 });
 
@@ -55,7 +55,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN') {
+  if (userRole === "SUPER_ADMIN") {
     return true;
   }
 
@@ -86,7 +86,7 @@ async function hasTaskAccess(
   return memberResult.length > 0;
 }
 
-export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
+export const Route = createFileRoute("/api/tasks/$taskId/comments/")({
   server: {
     handlers: {
       /**
@@ -97,7 +97,8 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
         // Authenticate user
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { taskId } = params;
@@ -111,13 +112,17 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           const task = taskResult[0];
           if (!task) {
-            return json({ error: 'Task not found' }, { status: 404 });
+            return json({ error: "Task not found" }, { status: 404 });
           }
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(
+            auth.user.id,
+            auth.user.role,
+            task.projectId
+          );
           if (!hasAccess) {
-            return json({ error: 'Access denied' }, { status: 403 });
+            return json({ error: "Access denied" }, { status: 403 });
           }
 
           // Fetch comments with user info
@@ -162,8 +167,8 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           return json({ data: commentsWithUser });
         } catch (error) {
-          console.error('[GET /api/tasks/:taskId/comments] Error:', error);
-          return json({ error: 'Failed to fetch comments' }, { status: 500 });
+          console.error("[GET /api/tasks/:taskId/comments] Error:", error);
+          return json({ error: "Failed to fetch comments" }, { status: 500 });
         }
       },
 
@@ -175,11 +180,12 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         // GUEST users cannot create comments
-        if (auth.user.role === 'GUEST') {
-          return json({ error: 'Access denied' }, { status: 403 });
+        if (auth.user.role === "GUEST") {
+          return json({ error: "Access denied" }, { status: 403 });
         }
 
         try {
@@ -200,13 +206,17 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           const task = taskResult[0];
           if (!task) {
-            return json({ error: 'Task not found' }, { status: 404 });
+            return json({ error: "Task not found" }, { status: 404 });
           }
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(
+            auth.user.id,
+            auth.user.role,
+            task.projectId
+          );
           if (!hasAccess) {
-            return json({ error: 'Access denied' }, { status: 403 });
+            return json({ error: "Access denied" }, { status: 403 });
           }
 
           const body = await request.json();
@@ -214,7 +224,7 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -233,7 +243,9 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
             mentionedUserIds = mentionedUsers
               .filter((u) =>
                 mentionedUsernames.some(
-                  (username) => u.name.toLowerCase().replace(/\s+/g, '') === username.toLowerCase()
+                  (username) =>
+                    u.name.toLowerCase().replace(/\s+/g, "") ===
+                    username.toLowerCase()
                 )
               )
               .map((u) => u.id);
@@ -249,7 +261,10 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
             isEdited: false,
           };
 
-          const result = await db.insert(comments).values(commentData).returning();
+          const result = await db
+            .insert(comments)
+            .values(commentData)
+            .returning();
           const newComment = result[0]!;
 
           // Create notifications (Requirements 8.2, 8.3)
@@ -258,15 +273,18 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           // Notify mentioned users (Requirement 8.2)
           for (const mentionedUserId of mentionedUserIds) {
-            if (mentionedUserId !== auth.user.id && !notifiedUserIds.has(mentionedUserId)) {
+            if (
+              mentionedUserId !== auth.user.id &&
+              !notifiedUserIds.has(mentionedUserId)
+            ) {
               notificationsToCreate.push({
                 id: randomUUID(),
                 userId: mentionedUserId,
-                type: 'MENTIONED',
-                title: 'You were mentioned in a comment',
+                type: "MENTIONED",
+                title: "You were mentioned in a comment",
                 message: `${auth.user.name} mentioned you in a comment on task: ${task.title}`,
                 data: JSON.stringify({
-                  entityType: 'COMMENT',
+                  entityType: "COMMENT",
                   entityId: newComment.id,
                   taskId: task.id,
                   projectId: task.projectId,
@@ -278,15 +296,19 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
           }
 
           // Notify task assignee if not the comment author (Requirement 8.3)
-          if (task.assigneeId && task.assigneeId !== auth.user.id && !notifiedUserIds.has(task.assigneeId)) {
+          if (
+            task.assigneeId &&
+            task.assigneeId !== auth.user.id &&
+            !notifiedUserIds.has(task.assigneeId)
+          ) {
             notificationsToCreate.push({
               id: randomUUID(),
               userId: task.assigneeId,
-              type: 'COMMENT_ADDED',
-              title: 'New comment on your task',
+              type: "COMMENT_ADDED",
+              title: "New comment on your task",
               message: `${auth.user.name} commented on task: ${task.title}`,
               data: JSON.stringify({
-                entityType: 'COMMENT',
+                entityType: "COMMENT",
                 entityId: newComment.id,
                 taskId: task.id,
                 projectId: task.projectId,
@@ -297,15 +319,18 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
           }
 
           // Notify task reporter if not the comment author (Requirement 8.3)
-          if (task.reporterId !== auth.user.id && !notifiedUserIds.has(task.reporterId)) {
+          if (
+            task.reporterId !== auth.user.id &&
+            !notifiedUserIds.has(task.reporterId)
+          ) {
             notificationsToCreate.push({
               id: randomUUID(),
               userId: task.reporterId,
-              type: 'COMMENT_ADDED',
-              title: 'New comment on a task you reported',
+              type: "COMMENT_ADDED",
+              title: "New comment on a task you reported",
               message: `${auth.user.name} commented on task: ${task.title}`,
               data: JSON.stringify({
-                entityType: 'COMMENT',
+                entityType: "COMMENT",
                 entityId: newComment.id,
                 taskId: task.id,
                 projectId: task.projectId,
@@ -322,7 +347,12 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
 
           // Fetch user info for response
           const userResult = await db
-            .select({ id: users.id, name: users.name, email: users.email, avatarUrl: users.avatarUrl })
+            .select({
+              id: users.id,
+              name: users.name,
+              email: users.email,
+              avatarUrl: users.avatarUrl,
+            })
             .from(users)
             .where(eq(users.id, auth.user.id))
             .limit(1);
@@ -332,10 +362,16 @@ export const Route = createFileRoute('/api/tasks/$taskId/comments/')({
             user: userResult[0] || null,
           };
 
-          return json({ data: commentWithUser, notificationsCreated: notificationsToCreate.length }, { status: 201 });
+          return json(
+            {
+              data: commentWithUser,
+              notificationsCreated: notificationsToCreate.length,
+            },
+            { status: 201 }
+          );
         } catch (error) {
-          console.error('[POST /api/tasks/:taskId/comments] Error:', error);
-          return json({ error: 'Failed to create comment' }, { status: 500 });
+          console.error("[POST /api/tasks/:taskId/comments] Error:", error);
+          return json({ error: "Failed to create comment" }, { status: 500 });
         }
       },
     },

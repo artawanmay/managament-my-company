@@ -1,16 +1,16 @@
 /**
  * Property-based tests for authentication
  */
-import { describe, it } from 'vitest';
-import * as fc from 'fast-check';
-import { hashPassword, verifyPassword } from '@/lib/auth/password';
+import { describe, it } from "vitest";
+import * as fc from "fast-check";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 
 // Argon2 hashing is computationally expensive, so we use fewer runs
 // but still enough to provide good coverage
 const PBT_RUNS = 20;
 const TEST_TIMEOUT = 60000; // 60 seconds for expensive crypto operations
 
-describe('Password Hashing Properties', () => {
+describe("Password Hashing Properties", () => {
   /**
    * **Feature: mmc-app, Property 12: Password Hash Verification**
    * *For any* password string, hashing with argon2 and then verifying the original
@@ -19,7 +19,7 @@ describe('Password Hashing Properties', () => {
    * **Validates: Requirements 18.1**
    */
   it(
-    'Property 12: Password Hash Verification - correct password verifies',
+    "Property 12: Password Hash Verification - correct password verifies",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -42,7 +42,7 @@ describe('Password Hashing Properties', () => {
    * **Validates: Requirements 18.1**
    */
   it(
-    'Property 12: Password Hash Verification - different password fails',
+    "Property 12: Password Hash Verification - different password fails",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -69,7 +69,7 @@ describe('Password Hashing Properties', () => {
    * **Validates: Requirements 18.1**
    */
   it(
-    'Property 12: Password Hash Verification - hash differs from plaintext',
+    "Property 12: Password Hash Verification - hash differs from plaintext",
     async () => {
       await fc.assert(
         fc.asyncProperty(

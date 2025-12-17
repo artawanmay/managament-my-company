@@ -2,10 +2,10 @@
  * User seeder script - Creates test users for all roles
  * Run with: npm run db:seed
  */
-import { db } from './index';
-import { usersSqlite, type Role } from './schema/users';
-import { hashPassword } from '../auth/password';
-import { eq } from 'drizzle-orm';
+import { db } from "./index";
+import { usersSqlite, type Role } from "./schema/users";
+import { hashPassword } from "../auth/password";
+import { eq } from "drizzle-orm";
 
 interface SeedUser {
   email: string;
@@ -16,33 +16,33 @@ interface SeedUser {
 
 const seedUsers: SeedUser[] = [
   {
-    email: 'superadmin@test.com',
-    password: 'password123',
-    name: 'Super Admin User',
-    role: 'SUPER_ADMIN',
+    email: "superadmin@test.com",
+    password: "password123",
+    name: "Super Admin User",
+    role: "SUPER_ADMIN",
   },
   {
-    email: 'manager@test.com',
-    password: 'password123',
-    name: 'Manager User',
-    role: 'MANAGER',
+    email: "manager@test.com",
+    password: "password123",
+    name: "Manager User",
+    role: "MANAGER",
   },
   {
-    email: 'member@test.com',
-    password: 'password123',
-    name: 'Member User',
-    role: 'MEMBER',
+    email: "member@test.com",
+    password: "password123",
+    name: "Member User",
+    role: "MEMBER",
   },
   {
-    email: 'guest@test.com',
-    password: 'password123',
-    name: 'Guest User',
-    role: 'GUEST',
+    email: "guest@test.com",
+    password: "password123",
+    name: "Guest User",
+    role: "GUEST",
   },
 ];
 
 async function seedDatabase() {
-  console.log('🌱 Starting user seeding...\n');
+  console.log("🌱 Starting user seeding...\n");
 
   for (const user of seedUsers) {
     // Check if user already exists
@@ -72,9 +72,9 @@ async function seedDatabase() {
     console.log(`✅ Created ${user.role}: ${user.email}`);
   }
 
-  console.log('\n🎉 Seeding complete!\n');
-  console.log('Test credentials (all use password: password123):');
-  console.log('─'.repeat(50));
+  console.log("\n🎉 Seeding complete!\n");
+  console.log("Test credentials (all use password: password123):");
+  console.log("─".repeat(50));
   seedUsers.forEach((u) => {
     console.log(`  ${u.role.padEnd(12)} → ${u.email}`);
   });
@@ -83,6 +83,6 @@ async function seedDatabase() {
 seedDatabase()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error('❌ Seeding failed:', err);
+    console.error("❌ Seeding failed:", err);
     process.exit(1);
   });

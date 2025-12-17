@@ -2,8 +2,8 @@
  * User validation schemas
  * Requirements: 2.1, 2.2, 2.3, 16.3, 16.4
  */
-import { z } from 'zod';
-import { roleValues, themeValues } from '@/lib/db/schema/users';
+import { z } from "zod";
+import { roleValues, themeValues } from "@/lib/db/schema/users";
 import {
   uuidSchema,
   emailSchema,
@@ -11,7 +11,7 @@ import {
   urlSchema,
   baseListQuerySchema,
   sortOrderSchema,
-} from './common';
+} from "./common";
 
 // Role enum
 export const roleSchema = z.enum(roleValues);
@@ -22,14 +22,15 @@ export const themePreferenceSchema = z.enum(themeValues);
 // Create user schema (admin only)
 export const createUserSchema = z.object({
   email: emailSchema,
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password is too long')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password is too long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
   name: requiredStringSchema(100),
-  role: roleSchema.default('MEMBER'),
+  role: roleSchema.default("MEMBER"),
   avatarUrl: urlSchema.optional().nullable(),
 });
 
@@ -57,27 +58,27 @@ export const updateThemeSchema = z.object({
 });
 
 // Change password schema
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password is too long')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string(),
-}).refine(
-  (data) => data.newPassword === data.confirmPassword,
-  {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  }
-);
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password is too long")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 // User list query schema
 export const userListQuerySchema = baseListQuerySchema.extend({
   role: roleSchema.optional(),
-  sortBy: z.enum(['name', 'email', 'role', 'createdAt']).default('name'),
+  sortBy: z.enum(["name", "email", "role", "createdAt"]).default("name"),
   sortOrder: sortOrderSchema,
 });
 

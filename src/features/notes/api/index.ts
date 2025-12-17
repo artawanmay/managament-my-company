@@ -9,4 +9,4 @@ export {
   updateNote,
   deleteNote,
   type NotesListParams,
-} from './note-api';
+} from "./note-api";

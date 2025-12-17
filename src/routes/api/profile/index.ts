@@ -3,22 +3,31 @@
  * GET /api/profile - Get current user profile
  * PUT /api/profile - Update current user profile
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { usersSqlite } from '@/lib/db/schema/users';
-import { requireAuth, requireAuthWithCsrf, handleAuthError } from '@/lib/auth/middleware';
-import { z } from 'zod';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { usersSqlite } from "@/lib/db/schema/users";
+import {
+  requireAuth,
+  requireAuthWithCsrf,
+  handleAuthError,
+} from "@/lib/auth/middleware";
+import { z } from "zod";
 
 // Zod schema for updating profile
 const updateProfileSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100).optional(),
-  email: z.string().email('Invalid email').max(255).optional(),
-  avatarUrl: z.string().url('Invalid URL').optional().nullable().or(z.literal('')),
+  name: z.string().min(1, "Name is required").max(100).optional(),
+  email: z.string().email("Invalid email").max(255).optional(),
+  avatarUrl: z
+    .string()
+    .url("Invalid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
-export const Route = createFileRoute('/api/profile/')({
+export const Route = createFileRoute("/api/profile/")({
   server: {
     handlers: {
       /**
@@ -28,7 +37,8 @@ export const Route = createFileRoute('/api/profile/')({
       GET: async ({ request }) => {
         const auth = await requireAuth(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const userResult = await db
@@ -48,13 +58,13 @@ export const Route = createFileRoute('/api/profile/')({
 
           const user = userResult[0];
           if (!user) {
-            return json({ error: 'User not found' }, { status: 404 });
+            return json({ error: "User not found" }, { status: 404 });
           }
 
           return json({ data: user });
         } catch (error) {
-          console.error('[GET /api/profile] Error:', error);
-          return json({ error: 'Failed to fetch profile' }, { status: 500 });
+          console.error("[GET /api/profile] Error:", error);
+          return json({ error: "Failed to fetch profile" }, { status: 500 });
         }
       },
 
@@ -65,7 +75,8 @@ export const Route = createFileRoute('/api/profile/')({
       PUT: async ({ request }) => {
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const body = await request.json();
@@ -73,7 +84,7 @@ export const Route = createFileRoute('/api/profile/')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -86,8 +97,14 @@ export const Route = createFileRoute('/api/profile/')({
               .where(eq(usersSqlite.email, parsed.data.email))
               .limit(1);
 
-            if (existingUser.length > 0 && existingUser[0]!.id !== auth.user.id) {
-              return json({ error: 'Email is already in use' }, { status: 409 });
+            if (
+              existingUser.length > 0 &&
+              existingUser[0]!.id !== auth.user.id
+            ) {
+              return json(
+                { error: "Email is already in use" },
+                { status: 409 }
+              );
             }
           }
 
@@ -95,9 +112,12 @@ export const Route = createFileRoute('/api/profile/')({
             updatedAt: new Date(),
           };
 
-          if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-          if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
-          if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl || null;
+          if (parsed.data.name !== undefined)
+            updateData.name = parsed.data.name;
+          if (parsed.data.email !== undefined)
+            updateData.email = parsed.data.email;
+          if (parsed.data.avatarUrl !== undefined)
+            updateData.avatarUrl = parsed.data.avatarUrl || null;
 
           const result = await db
             .update(usersSqlite)
@@ -116,13 +136,13 @@ export const Route = createFileRoute('/api/profile/')({
 
           const updatedUser = result[0];
           if (!updatedUser) {
-            return json({ error: 'Failed to update profile' }, { status: 500 });
+            return json({ error: "Failed to update profile" }, { status: 500 });
           }
 
           return json({ data: updatedUser });
         } catch (error) {
-          console.error('[PUT /api/profile] Error:', error);
-          return json({ error: 'Failed to update profile' }, { status: 500 });
+          console.error("[PUT /api/profile] Error:", error);
+          return json({ error: "Failed to update profile" }, { status: 500 });
         }
       },
     },

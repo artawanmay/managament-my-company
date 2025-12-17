@@ -66,7 +66,12 @@ export {
   ToastClose,
   ToastAction,
 } from "./toast";
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "./tooltip";
 export { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 export { Separator } from "./separator";
 export { ScrollArea, ScrollBar } from "./scroll-area";

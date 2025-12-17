@@ -8,11 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   Calendar,
   Clock,
@@ -21,10 +21,10 @@ import {
   Folder,
   Edit,
   Trash2,
-} from 'lucide-react';
-import type { Task } from '../types';
-import { PRIORITY_CONFIG, KANBAN_COLUMNS } from '../types';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import type { Task } from "../types";
+import { PRIORITY_CONFIG, KANBAN_COLUMNS } from "../types";
+import { cn } from "@/lib/utils";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -48,21 +48,21 @@ export function TaskDetail({
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatDateTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateStr).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -113,7 +113,10 @@ export function TaskDetail({
             <Badge variant="outline" className="text-sm">
               {statusColumn?.title || task.status}
             </Badge>
-            <Badge variant="secondary" className={cn('text-sm', priorityConfig.color)}>
+            <Badge
+              variant="secondary"
+              className={cn("text-sm", priorityConfig.color)}
+            >
               {priorityConfig.label} Priority
             </Badge>
             {task.isOverdue && (
@@ -150,12 +153,14 @@ export function TaskDetail({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={task.assignee.avatarUrl || undefined} />
                     <AvatarFallback>
-                      {task.assignee.name?.charAt(0).toUpperCase() || '?'}
+                      {task.assignee.name?.charAt(0).toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{task.assignee.name}</p>
-                    <p className="text-xs text-gray-500">{task.assignee.email}</p>
+                    <p className="text-xs text-gray-500">
+                      {task.assignee.email}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -174,12 +179,14 @@ export function TaskDetail({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={task.reporter.avatarUrl || undefined} />
                     <AvatarFallback>
-                      {task.reporter.name?.charAt(0).toUpperCase() || '?'}
+                      {task.reporter.name?.charAt(0).toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{task.reporter.name}</p>
-                    <p className="text-xs text-gray-500">{task.reporter.email}</p>
+                    <p className="text-xs text-gray-500">
+                      {task.reporter.email}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -196,8 +203,9 @@ export function TaskDetail({
               {task.dueDate ? (
                 <p
                   className={cn(
-                    'text-sm',
-                    task.isOverdue && 'text-red-600 dark:text-red-400 font-medium'
+                    "text-sm",
+                    task.isOverdue &&
+                      "text-red-600 dark:text-red-400 font-medium"
                   )}
                 >
                   {formatDate(task.dueDate)}
@@ -216,12 +224,14 @@ export function TaskDetail({
               <div className="text-sm">
                 {task.estimatedHours ? (
                   <p>
-                    Estimated: <span className="font-medium">{task.estimatedHours}h</span>
+                    Estimated:{" "}
+                    <span className="font-medium">{task.estimatedHours}h</span>
                   </p>
                 ) : null}
                 {task.actualHours ? (
                   <p>
-                    Actual: <span className="font-medium">{task.actualHours}h</span>
+                    Actual:{" "}
+                    <span className="font-medium">{task.actualHours}h</span>
                   </p>
                 ) : null}
                 {!task.estimatedHours && !task.actualHours && (

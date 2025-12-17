@@ -1,41 +1,41 @@
 /**
  * useUploadAvatar Hook - Upload avatar image
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 async function uploadAvatar(file: File) {
-  const csrfToken = sessionStorage.getItem('csrf_token');
+  const csrfToken = sessionStorage.getItem("csrf_token");
   const formData = new FormData();
-  formData.append('avatar', file);
+  formData.append("avatar", file);
 
-  const response = await fetch('/api/profile/avatar', {
-    method: 'POST',
+  const response = await fetch("/api/profile/avatar", {
+    method: "POST",
     headers: {
-      ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+      ...(csrfToken && { "X-CSRF-Token": csrfToken }),
     },
     body: formData,
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to upload avatar');
+    throw new Error(error.error || "Failed to upload avatar");
   }
 
   return response.json();
 }
 
 async function deleteAvatar() {
-  const csrfToken = sessionStorage.getItem('csrf_token');
-  const response = await fetch('/api/profile/avatar', {
-    method: 'DELETE',
+  const csrfToken = sessionStorage.getItem("csrf_token");
+  const response = await fetch("/api/profile/avatar", {
+    method: "DELETE",
     headers: {
-      ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+      ...(csrfToken && { "X-CSRF-Token": csrfToken }),
     },
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to delete avatar');
+    throw new Error(error.error || "Failed to delete avatar");
   }
 
   return response.json();
@@ -47,8 +47,8 @@ export function useUploadAvatar() {
   return useMutation({
     mutationFn: uploadAvatar,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['session'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
     },
   });
 }
@@ -59,8 +59,8 @@ export function useDeleteAvatar() {
   return useMutation({
     mutationFn: deleteAvatar,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['session'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
     },
   });
 }

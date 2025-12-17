@@ -2,24 +2,24 @@
  * Property-based tests for notes and credentials management
  * Tests for secret access logging and unauthorized access denial
  */
-import { describe, it, beforeEach, afterEach, beforeAll } from 'vitest';
-import * as fc from 'fast-check';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { sql } from 'drizzle-orm';
-import * as schema from '@/lib/db/schema/index';
-import { encryptSecret } from '@/lib/security/crypto';
+import { describe, it, beforeEach, afterEach, beforeAll } from "vitest";
+import * as fc from "fast-check";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import { sql } from "drizzle-orm";
+import * as schema from "@/lib/db/schema/index";
+import { encryptSecret } from "@/lib/security/crypto";
 import {
   canViewNoteSecret,
   setDatabase,
   resetDatabase,
   type PermissionUser,
-} from '@/lib/auth/permissions';
+} from "@/lib/auth/permissions";
 
 // Set up encryption key for tests
 beforeAll(() => {
   if (!process.env.ENCRYPTION_KEY) {
-    process.env.ENCRYPTION_KEY = 'test-encryption-key-for-property-tests-32';
+    process.env.ENCRYPTION_KEY = "test-encryption-key-for-property-tests-32";
   }
 });
 
@@ -28,7 +28,7 @@ let sqlite: Database.Database;
 let db: ReturnType<typeof drizzle>;
 
 function setupTestDb() {
-  sqlite = new Database(':memory:');
+  sqlite = new Database(":memory:");
   db = drizzle(sqlite, { schema });
 
   // Create users table
@@ -126,12 +126,24 @@ function setupTestDb() {
   `);
 
   // Create indexes
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS notes_project_id_idx ON notes(project_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS notes_client_id_idx ON notes(client_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS note_access_logs_note_id_idx ON note_access_logs(note_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS note_access_logs_user_id_idx ON note_access_logs(user_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`);
-  sqlite.exec(`CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`);
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS notes_project_id_idx ON notes(project_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS notes_client_id_idx ON notes(client_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS note_access_logs_note_id_idx ON note_access_logs(note_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS note_access_logs_user_id_idx ON note_access_logs(user_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id)`
+  );
+  sqlite.exec(
+    `CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id)`
+  );
 
   // Set the test database for permissions module
   setDatabase(db as unknown as Parameters<typeof setDatabase>[0]);
@@ -148,25 +160,27 @@ function cleanupTestDb() {
 const uuidArbitrary = fc.uuid();
 
 // IP address arbitrary
-const ipArbitrary = fc.tuple(
-  fc.integer({ min: 0, max: 255 }),
-  fc.integer({ min: 0, max: 255 }),
-  fc.integer({ min: 0, max: 255 }),
-  fc.integer({ min: 0, max: 255 })
-).map(([a, b, c, d]) => `${a}.${b}.${c}.${d}`);
+const ipArbitrary = fc
+  .tuple(
+    fc.integer({ min: 0, max: 255 }),
+    fc.integer({ min: 0, max: 255 }),
+    fc.integer({ min: 0, max: 255 }),
+    fc.integer({ min: 0, max: 255 })
+  )
+  .map(([a, b, c, d]) => `${a}.${b}.${c}.${d}`);
 
 // User agent arbitrary
 const userAgentArbitrary = fc.constantFrom(
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15"
 );
 
 const PBT_RUNS = 100;
 const TEST_TIMEOUT = 30000;
 
-describe('Notes and Credentials Properties', () => {
+describe("Notes and Credentials Properties", () => {
   beforeEach(() => {
     setupTestDb();
   });
@@ -182,7 +196,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.5**
    */
   it(
-    'Property 10: Secret Access Logging - log entry contains all required fields',
+    "Property 10: Secret Access Logging - log entry contains all required fields",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -193,7 +207,15 @@ describe('Notes and Credentials Properties', () => {
           ipArbitrary,
           userAgentArbitrary,
           fc.string({ minLength: 1, maxLength: 100 }),
-          async (userId, noteId, logId, projectId, ip, userAgent, secretValue) => {
+          async (
+            userId,
+            noteId,
+            logId,
+            projectId,
+            ip,
+            userAgent,
+            secretValue
+          ) => {
             // Create a test user with SUPER_ADMIN role (can view secrets)
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
@@ -239,7 +261,7 @@ describe('Notes and Credentials Properties', () => {
               logEntry !== undefined &&
               logEntry.note_id === noteId &&
               logEntry.user_id === userId &&
-              logEntry.action === 'VIEW_SECRET' &&
+              logEntry.action === "VIEW_SECRET" &&
               logEntry.ip === ip &&
               logEntry.user_agent === userAgent &&
               logEntry.created_at !== undefined
@@ -258,7 +280,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.5**
    */
   it(
-    'Property 10: Secret Access Logging - multiple accesses create multiple logs',
+    "Property 10: Secret Access Logging - multiple accesses create multiple logs",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -280,7 +302,7 @@ describe('Notes and Credentials Properties', () => {
             `);
 
             // Create a note
-            const encryptedSecret = encryptSecret('test-secret');
+            const encryptedSecret = encryptSecret("test-secret");
             db.run(sql`
               INSERT INTO notes (id, type, system_name, project_id, secret, created_by, updated_by)
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${userId}, ${userId})
@@ -316,7 +338,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.4, 2.6**
    */
   it(
-    'Property 11: Unauthorized Secret Access Denial - GUEST users cannot view secrets',
+    "Property 11: Unauthorized Secret Access Denial - GUEST users cannot view secrets",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -350,14 +372,17 @@ describe('Notes and Credentials Properties', () => {
             `);
 
             // Create a note
-            const encryptedSecret = encryptSecret('test-secret');
+            const encryptedSecret = encryptSecret("test-secret");
             db.run(sql`
               INSERT INTO notes (id, type, system_name, project_id, secret, created_by, updated_by)
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${adminUserId}, ${adminUserId})
             `);
 
             // Check if GUEST can view the secret
-            const guestUser: PermissionUser = { id: guestUserId, role: 'GUEST' };
+            const guestUser: PermissionUser = {
+              id: guestUserId,
+              role: "GUEST",
+            };
             const canView = await canViewNoteSecret(guestUser, noteId);
 
             // GUEST users should NOT be able to view secrets
@@ -376,7 +401,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.4, 2.6**
    */
   it(
-    'Property 11: Unauthorized Secret Access Denial - non-members cannot view project secrets',
+    "Property 11: Unauthorized Secret Access Denial - non-members cannot view project secrets",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -410,14 +435,17 @@ describe('Notes and Credentials Properties', () => {
             `);
 
             // Create a note in the project
-            const encryptedSecret = encryptSecret('test-secret');
+            const encryptedSecret = encryptSecret("test-secret");
             db.run(sql`
               INSERT INTO notes (id, type, system_name, project_id, secret, created_by, updated_by)
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${memberUserId}, ${memberUserId})
             `);
 
             // Check if non-member can view the secret
-            const nonMemberUser: PermissionUser = { id: nonMemberUserId, role: 'MEMBER' };
+            const nonMemberUser: PermissionUser = {
+              id: nonMemberUserId,
+              role: "MEMBER",
+            };
             const canView = await canViewNoteSecret(nonMemberUser, noteId);
 
             // Non-members should NOT be able to view secrets
@@ -436,7 +464,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.4, 2.6**
    */
   it(
-    'Property 11: Unauthorized Secret Access Denial - admins can always view secrets',
+    "Property 11: Unauthorized Secret Access Denial - admins can always view secrets",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -464,14 +492,17 @@ describe('Notes and Credentials Properties', () => {
             `);
 
             // Create a note
-            const encryptedSecret = encryptSecret('test-secret');
+            const encryptedSecret = encryptSecret("test-secret");
             db.run(sql`
               INSERT INTO notes (id, type, system_name, project_id, secret, created_by, updated_by)
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${creatorUserId}, ${creatorUserId})
             `);
 
             // Check if SUPER_ADMIN can view the secret
-            const adminUser: PermissionUser = { id: adminUserId, role: 'SUPER_ADMIN' };
+            const adminUser: PermissionUser = {
+              id: adminUserId,
+              role: "SUPER_ADMIN",
+            };
             const canView = await canViewNoteSecret(adminUser, noteId);
 
             // SUPER_ADMIN should ALWAYS be able to view secrets
@@ -490,7 +521,7 @@ describe('Notes and Credentials Properties', () => {
    * **Validates: Requirements 7.4, 2.6**
    */
   it(
-    'Property 11: Unauthorized Secret Access Denial - project members can view secrets',
+    "Property 11: Unauthorized Secret Access Denial - project members can view secrets",
     async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -517,14 +548,17 @@ describe('Notes and Credentials Properties', () => {
             `);
 
             // Create a note in the project
-            const encryptedSecret = encryptSecret('test-secret');
+            const encryptedSecret = encryptSecret("test-secret");
             db.run(sql`
               INSERT INTO notes (id, type, system_name, project_id, secret, created_by, updated_by)
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${memberUserId}, ${memberUserId})
             `);
 
             // Check if member can view the secret
-            const memberUser: PermissionUser = { id: memberUserId, role: 'MEMBER' };
+            const memberUser: PermissionUser = {
+              id: memberUserId,
+              role: "MEMBER",
+            };
             const canView = await canViewNoteSecret(memberUser, noteId);
 
             // Project members should be able to view secrets in their projects

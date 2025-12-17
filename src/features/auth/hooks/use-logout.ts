@@ -4,9 +4,9 @@
  * Requirements:
  * - 1.4: Logout mutation with TanStack Query
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { logout } from '../api/auth-api';
-import type { LogoutResponse } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { logout } from "../api/auth-api";
+import type { LogoutResponse } from "../types";
 
 interface UseLogoutOptions {
   onSuccess?: (data: LogoutResponse) => void;
@@ -18,17 +18,17 @@ export function useLogout(options?: UseLogoutOptions) {
 
   return useMutation({
     mutationFn: () => {
-      const csrfToken = sessionStorage.getItem('csrf_token') || '';
+      const csrfToken = sessionStorage.getItem("csrf_token") || "";
       return logout(csrfToken);
     },
     onSuccess: (data) => {
       if (data.success) {
         // Clear CSRF token
-        sessionStorage.removeItem('csrf_token');
+        sessionStorage.removeItem("csrf_token");
         // Clear all cached queries
         queryClient.clear();
         // Invalidate session query
-        queryClient.invalidateQueries({ queryKey: ['session'] });
+        queryClient.invalidateQueries({ queryKey: ["session"] });
       }
       options?.onSuccess?.(data);
     },

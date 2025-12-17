@@ -7,10 +7,10 @@
  * - 6.4: Broadcast task moves to all project viewers via SSE
  * - 20.1: Realtime task updates
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { json } from '@tanstack/react-start';
-import { eq, and, gt, lt, gte, lte, ne, sql } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { eq, and, gt, lt, gte, lte, ne, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   tasks,
   taskStatusValues,
@@ -19,15 +19,12 @@ import {
   notifications,
   type TaskStatus,
   type NewNotification,
-} from '@/lib/db/schema';
-import {
-  requireAuthWithCsrf,
-  handleAuthError,
-} from '@/lib/auth/middleware';
-import { publishTaskEvent, broadcastToProject } from '@/lib/realtime';
-import { logTaskMoved } from '@/lib/activity';
-import { z } from 'zod';
-import { randomUUID } from 'crypto';
+} from "@/lib/db/schema";
+import { requireAuthWithCsrf, handleAuthError } from "@/lib/auth/middleware";
+import { publishTaskEvent, broadcastToProject } from "@/lib/realtime";
+import { logTaskMoved } from "@/lib/activity";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Zod schema for moving a task
 const moveTaskSchema = z.object({
@@ -43,7 +40,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN') {
+  if (userRole === "SUPER_ADMIN") {
     return true;
   }
 
@@ -74,7 +71,7 @@ async function hasTaskAccess(
   return memberResult.length > 0;
 }
 
-export const Route = createFileRoute('/api/tasks/$taskId/move')({
+export const Route = createFileRoute("/api/tasks/$taskId/move")({
   server: {
     handlers: {
       /**
@@ -85,7 +82,8 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
         // Authenticate user with CSRF protection
         const auth = await requireAuthWithCsrf(request);
         const authError = handleAuthError(auth);
-        if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
+        if (authError || !auth.success)
+          return authError ?? new Response("Unauthorized", { status: 401 });
 
         try {
           const { taskId } = params;
@@ -105,15 +103,19 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
             .limit(1);
 
           if (existingTask.length === 0) {
-            return json({ error: 'Task not found' }, { status: 404 });
+            return json({ error: "Task not found" }, { status: 404 });
           }
 
           const task = existingTask[0]!;
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(
+            auth.user.id,
+            auth.user.role,
+            task.projectId
+          );
           if (!hasAccess) {
-            return json({ error: 'Access denied' }, { status: 403 });
+            return json({ error: "Access denied" }, { status: 403 });
           }
 
           const body = await request.json();
@@ -121,7 +123,7 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
 
           if (!parsed.success) {
             return json(
-              { error: 'Validation failed', details: parsed.error.flatten() },
+              { error: "Validation failed", details: parsed.error.flatten() },
               { status: 400 }
             );
           }
@@ -174,11 +176,11 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
               const notificationData: NewNotification = {
                 id: randomUUID(),
                 userId: task.assigneeId,
-                type: 'TASK_MOVED',
-                title: 'Task Status Changed',
+                type: "TASK_MOVED",
+                title: "Task Status Changed",
                 message: `Task "${task.title}" was moved from ${oldStatus} to ${newStatus}`,
                 data: JSON.stringify({
-                  entityType: 'TASK',
+                  entityType: "TASK",
                   entityId: task.id,
                   projectId: task.projectId,
                   movedBy: auth.user.id,
@@ -192,7 +194,7 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
 
             // Broadcast task move to all project viewers (Requirement 6.4, 20.1)
             const taskEvent = {
-              type: 'TASK_MOVED' as const,
+              type: "TASK_MOVED" as const,
               taskId: task.id,
               projectId: task.projectId,
               data: {
@@ -207,18 +209,24 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
             };
 
             // Log activity for status change
-            await logTaskMoved(auth.user.id, task.id, task.projectId, oldStatus, newStatus);
+            await logTaskMoved(
+              auth.user.id,
+              task.id,
+              task.projectId,
+              oldStatus,
+              newStatus
+            );
 
             // Broadcast via both Redis pub/sub and direct SSE connections
             try {
               await publishTaskEvent(task.projectId, taskEvent);
             } catch (err) {
               // Log but don't fail the request if broadcast fails
-              console.error('[Task Move] Failed to publish task event:', err);
+              console.error("[Task Move] Failed to publish task event:", err);
             }
 
             // Also broadcast directly to SSE connections (for same-server connections)
-            broadcastToProject(task.projectId, 'task_moved', taskEvent);
+            broadcastToProject(task.projectId, "task_moved", taskEvent);
 
             return json({ data: updatedTask });
           } else {
@@ -272,7 +280,7 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
 
             // Broadcast reorder event to all project viewers
             const reorderEvent = {
-              type: 'TASK_MOVED' as const,
+              type: "TASK_MOVED" as const,
               taskId: task.id,
               projectId: task.projectId,
               data: {
@@ -289,16 +297,19 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
             try {
               await publishTaskEvent(task.projectId, reorderEvent);
             } catch (err) {
-              console.error('[Task Move] Failed to publish reorder event:', err);
+              console.error(
+                "[Task Move] Failed to publish reorder event:",
+                err
+              );
             }
 
-            broadcastToProject(task.projectId, 'task_moved', reorderEvent);
+            broadcastToProject(task.projectId, "task_moved", reorderEvent);
 
             return json({ data: updatedTask });
           }
         } catch (error) {
-          console.error('[PUT /api/tasks/:taskId/move] Error:', error);
-          return json({ error: 'Failed to move task' }, { status: 500 });
+          console.error("[PUT /api/tasks/:taskId/move] Error:", error);
+          return json({ error: "Failed to move task" }, { status: 500 });
         }
       },
     },

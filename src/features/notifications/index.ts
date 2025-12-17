@@ -3,7 +3,7 @@ export {
   fetchNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-} from './api';
+} from "./api";
 
 // Hooks
 export {
@@ -11,10 +11,10 @@ export {
   notificationsQueryKey,
   useMarkAsRead,
   useMarkAllAsRead,
-} from './hooks';
+} from "./hooks";
 
 // Components
-export { NotificationItem, NotificationDropdown } from './components';
+export { NotificationItem, NotificationDropdown } from "./components";
 
 // Types
 export type {
@@ -24,4 +24,4 @@ export type {
   NotificationsListResponse,
   MarkAsReadResponse,
   MarkAllAsReadResponse,
-} from './types';
+} from "./types";

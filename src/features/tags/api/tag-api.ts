@@ -8,9 +8,9 @@ import type {
   UpdateTagInput,
   AttachTagInput,
   DetachTagInput,
-} from '../types';
+} from "../types";
 
-const API_BASE = '/api/tags';
+const API_BASE = "/api/tags";
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -24,8 +24,8 @@ interface PaginatedResponse<T> {
 
 interface TagListParams {
   search?: string;
-  sortBy?: 'name' | 'createdAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "createdAt";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -33,25 +33,29 @@ interface TagListParams {
 /**
  * Fetch all tags with optional filtering
  */
-export async function fetchTags(params?: TagListParams): Promise<PaginatedResponse<Tag>> {
+export async function fetchTags(
+  params?: TagListParams
+): Promise<PaginatedResponse<Tag>> {
   const searchParams = new URLSearchParams();
 
-  if (params?.search) searchParams.set('search', params.search);
-  if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
-  if (params?.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  if (params?.page) searchParams.set('page', params.page.toString());
-  if (params?.limit) searchParams.set('limit', params.limit.toString());
+  if (params?.search) searchParams.set("search", params.search);
+  if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params?.page) searchParams.set("page", params.page.toString());
+  if (params?.limit) searchParams.set("limit", params.limit.toString());
 
   const queryString = searchParams.toString();
   const url = queryString ? `${API_BASE}?${queryString}` : API_BASE;
 
   const response = await fetch(url, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch tags' }));
-    throw new Error(error.error || 'Failed to fetch tags');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch tags" }));
+    throw new Error(error.error || "Failed to fetch tags");
   }
 
   return response.json();
@@ -62,12 +66,14 @@ export async function fetchTags(params?: TagListParams): Promise<PaginatedRespon
  */
 export async function fetchTag(tagId: string): Promise<Tag> {
   const response = await fetch(`${API_BASE}/${tagId}`, {
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to fetch tag' }));
-    throw new Error(error.error || 'Failed to fetch tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to fetch tag" }));
+    throw new Error(error.error || "Failed to fetch tag");
   }
 
   const result = await response.json();
@@ -82,18 +88,20 @@ export async function createTag(
   csrfToken: string
 ): Promise<Tag> {
   const response = await fetch(API_BASE, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to create tag' }));
-    throw new Error(error.error || 'Failed to create tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to create tag" }));
+    throw new Error(error.error || "Failed to create tag");
   }
 
   const result = await response.json();
@@ -109,18 +117,20 @@ export async function updateTag(
   csrfToken: string
 ): Promise<Tag> {
   const response = await fetch(`${API_BASE}/${tagId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to update tag' }));
-    throw new Error(error.error || 'Failed to update tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to update tag" }));
+    throw new Error(error.error || "Failed to update tag");
   }
 
   const result = await response.json();
@@ -130,18 +140,23 @@ export async function updateTag(
 /**
  * Delete a tag
  */
-export async function deleteTag(tagId: string, csrfToken: string): Promise<void> {
+export async function deleteTag(
+  tagId: string,
+  csrfToken: string
+): Promise<void> {
   const response = await fetch(`${API_BASE}/${tagId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'X-CSRF-Token': csrfToken,
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to delete tag' }));
-    throw new Error(error.error || 'Failed to delete tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to delete tag" }));
+    throw new Error(error.error || "Failed to delete tag");
   }
 }
 
@@ -154,18 +169,20 @@ export async function attachTag(
   csrfToken: string
 ): Promise<Taggable> {
   const response = await fetch(`${API_BASE}/${tagId}/attach`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to attach tag' }));
-    throw new Error(error.error || 'Failed to attach tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to attach tag" }));
+    throw new Error(error.error || "Failed to attach tag");
   }
 
   const result = await response.json();
@@ -181,17 +198,19 @@ export async function detachTag(
   csrfToken: string
 ): Promise<void> {
   const response = await fetch(`${API_BASE}/${tagId}/detach`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to detach tag' }));
-    throw new Error(error.error || 'Failed to detach tag');
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to detach tag" }));
+    throw new Error(error.error || "Failed to detach tag");
   }
 }

@@ -1,1 +1,5 @@
-export { fetchActivity, fetchProjectActivity, type FetchActivityParams } from './activity-api';
+export {
+  fetchActivity,
+  fetchProjectActivity,
+  type FetchActivityParams,
+} from "./activity-api";
