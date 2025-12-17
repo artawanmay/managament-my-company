@@ -93,6 +93,7 @@ export function parseDockerCompose(content: string): DockerComposeConfig {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (line === undefined) continue;
     const trimmed = line.trim();
     const indent = getIndent(line);
     
@@ -444,10 +445,10 @@ export function validateDockerCompose(content: string): DockerComposeValidationR
  * @param volumeConfig - The volume configuration
  * @returns True if the volume is configured for persistence
  */
-export function isNamedVolume(volumeConfig: { name?: string } | null): boolean {
+export function isNamedVolume(volumeConfig: { name?: string } | null | undefined): boolean {
   // Named volumes (with or without explicit name) persist data
   // Bind mounts (starting with ./ or /) do not count as named volumes
-  return volumeConfig !== null;
+  return volumeConfig !== null && volumeConfig !== undefined;
 }
 
 /**
