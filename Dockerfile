@@ -52,7 +52,7 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 appuser
 
 # Copy built application from builder stage
-COPY --from=builder --chown=appuser:nodejs /app/.output ./.output
+COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
 COPY --from=builder --chown=appuser:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=appuser:nodejs /app/package.json ./package.json
 
@@ -79,4 +79,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Set entrypoint and default command
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["node", ".output/server/index.mjs"]
+CMD ["node", "dist/server/server.js"]
