@@ -1,7 +1,7 @@
 # =============================================================================
 # Stage 1: deps - Install production dependencies
 # =============================================================================
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 # Install build dependencies for native modules (argon2, better-sqlite3)
 RUN apk add --no-cache python3 make g++ libc6-compat
@@ -17,7 +17,7 @@ RUN npm ci
 # =============================================================================
 # Stage 2: builder - Build application with Vite
 # =============================================================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ RUN npm prune --production
 # =============================================================================
 # Stage 3: runner - Minimal runtime with built assets
 # =============================================================================
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 # Install runtime dependencies for native modules
 RUN apk add --no-cache libc6-compat
