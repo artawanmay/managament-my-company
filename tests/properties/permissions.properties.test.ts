@@ -151,32 +151,14 @@ describe('Role Permission Properties', () => {
 
   /**
    * **Feature: mmc-app, Property 5: Role Permission Boundaries**
-   * ADMIN can manage any user except SUPER_ADMIN
-   * **Validates: Requirements 2.3**
+   * MANAGER cannot manage any users (only SUPER_ADMIN can)
+   * **Validates: Requirements 3.2, 3.4**
    */
-  it('Property 5: Role Permission Boundaries - ADMIN cannot manage SUPER_ADMIN', () => {
+  it('Property 5: Role Permission Boundaries - MANAGER cannot manage users', () => {
     fc.assert(
-      fc.property(fc.uuid(), (userId) => {
-        const admin: PermissionUser = { id: userId, role: 'ADMIN' };
-        return canManageUser(admin, 'SUPER_ADMIN') === false;
-      }),
-      { numRuns: PBT_RUNS }
-    );
-  });
-
-  /**
-   * **Feature: mmc-app, Property 5: Role Permission Boundaries**
-   * ADMIN can manage users with roles below SUPER_ADMIN
-   * **Validates: Requirements 2.3**
-   */
-  it('Property 5: Role Permission Boundaries - ADMIN can manage non-SUPER_ADMIN users', () => {
-    const nonSuperAdminRoles: Role[] = ['ADMIN', 'MANAGER', 'MEMBER', 'GUEST'];
-    const nonSuperAdminRoleArb = fc.constantFrom(...nonSuperAdminRoles);
-
-    fc.assert(
-      fc.property(fc.uuid(), nonSuperAdminRoleArb, (userId, targetRole) => {
-        const admin: PermissionUser = { id: userId, role: 'ADMIN' };
-        return canManageUser(admin, targetRole) === true;
+      fc.property(fc.uuid(), roleArb, (userId, targetRole) => {
+        const manager: PermissionUser = { id: userId, role: 'MANAGER' };
+        return canManageUser(manager, targetRole) === false;
       }),
       { numRuns: PBT_RUNS }
     );
@@ -202,14 +184,14 @@ describe('Role Permission Properties', () => {
 
   /**
    * **Feature: mmc-app, Property 5: Role Permission Boundaries**
-   * canManageUsers returns true only for SUPER_ADMIN and ADMIN
-   * **Validates: Requirements 2.2, 2.3**
+   * canManageUsers returns true only for SUPER_ADMIN
+   * **Validates: Requirements 2.2**
    */
-  it('Property 5: Role Permission Boundaries - only SUPER_ADMIN and ADMIN can manage users', () => {
+  it('Property 5: Role Permission Boundaries - only SUPER_ADMIN can manage users', () => {
     fc.assert(
       fc.property(permissionUserArb, (user) => {
         const canManage = canManageUsers(user);
-        const shouldBeAbleToManage = user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
+        const shouldBeAbleToManage = user.role === 'SUPER_ADMIN';
         return canManage === shouldBeAbleToManage;
       }),
       { numRuns: PBT_RUNS }
@@ -401,10 +383,10 @@ describe('Project Access Control Properties', () => {
 
   /**
    * **Feature: mmc-app, Property 6: Project Access Control**
-   * ADMIN can access any project
-   * **Validates: Requirements 4.2, 4.4, 4.5**
+   * MANAGER without membership cannot access any project (unless they are the project manager)
+   * **Validates: Requirements 3.3**
    */
-  it('Property 6: Project Access Control - ADMIN can access any project', async () => {
+  it('Property 6: Project Access Control - MANAGER without membership cannot access project', async () => {
     // Create test data
     const clientId = 'test-client-2';
     const projectId = 'test-project-2';
@@ -429,9 +411,11 @@ describe('Project Access Control Properties', () => {
 
     await fc.assert(
       fc.asyncProperty(fc.uuid(), async (userId) => {
-        const admin: PermissionUser = { id: userId, role: 'ADMIN' };
-        const canAccess = await canAccessProject(admin, projectId);
-        return canAccess === true;
+        // Ensure user is not the manager
+        fc.pre(userId !== managerId);
+        const manager: PermissionUser = { id: userId, role: 'MANAGER' };
+        const canAccess = await canAccessProject(manager, projectId);
+        return canAccess === false;
       }),
       { numRuns: 20 }
     );

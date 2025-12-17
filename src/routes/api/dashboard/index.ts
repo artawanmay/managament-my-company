@@ -46,7 +46,7 @@ export const Route = createFileRoute('/api/dashboard/')({
 
           // Get accessible project IDs for the user
           let accessibleProjectIds: string[] = [];
-          const isAdmin = auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN';
+          const isAdmin = auth.user.role === 'SUPER_ADMIN';
 
           if (!isAdmin) {
             // Non-admin users: filter by project membership or manager role

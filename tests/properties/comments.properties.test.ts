@@ -153,9 +153,9 @@ function cleanupTestDb() {
 // UUID generator for test IDs
 const uuidArbitrary = fc.uuid();
 
-// Role arbitrary (excluding GUEST for comment creation)
-const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER') as fc.Arbitrary<
-  'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'MEMBER'
+// Role arbitrary (excluding GUEST for comment creation, ADMIN role removed)
+const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'MANAGER', 'MEMBER') as fc.Arbitrary<
+  'SUPER_ADMIN' | 'MANAGER' | 'MEMBER'
 >;
 
 const PBT_RUNS = 100;

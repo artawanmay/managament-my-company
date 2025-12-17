@@ -28,6 +28,7 @@ import {
   handleAuthError,
   handleRoleError,
 } from '@/lib/auth/middleware';
+import { logProjectCreated } from '@/lib/activity';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
@@ -151,8 +152,8 @@ export const Route = createFileRoute('/api/projects/')({
           let projectList;
           let total;
 
-          if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN') {
-            // Admin users can see all projects
+          if (auth.user.role === 'SUPER_ADMIN') {
+            // SUPER_ADMIN users can see all projects
             let query = db
               .select({
                 id: projects.id,
@@ -300,8 +301,8 @@ export const Route = createFileRoute('/api/projects/')({
         const authError = handleAuthError(auth);
         if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to create projects
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to create projects
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -351,7 +352,10 @@ export const Route = createFileRoute('/api/projects/')({
           };
 
           const result = await db.insert(projects).values(projectData).returning();
-          const newProject = result[0];
+          const newProject = result[0]!;
+
+          // Log activity
+          await logProjectCreated(auth.user.id, newProject.id, newProject.name, newProject.clientId);
 
           return json({ data: newProject }, { status: 201 });
         } catch (error) {

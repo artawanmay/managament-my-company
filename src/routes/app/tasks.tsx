@@ -4,22 +4,27 @@
  */
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   TasksTable,
+  KanbanBoard,
   TaskForm,
   TaskDetail,
   useTasks,
   useCreateTask,
   useUpdateTask,
   useDeleteTask,
+  useMoveTask,
+  useViewMode,
   type Task,
+  type TaskStatus,
   type CreateTaskInput,
   type UpdateTaskInput,
 } from '@/features/tasks';
 import { useProjects } from '@/features/projects';
+import { useUsers } from '@/features/users';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,21 +42,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export const Route = createFileRoute('/app/tasks')({
   component: TasksPage,
 });
 
-// Temporary mock users until user management is implemented
-const mockUsers = [
-  { id: 'user-1', name: 'Admin User' },
-  { id: 'user-2', name: 'Manager User' },
-  { id: 'user-3', name: 'Member User' },
-];
+
 
 function TasksPage() {
   const { toast } = useToast();
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const { viewMode, setViewMode } = useViewMode();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -63,9 +69,14 @@ function TasksPage() {
     selectedProjectId ? { projectId: selectedProjectId } : {}
   );
   const { data: projectsData } = useProjects();
+  const { data: usersData } = useUsers();
+
+  // Transform users data for the task form
+  const users = usersData?.data?.map((u) => ({ id: u.id, name: u.name })) || [];
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask();
   const deleteMutation = useDeleteTask();
+  const moveMutation = useMoveTask();
 
   const tasks = tasksData?.data || [];
   const projects = projectsData?.data || [];
@@ -141,6 +152,30 @@ function TasksPage() {
     }
   };
 
+  const handleTaskMove = (taskId: string, newStatus: TaskStatus, newOrder: number) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    // Use mutate (fire-and-forget) instead of mutateAsync for smooth UI
+    // Optimistic update in useMoveTask hook handles immediate UI feedback
+    moveMutation.mutate(
+      {
+        taskId,
+        data: { status: newStatus, order: newOrder },
+        projectId: task.projectId,
+      },
+      {
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Failed to move task',
+            variant: 'destructive',
+          });
+        },
+      }
+    );
+  };
+
   const handleDeleteConfirm = async () => {
     if (!taskToDelete) return;
 
@@ -186,6 +221,34 @@ function TasksPage() {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex items-center border rounded-md">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-r-none"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>List View</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-l-none"
+                  onClick={() => setViewMode('kanban')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Kanban View</TooltipContent>
+            </Tooltip>
+          </div>
           <Button
             onClick={() => setIsCreateFormOpen(true)}
             disabled={!selectedProjectId}
@@ -196,18 +259,27 @@ function TasksPage() {
         </div>
       </div>
 
-      <TasksTable
-        tasks={tasks}
-        isLoading={isLoading}
-        onTaskClick={handleTaskClick}
-      />
+      {viewMode === 'list' ? (
+        <TasksTable
+          tasks={tasks}
+          isLoading={isLoading}
+          onTaskClick={handleTaskClick}
+        />
+      ) : (
+        <KanbanBoard
+          tasks={tasks}
+          onTaskClick={handleTaskClick}
+          onTaskMove={handleTaskMove}
+          isLoading={isLoading}
+        />
+      )}
 
       {/* Create Task Form */}
       <TaskForm
         open={isCreateFormOpen}
         onOpenChange={setIsCreateFormOpen}
         projectId={selectedProjectId}
-        users={mockUsers}
+        users={users}
         onSubmit={handleCreateSubmit}
         isLoading={createMutation.isPending}
       />
@@ -218,7 +290,7 @@ function TasksPage() {
         onOpenChange={setIsEditFormOpen}
         task={selectedTask}
         projectId={selectedTask?.projectId}
-        users={mockUsers}
+        users={users}
         onSubmit={handleEditSubmit}
         isLoading={updateMutation.isPending}
       />

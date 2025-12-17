@@ -1,5 +1,5 @@
 // Components
-export { ActivityFeed, ActivityItem } from './components';
+export { ActivityFeed, ActivityItem, ActivityHistory } from './components';
 
 // Hooks
 export { useActivity, useProjectActivity } from './hooks';

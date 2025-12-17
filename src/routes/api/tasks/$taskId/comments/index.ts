@@ -55,7 +55,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+  if (userRole === 'SUPER_ADMIN') {
     return true;
   }
 

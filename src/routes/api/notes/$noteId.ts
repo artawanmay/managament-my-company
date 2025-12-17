@@ -123,11 +123,11 @@ export const Route = createFileRoute('/api/notes/$noteId')({
 
           const note = existingNote[0]!;
 
-          // Check access - creator can always edit, or check project/admin access
+          // Check access - creator can always edit, or check project/SUPER_ADMIN access
           const isCreator = note.createdBy === auth.user.id;
-          const isAdmin = auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN';
+          const isSuperAdmin = auth.user.role === 'SUPER_ADMIN';
           
-          if (!isCreator && !isAdmin) {
+          if (!isCreator && !isSuperAdmin) {
             // Check project access for managers
             if (note.projectId) {
               const hasAccess = await canAccessProject(auth.user, note.projectId);
@@ -182,8 +182,8 @@ export const Route = createFileRoute('/api/notes/$noteId')({
                 return json({ error: 'Client not found' }, { status: 404 });
               }
 
-              // Only SUPER_ADMIN and ADMIN can set client-level notes
-              if (!isAdmin) {
+              // Only SUPER_ADMIN can set client-level notes
+              if (!isSuperAdmin) {
                 return json({ error: 'Access denied to set client notes' }, { status: 403 });
               }
             }
@@ -271,11 +271,11 @@ export const Route = createFileRoute('/api/notes/$noteId')({
 
           const note = existingNote[0]!;
 
-          // Check access - creator can always delete, or check admin access
+          // Check access - creator can always delete, or check SUPER_ADMIN access
           const isCreator = note.createdBy === auth.user.id;
-          const isAdmin = auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN';
+          const isSuperAdmin = auth.user.role === 'SUPER_ADMIN';
           
-          if (!isCreator && !isAdmin) {
+          if (!isCreator && !isSuperAdmin) {
             // Check project access for managers
             if (note.projectId) {
               const hasAccess = await canAccessProject(auth.user, note.projectId);

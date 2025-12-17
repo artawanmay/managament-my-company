@@ -24,45 +24,24 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { usePermissions, type SidebarPermission } from "@/hooks/use-permissions";
 
 interface NavItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  requiredPermission?: SidebarPermission;
 }
 
-const mainNavItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/app/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Clients",
-    href: "/app/clients",
-    icon: Users,
-  },
-  {
-    title: "Projects",
-    href: "/app/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Tasks",
-    href: "/app/tasks",
-    icon: Briefcase,
-  },
-  {
-    title: "Notes",
-    href: "/app/notes",
-    icon: FileText,
-  },
-  {
-    title: "Users",
-    href: "/app/users",
-    icon: UserCog,
-  },
-];
+// Icon mapping untuk setiap menu
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Dashboard: LayoutDashboard,
+  Clients: Users,
+  Projects: FolderKanban,
+  Tasks: Briefcase,
+  Notes: FileText,
+  Users: UserCog,
+};
 
 const bottomNavItems: NavItem[] = [
   {
@@ -118,6 +97,20 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   const { isCollapsed, setCollapsed, isMobile } = useSidebar();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const { getVisibleSidebarModules, isLoading } = usePermissions();
+
+  // Get visible nav items based on user permissions
+  const visibleNavItems: NavItem[] = React.useMemo(() => {
+    if (isLoading) return [];
+    
+    const modules = getVisibleSidebarModules();
+    return modules.map(module => ({
+      title: module.title,
+      href: module.href,
+      icon: iconMap[module.title] || LayoutDashboard,
+      requiredPermission: module.requiredPermission,
+    }));
+  }, [getVisibleSidebarModules, isLoading]);
 
   return (
     <div className="flex h-full flex-col">
@@ -145,7 +138,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="flex flex-col gap-1">
-          {mainNavItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.href}
               item={item}

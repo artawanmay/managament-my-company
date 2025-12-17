@@ -30,6 +30,7 @@ import {
   handleAuthError,
 } from '@/lib/auth/middleware';
 import { logError } from '@/lib/logger';
+import { logTaskCreated } from '@/lib/activity';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
@@ -103,8 +104,8 @@ export const Route = createFileRoute('/api/tasks/')({
           // Get accessible project IDs for the user
           let accessibleProjectIds: string[] = [];
 
-          if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN') {
-            // Admin users can see all tasks
+          if (auth.user.role === 'SUPER_ADMIN') {
+            // SUPER_ADMIN users can see all tasks
             if (projectId) {
               accessibleProjectIds = [projectId];
             } else {
@@ -275,7 +276,7 @@ export const Route = createFileRoute('/api/tasks/')({
 
           // Check project access for non-admin users
           const projectData = projectResult[0]!;
-          if (auth.user.role !== 'SUPER_ADMIN' && auth.user.role !== 'ADMIN') {
+          if (auth.user.role !== 'SUPER_ADMIN') {
             const isManager = projectData.managerId === auth.user.id;
             const isMember = await db
               .select({ id: projectMembers.id })
@@ -335,6 +336,9 @@ export const Route = createFileRoute('/api/tasks/')({
 
           const result = await db.insert(tasks).values(taskData).returning();
           const newTask = result[0]!;
+
+          // Log activity
+          await logTaskCreated(auth.user.id, newTask.id, newTask.title, parsed.data.projectId);
 
           // Create notification for assignee if different from creator (Requirement 5.4)
           if (parsed.data.assigneeId && parsed.data.assigneeId !== auth.user.id) {

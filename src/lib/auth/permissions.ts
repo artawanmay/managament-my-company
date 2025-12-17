@@ -40,14 +40,13 @@ export function getDatabase(): Database {
 
 /**
  * Role hierarchy - higher index = more permissions
- * SUPER_ADMIN > ADMIN > MANAGER > MEMBER > GUEST
+ * SUPER_ADMIN > MANAGER > MEMBER > GUEST (ADMIN removed)
  */
 export const ROLE_HIERARCHY: Record<Role, number> = {
   GUEST: 0,
   MEMBER: 1,
   MANAGER: 2,
-  ADMIN: 3,
-  SUPER_ADMIN: 4,
+  SUPER_ADMIN: 3,
 };
 
 /**
@@ -71,15 +70,6 @@ export type PermissionAction =
 export const PERMISSION_MATRIX: Record<Role, Set<PermissionAction>> = {
   SUPER_ADMIN: new Set([
     'manage_all_users',
-    'manage_users',
-    'manage_clients',
-    'manage_projects',
-    'manage_assigned_projects',
-    'create_tasks',
-    'edit_tasks',
-    'view_secrets',
-  ]),
-  ADMIN: new Set([
     'manage_users',
     'manage_clients',
     'manage_projects',
@@ -138,16 +128,12 @@ export function canManageUsers(user: PermissionUser): boolean {
 
 /**
  * Check if a user can manage a specific target user based on role hierarchy
- * SUPER_ADMIN can manage anyone
- * ADMIN can manage anyone except SUPER_ADMIN
+ * Only SUPER_ADMIN can manage users (ADMIN role removed)
  * Requirements 2.2, 2.3
  */
-export function canManageUser(user: PermissionUser, targetUserRole: Role): boolean {
+export function canManageUser(user: PermissionUser, _targetUserRole: Role): boolean {
   if (user.role === 'SUPER_ADMIN') {
     return true;
-  }
-  if (user.role === 'ADMIN') {
-    return targetUserRole !== 'SUPER_ADMIN';
   }
   return false;
 }
@@ -173,13 +159,13 @@ export async function isProjectMember(userId: string, projectId: string): Promis
 
 /**
  * Check if a user can access a project
- * SUPER_ADMIN and ADMIN can access all projects
+ * SUPER_ADMIN can access all projects
  * MANAGER, MEMBER, GUEST can only access projects they are members of
  * Requirements 4.2, 4.4, 4.5
  */
 export async function canAccessProject(user: PermissionUser, projectId: string): Promise<boolean> {
-  // SUPER_ADMIN and ADMIN can access all projects
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  // SUPER_ADMIN can access all projects
+  if (user.role === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -202,13 +188,13 @@ export async function canAccessProject(user: PermissionUser, projectId: string):
 
 /**
  * Check if a user can manage a project (add/remove members, edit project)
- * SUPER_ADMIN and ADMIN can manage all projects
+ * SUPER_ADMIN can manage all projects
  * MANAGER can manage projects they are assigned to as manager
  * Requirements 2.4, 4.4, 4.5
  */
 export async function canManageProject(user: PermissionUser, projectId: string): Promise<boolean> {
-  // SUPER_ADMIN and ADMIN can manage all projects
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  // SUPER_ADMIN can manage all projects
+  if (user.role === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -248,12 +234,12 @@ export async function canManageProject(user: PermissionUser, projectId: string):
  * Check if a user can access a note
  * Notes can be associated with a project or client
  * Access is granted if user can access the associated project
- * SUPER_ADMIN and ADMIN can access all notes
+ * SUPER_ADMIN can access all notes
  * Requirements 7.1, 7.4
  */
 export async function canAccessNote(user: PermissionUser, noteId: string): Promise<boolean> {
-  // SUPER_ADMIN and ADMIN can access all notes
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  // SUPER_ADMIN can access all notes
+  if (user.role === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -386,8 +372,8 @@ export async function canCreateTask(user: PermissionUser, projectId: string): Pr
     return false;
   }
 
-  // SUPER_ADMIN, ADMIN, MANAGER can always create tasks if they have access
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'MANAGER') {
+  // SUPER_ADMIN, MANAGER can always create tasks if they have access
+  if (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER') {
     return true;
   }
 

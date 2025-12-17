@@ -36,7 +36,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+  if (userRole === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -201,10 +201,10 @@ export const Route = createFileRoute('/api/comments/$commentId')({
 
           // Only the comment author or admins can delete (Requirement 8.5)
           const isAuthor = comment.userId === auth.user.id;
-          const isAdmin = auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN';
+          const isAdmin = auth.user.role === 'SUPER_ADMIN';
 
           if (!isAuthor && !isAdmin) {
-            return json({ error: 'Only the comment author or admins can delete this comment' }, { status: 403 });
+            return json({ error: 'Only the comment author or SUPER_ADMIN can delete this comment' }, { status: 403 });
           }
 
           await db.delete(comments).where(eq(comments.id, commentId));

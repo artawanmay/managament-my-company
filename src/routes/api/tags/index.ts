@@ -131,8 +131,8 @@ export const Route = createFileRoute('/api/tags/')({
         if (authError || !auth.success)
           return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to create tags
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to create tags
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 

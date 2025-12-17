@@ -24,6 +24,7 @@ import {
   useUpdateUserRole,
   useDeleteUser,
 } from '@/features/users/hooks';
+import { ResetPasswordDialog, useResetPassword } from '@/features/profile';
 import type { User, Role, CreateUserInput, UpdateUserInput } from '@/features/users/types';
 
 export const Route = createFileRoute('/app/users')({
@@ -40,6 +41,7 @@ function UsersPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Mutations
@@ -47,10 +49,11 @@ function UsersPage() {
   const updateUser = useUpdateUser();
   const updateUserRole = useUpdateUserRole();
   const deleteUser = useDeleteUser();
+  const resetPassword = useResetPassword();
 
   // Check if current user can manage users
   const canManageUsers =
-    currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN';
+    currentUser?.role === 'SUPER_ADMIN';
 
   const handleCreateUser = async (data: CreateUserInput) => {
     try {
@@ -138,6 +141,29 @@ function UsersPage() {
   const openDeleteDialog = (user: User) => {
     setSelectedUser(user);
     setDeleteDialogOpen(true);
+  };
+
+  const openResetPasswordDialog = (user: User) => {
+    setSelectedUser(user);
+    setResetPasswordDialogOpen(true);
+  };
+
+  const handleResetPassword = async (userId: string, newPassword: string) => {
+    try {
+      await resetPassword.mutateAsync({ userId, newPassword });
+      toast({
+        title: 'Password reset',
+        description: 'The user password has been reset successfully.',
+      });
+      setResetPasswordDialogOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to reset password',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Show loading skeleton while session is being fetched to prevent "Access Denied" flash
@@ -233,6 +259,7 @@ function UsersPage() {
               onEdit={openEditDialog}
               onDelete={openDeleteDialog}
               onChangeRole={openRoleDialog}
+              onResetPassword={openResetPasswordDialog}
               isLoading={isLoading}
             />
           )}
@@ -276,6 +303,15 @@ function UsersPage() {
         user={selectedUser}
         onConfirm={handleDeleteUser}
         isLoading={deleteUser.isPending}
+      />
+
+      {/* Reset Password Dialog */}
+      <ResetPasswordDialog
+        open={resetPasswordDialogOpen}
+        onOpenChange={setResetPasswordDialogOpen}
+        user={selectedUser}
+        onConfirm={handleResetPassword}
+        isLoading={resetPassword.isPending}
       />
     </div>
   );

@@ -25,6 +25,7 @@ import {
   handleAuthError,
 } from '@/lib/auth/middleware';
 import { publishTaskEvent, broadcastToProject } from '@/lib/realtime';
+import { logTaskMoved } from '@/lib/activity';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
@@ -42,7 +43,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+  if (userRole === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -204,6 +205,9 @@ export const Route = createFileRoute('/api/tasks/$taskId/move')({
               timestamp: new Date().toISOString(),
               actorId: auth.user.id,
             };
+
+            // Log activity for status change
+            await logTaskMoved(auth.user.id, task.id, task.projectId, oldStatus, newStatus);
 
             // Broadcast via both Redis pub/sub and direct SSE connections
             try {

@@ -72,6 +72,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
+    "@tanstack/react-query-devtools": "^5.91.1",
     "@types/argon2": "^0.14.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/ioredis": "^4.28.10",
@@ -81,6 +82,7 @@
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@welldone-software/why-did-you-render": "^7.0.1",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.8",
     "eslint": "^8.57.1",

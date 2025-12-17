@@ -16,26 +16,32 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AppUsersRouteImport } from './routes/app/users'
 import { Route as AppTasksRouteImport } from './routes/app/tasks'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
-import { Route as AppProjectsRouteImport } from './routes/app/projects'
+import { Route as AppProfileRouteImport } from './routes/app/profile'
 import { Route as AppNotesRouteImport } from './routes/app/notes'
 import { Route as AppDashboardRouteImport } from './routes/app/dashboard'
-import { Route as AppClientsRouteImport } from './routes/app/clients'
+import { Route as AppProjectsRouteRouteImport } from './routes/app/projects/route'
+import { Route as AppClientsRouteRouteImport } from './routes/app/clients/route'
+import { Route as AppProjectsIndexRouteImport } from './routes/app/projects/index'
+import { Route as AppClientsIndexRouteImport } from './routes/app/clients/index'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
 import { Route as ApiTasksIndexRouteImport } from './routes/api/tasks/index'
 import { Route as ApiTagsIndexRouteImport } from './routes/api/tags/index'
 import { Route as ApiSearchIndexRouteImport } from './routes/api/search/index'
 import { Route as ApiProjectsIndexRouteImport } from './routes/api/projects/index'
+import { Route as ApiProfileIndexRouteImport } from './routes/api/profile/index'
 import { Route as ApiNotificationsIndexRouteImport } from './routes/api/notifications/index'
 import { Route as ApiNotesIndexRouteImport } from './routes/api/notes/index'
 import { Route as ApiDashboardIndexRouteImport } from './routes/api/dashboard/index'
 import { Route as ApiClientsIndexRouteImport } from './routes/api/clients/index'
 import { Route as ApiActivityIndexRouteImport } from './routes/api/activity/index'
-import { Route as AppClientsClientIdRouteImport } from './routes/app/clients.$clientId'
+import { Route as AppClientsClientIdRouteImport } from './routes/app/clients/$clientId'
 import { Route as ApiUsersUserIdRouteImport } from './routes/api/users/$userId'
 import { Route as ApiTasksTaskIdRouteImport } from './routes/api/tasks/$taskId'
 import { Route as ApiTagsTagIdRouteImport } from './routes/api/tags/$tagId'
 import { Route as ApiRealtimeNotificationsRouteImport } from './routes/api/realtime/notifications'
 import { Route as ApiProjectsProjectIdRouteImport } from './routes/api/projects/$projectId'
+import { Route as ApiProfilePasswordRouteImport } from './routes/api/profile/password'
+import { Route as ApiProfileAvatarRouteImport } from './routes/api/profile/avatar'
 import { Route as ApiNotesNoteIdRouteImport } from './routes/api/notes/$noteId'
 import { Route as ApiCommentsCommentIdRouteImport } from './routes/api/comments/$commentId'
 import { Route as ApiClientsClientIdRouteImport } from './routes/api/clients/$clientId'
@@ -52,7 +58,9 @@ import { Route as AppProjectsProjectIdFilesRouteImport } from './routes/app/proj
 import { Route as AppProjectsProjectIdBoardRouteImport } from './routes/app/projects.$projectId/board'
 import { Route as ApiUsersMeThemeRouteImport } from './routes/api/users/me/theme'
 import { Route as ApiUsersUserIdRoleRouteImport } from './routes/api/users/$userId/role'
+import { Route as ApiUsersUserIdResetPasswordRouteImport } from './routes/api/users/$userId/reset-password'
 import { Route as ApiTasksTaskIdMoveRouteImport } from './routes/api/tasks/$taskId/move'
+import { Route as ApiTasksTaskIdActivityRouteImport } from './routes/api/tasks/$taskId/activity'
 import { Route as ApiTagsTagIdDetachRouteImport } from './routes/api/tags/$tagId/detach'
 import { Route as ApiTagsTagIdAttachRouteImport } from './routes/api/tags/$tagId/attach'
 import { Route as ApiRealtimeProjectsProjectIdRouteImport } from './routes/api/realtime/projects.$projectId'
@@ -62,6 +70,7 @@ import { Route as ApiProjectsProjectIdActivityRouteImport } from './routes/api/p
 import { Route as ApiNotificationsNotificationIdReadRouteImport } from './routes/api/notifications/$notificationId/read'
 import { Route as ApiNotesNoteIdSecretRouteImport } from './routes/api/notes/$noteId/secret'
 import { Route as ApiFilesFileIdDownloadRouteImport } from './routes/api/files/$fileId/download'
+import { Route as ApiClientsClientIdActivityRouteImport } from './routes/api/clients/$clientId/activity'
 import { Route as ApiTasksTaskIdCommentsIndexRouteImport } from './routes/api/tasks/$taskId/comments/index'
 import { Route as ApiProjectsProjectIdMembersIndexRouteImport } from './routes/api/projects/$projectId/members/index'
 import { Route as ApiProjectsProjectIdMembersUserIdRouteImport } from './routes/api/projects/$projectId/members/$userId'
@@ -101,9 +110,9 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppProjectsRoute = AppProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppNotesRoute = AppNotesRouteImport.update({
@@ -116,10 +125,25 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppClientsRoute = AppClientsRouteImport.update({
+const AppProjectsRouteRoute = AppProjectsRouteRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppClientsRouteRoute = AppClientsRouteRouteImport.update({
   id: '/clients',
   path: '/clients',
   getParentRoute: () => AppRouteRoute,
+} as any)
+const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppProjectsRouteRoute,
+} as any)
+const AppClientsIndexRoute = AppClientsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppClientsRouteRoute,
 } as any)
 const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
   id: '/api/users/',
@@ -144,6 +168,11 @@ const ApiSearchIndexRoute = ApiSearchIndexRouteImport.update({
 const ApiProjectsIndexRoute = ApiProjectsIndexRouteImport.update({
   id: '/api/projects/',
   path: '/api/projects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfileIndexRoute = ApiProfileIndexRouteImport.update({
+  id: '/api/profile/',
+  path: '/api/profile/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNotificationsIndexRoute = ApiNotificationsIndexRouteImport.update({
@@ -174,7 +203,7 @@ const ApiActivityIndexRoute = ApiActivityIndexRouteImport.update({
 const AppClientsClientIdRoute = AppClientsClientIdRouteImport.update({
   id: '/$clientId',
   path: '/$clientId',
-  getParentRoute: () => AppClientsRoute,
+  getParentRoute: () => AppClientsRouteRoute,
 } as any)
 const ApiUsersUserIdRoute = ApiUsersUserIdRouteImport.update({
   id: '/api/users/$userId',
@@ -200,6 +229,16 @@ const ApiRealtimeNotificationsRoute =
 const ApiProjectsProjectIdRoute = ApiProjectsProjectIdRouteImport.update({
   id: '/api/projects/$projectId',
   path: '/api/projects/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfilePasswordRoute = ApiProfilePasswordRouteImport.update({
+  id: '/api/profile/password',
+  path: '/api/profile/password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfileAvatarRoute = ApiProfileAvatarRouteImport.update({
+  id: '/api/profile/avatar',
+  path: '/api/profile/avatar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNotesNoteIdRoute = ApiNotesNoteIdRouteImport.update({
@@ -236,7 +275,7 @@ const AppProjectsProjectIdRouteRoute =
   AppProjectsProjectIdRouteRouteImport.update({
     id: '/$projectId',
     path: '/$projectId',
-    getParentRoute: () => AppProjectsRoute,
+    getParentRoute: () => AppProjectsRouteRoute,
   } as any)
 const AppProjectsProjectIdIndexRoute =
   AppProjectsProjectIdIndexRouteImport.update({
@@ -288,9 +327,20 @@ const ApiUsersUserIdRoleRoute = ApiUsersUserIdRoleRouteImport.update({
   path: '/role',
   getParentRoute: () => ApiUsersUserIdRoute,
 } as any)
+const ApiUsersUserIdResetPasswordRoute =
+  ApiUsersUserIdResetPasswordRouteImport.update({
+    id: '/reset-password',
+    path: '/reset-password',
+    getParentRoute: () => ApiUsersUserIdRoute,
+  } as any)
 const ApiTasksTaskIdMoveRoute = ApiTasksTaskIdMoveRouteImport.update({
   id: '/move',
   path: '/move',
+  getParentRoute: () => ApiTasksTaskIdRoute,
+} as any)
+const ApiTasksTaskIdActivityRoute = ApiTasksTaskIdActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => ApiTasksTaskIdRoute,
 } as any)
 const ApiTagsTagIdDetachRoute = ApiTagsTagIdDetachRouteImport.update({
@@ -343,6 +393,12 @@ const ApiFilesFileIdDownloadRoute = ApiFilesFileIdDownloadRouteImport.update({
   path: '/api/files/$fileId/download',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientsClientIdActivityRoute =
+  ApiClientsClientIdActivityRouteImport.update({
+    id: '/activity',
+    path: '/activity',
+    getParentRoute: () => ApiClientsClientIdRoute,
+  } as any)
 const ApiTasksTaskIdCommentsIndexRoute =
   ApiTasksTaskIdCommentsIndexRouteImport.update({
     id: '/comments/',
@@ -366,10 +422,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
-  '/app/clients': typeof AppClientsRouteWithChildren
+  '/app/clients': typeof AppClientsRouteRouteWithChildren
+  '/app/projects': typeof AppProjectsRouteRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/notes': typeof AppNotesRoute
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/users': typeof AppUsersRoute
@@ -378,9 +435,11 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
-  '/api/clients/$clientId': typeof ApiClientsClientIdRoute
+  '/api/clients/$clientId': typeof ApiClientsClientIdRouteWithChildren
   '/api/comments/$commentId': typeof ApiCommentsCommentIdRoute
   '/api/notes/$noteId': typeof ApiNotesNoteIdRouteWithChildren
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
+  '/api/profile/password': typeof ApiProfilePasswordRoute
   '/api/projects/$projectId': typeof ApiProjectsProjectIdRouteWithChildren
   '/api/realtime/notifications': typeof ApiRealtimeNotificationsRoute
   '/api/tags/$tagId': typeof ApiTagsTagIdRouteWithChildren
@@ -392,11 +451,15 @@ export interface FileRoutesByFullPath {
   '/api/dashboard': typeof ApiDashboardIndexRoute
   '/api/notes': typeof ApiNotesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
+  '/api/profile': typeof ApiProfileIndexRoute
   '/api/projects': typeof ApiProjectsIndexRoute
   '/api/search': typeof ApiSearchIndexRoute
   '/api/tags': typeof ApiTagsIndexRoute
   '/api/tasks': typeof ApiTasksIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
+  '/app/clients/': typeof AppClientsIndexRoute
+  '/app/projects/': typeof AppProjectsIndexRoute
+  '/api/clients/$clientId/activity': typeof ApiClientsClientIdActivityRoute
   '/api/files/$fileId/download': typeof ApiFilesFileIdDownloadRoute
   '/api/notes/$noteId/secret': typeof ApiNotesNoteIdSecretRoute
   '/api/notifications/$notificationId/read': typeof ApiNotificationsNotificationIdReadRoute
@@ -406,7 +469,9 @@ export interface FileRoutesByFullPath {
   '/api/realtime/projects/$projectId': typeof ApiRealtimeProjectsProjectIdRoute
   '/api/tags/$tagId/attach': typeof ApiTagsTagIdAttachRoute
   '/api/tags/$tagId/detach': typeof ApiTagsTagIdDetachRoute
+  '/api/tasks/$taskId/activity': typeof ApiTasksTaskIdActivityRoute
   '/api/tasks/$taskId/move': typeof ApiTasksTaskIdMoveRoute
+  '/api/users/$userId/reset-password': typeof ApiUsersUserIdResetPasswordRoute
   '/api/users/$userId/role': typeof ApiUsersUserIdRoleRoute
   '/api/users/me/theme': typeof ApiUsersMeThemeRoute
   '/app/projects/$projectId/board': typeof AppProjectsProjectIdBoardRoute
@@ -424,10 +489,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
-  '/app/clients': typeof AppClientsRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/notes': typeof AppNotesRoute
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/users': typeof AppUsersRoute
@@ -435,9 +499,11 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
-  '/api/clients/$clientId': typeof ApiClientsClientIdRoute
+  '/api/clients/$clientId': typeof ApiClientsClientIdRouteWithChildren
   '/api/comments/$commentId': typeof ApiCommentsCommentIdRoute
   '/api/notes/$noteId': typeof ApiNotesNoteIdRouteWithChildren
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
+  '/api/profile/password': typeof ApiProfilePasswordRoute
   '/api/projects/$projectId': typeof ApiProjectsProjectIdRouteWithChildren
   '/api/realtime/notifications': typeof ApiRealtimeNotificationsRoute
   '/api/tags/$tagId': typeof ApiTagsTagIdRouteWithChildren
@@ -449,11 +515,15 @@ export interface FileRoutesByTo {
   '/api/dashboard': typeof ApiDashboardIndexRoute
   '/api/notes': typeof ApiNotesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
+  '/api/profile': typeof ApiProfileIndexRoute
   '/api/projects': typeof ApiProjectsIndexRoute
   '/api/search': typeof ApiSearchIndexRoute
   '/api/tags': typeof ApiTagsIndexRoute
   '/api/tasks': typeof ApiTasksIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
+  '/app/clients': typeof AppClientsIndexRoute
+  '/app/projects': typeof AppProjectsIndexRoute
+  '/api/clients/$clientId/activity': typeof ApiClientsClientIdActivityRoute
   '/api/files/$fileId/download': typeof ApiFilesFileIdDownloadRoute
   '/api/notes/$noteId/secret': typeof ApiNotesNoteIdSecretRoute
   '/api/notifications/$notificationId/read': typeof ApiNotificationsNotificationIdReadRoute
@@ -463,7 +533,9 @@ export interface FileRoutesByTo {
   '/api/realtime/projects/$projectId': typeof ApiRealtimeProjectsProjectIdRoute
   '/api/tags/$tagId/attach': typeof ApiTagsTagIdAttachRoute
   '/api/tags/$tagId/detach': typeof ApiTagsTagIdDetachRoute
+  '/api/tasks/$taskId/activity': typeof ApiTasksTaskIdActivityRoute
   '/api/tasks/$taskId/move': typeof ApiTasksTaskIdMoveRoute
+  '/api/users/$userId/reset-password': typeof ApiUsersUserIdResetPasswordRoute
   '/api/users/$userId/role': typeof ApiUsersUserIdRoleRoute
   '/api/users/me/theme': typeof ApiUsersMeThemeRoute
   '/app/projects/$projectId/board': typeof AppProjectsProjectIdBoardRoute
@@ -482,10 +554,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
-  '/app/clients': typeof AppClientsRouteWithChildren
+  '/app/clients': typeof AppClientsRouteRouteWithChildren
+  '/app/projects': typeof AppProjectsRouteRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/notes': typeof AppNotesRoute
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/users': typeof AppUsersRoute
@@ -494,9 +567,11 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
-  '/api/clients/$clientId': typeof ApiClientsClientIdRoute
+  '/api/clients/$clientId': typeof ApiClientsClientIdRouteWithChildren
   '/api/comments/$commentId': typeof ApiCommentsCommentIdRoute
   '/api/notes/$noteId': typeof ApiNotesNoteIdRouteWithChildren
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
+  '/api/profile/password': typeof ApiProfilePasswordRoute
   '/api/projects/$projectId': typeof ApiProjectsProjectIdRouteWithChildren
   '/api/realtime/notifications': typeof ApiRealtimeNotificationsRoute
   '/api/tags/$tagId': typeof ApiTagsTagIdRouteWithChildren
@@ -508,11 +583,15 @@ export interface FileRoutesById {
   '/api/dashboard/': typeof ApiDashboardIndexRoute
   '/api/notes/': typeof ApiNotesIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
+  '/api/profile/': typeof ApiProfileIndexRoute
   '/api/projects/': typeof ApiProjectsIndexRoute
   '/api/search/': typeof ApiSearchIndexRoute
   '/api/tags/': typeof ApiTagsIndexRoute
   '/api/tasks/': typeof ApiTasksIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
+  '/app/clients/': typeof AppClientsIndexRoute
+  '/app/projects/': typeof AppProjectsIndexRoute
+  '/api/clients/$clientId/activity': typeof ApiClientsClientIdActivityRoute
   '/api/files/$fileId/download': typeof ApiFilesFileIdDownloadRoute
   '/api/notes/$noteId/secret': typeof ApiNotesNoteIdSecretRoute
   '/api/notifications/$notificationId/read': typeof ApiNotificationsNotificationIdReadRoute
@@ -522,7 +601,9 @@ export interface FileRoutesById {
   '/api/realtime/projects/$projectId': typeof ApiRealtimeProjectsProjectIdRoute
   '/api/tags/$tagId/attach': typeof ApiTagsTagIdAttachRoute
   '/api/tags/$tagId/detach': typeof ApiTagsTagIdDetachRoute
+  '/api/tasks/$taskId/activity': typeof ApiTasksTaskIdActivityRoute
   '/api/tasks/$taskId/move': typeof ApiTasksTaskIdMoveRoute
+  '/api/users/$userId/reset-password': typeof ApiUsersUserIdResetPasswordRoute
   '/api/users/$userId/role': typeof ApiUsersUserIdRoleRoute
   '/api/users/me/theme': typeof ApiUsersMeThemeRoute
   '/app/projects/$projectId/board': typeof AppProjectsProjectIdBoardRoute
@@ -543,9 +624,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/app/clients'
+    | '/app/projects'
     | '/app/dashboard'
     | '/app/notes'
-    | '/app/projects'
+    | '/app/profile'
     | '/app/settings'
     | '/app/tasks'
     | '/app/users'
@@ -557,6 +639,8 @@ export interface FileRouteTypes {
     | '/api/clients/$clientId'
     | '/api/comments/$commentId'
     | '/api/notes/$noteId'
+    | '/api/profile/avatar'
+    | '/api/profile/password'
     | '/api/projects/$projectId'
     | '/api/realtime/notifications'
     | '/api/tags/$tagId'
@@ -568,11 +652,15 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/notes'
     | '/api/notifications'
+    | '/api/profile'
     | '/api/projects'
     | '/api/search'
     | '/api/tags'
     | '/api/tasks'
     | '/api/users'
+    | '/app/clients/'
+    | '/app/projects/'
+    | '/api/clients/$clientId/activity'
     | '/api/files/$fileId/download'
     | '/api/notes/$noteId/secret'
     | '/api/notifications/$notificationId/read'
@@ -582,7 +670,9 @@ export interface FileRouteTypes {
     | '/api/realtime/projects/$projectId'
     | '/api/tags/$tagId/attach'
     | '/api/tags/$tagId/detach'
+    | '/api/tasks/$taskId/activity'
     | '/api/tasks/$taskId/move'
+    | '/api/users/$userId/reset-password'
     | '/api/users/$userId/role'
     | '/api/users/me/theme'
     | '/app/projects/$projectId/board'
@@ -600,10 +690,9 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
-    | '/app/clients'
     | '/app/dashboard'
     | '/app/notes'
-    | '/app/projects'
+    | '/app/profile'
     | '/app/settings'
     | '/app/tasks'
     | '/app/users'
@@ -614,6 +703,8 @@ export interface FileRouteTypes {
     | '/api/clients/$clientId'
     | '/api/comments/$commentId'
     | '/api/notes/$noteId'
+    | '/api/profile/avatar'
+    | '/api/profile/password'
     | '/api/projects/$projectId'
     | '/api/realtime/notifications'
     | '/api/tags/$tagId'
@@ -625,11 +716,15 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/notes'
     | '/api/notifications'
+    | '/api/profile'
     | '/api/projects'
     | '/api/search'
     | '/api/tags'
     | '/api/tasks'
     | '/api/users'
+    | '/app/clients'
+    | '/app/projects'
+    | '/api/clients/$clientId/activity'
     | '/api/files/$fileId/download'
     | '/api/notes/$noteId/secret'
     | '/api/notifications/$notificationId/read'
@@ -639,7 +734,9 @@ export interface FileRouteTypes {
     | '/api/realtime/projects/$projectId'
     | '/api/tags/$tagId/attach'
     | '/api/tags/$tagId/detach'
+    | '/api/tasks/$taskId/activity'
     | '/api/tasks/$taskId/move'
+    | '/api/users/$userId/reset-password'
     | '/api/users/$userId/role'
     | '/api/users/me/theme'
     | '/app/projects/$projectId/board'
@@ -658,9 +755,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/app/clients'
+    | '/app/projects'
     | '/app/dashboard'
     | '/app/notes'
-    | '/app/projects'
+    | '/app/profile'
     | '/app/settings'
     | '/app/tasks'
     | '/app/users'
@@ -672,6 +770,8 @@ export interface FileRouteTypes {
     | '/api/clients/$clientId'
     | '/api/comments/$commentId'
     | '/api/notes/$noteId'
+    | '/api/profile/avatar'
+    | '/api/profile/password'
     | '/api/projects/$projectId'
     | '/api/realtime/notifications'
     | '/api/tags/$tagId'
@@ -683,11 +783,15 @@ export interface FileRouteTypes {
     | '/api/dashboard/'
     | '/api/notes/'
     | '/api/notifications/'
+    | '/api/profile/'
     | '/api/projects/'
     | '/api/search/'
     | '/api/tags/'
     | '/api/tasks/'
     | '/api/users/'
+    | '/app/clients/'
+    | '/app/projects/'
+    | '/api/clients/$clientId/activity'
     | '/api/files/$fileId/download'
     | '/api/notes/$noteId/secret'
     | '/api/notifications/$notificationId/read'
@@ -697,7 +801,9 @@ export interface FileRouteTypes {
     | '/api/realtime/projects/$projectId'
     | '/api/tags/$tagId/attach'
     | '/api/tags/$tagId/detach'
+    | '/api/tasks/$taskId/activity'
     | '/api/tasks/$taskId/move'
+    | '/api/users/$userId/reset-password'
     | '/api/users/$userId/role'
     | '/api/users/me/theme'
     | '/app/projects/$projectId/board'
@@ -719,9 +825,11 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
-  ApiClientsClientIdRoute: typeof ApiClientsClientIdRoute
+  ApiClientsClientIdRoute: typeof ApiClientsClientIdRouteWithChildren
   ApiCommentsCommentIdRoute: typeof ApiCommentsCommentIdRoute
   ApiNotesNoteIdRoute: typeof ApiNotesNoteIdRouteWithChildren
+  ApiProfileAvatarRoute: typeof ApiProfileAvatarRoute
+  ApiProfilePasswordRoute: typeof ApiProfilePasswordRoute
   ApiProjectsProjectIdRoute: typeof ApiProjectsProjectIdRouteWithChildren
   ApiRealtimeNotificationsRoute: typeof ApiRealtimeNotificationsRoute
   ApiTagsTagIdRoute: typeof ApiTagsTagIdRouteWithChildren
@@ -732,6 +840,7 @@ export interface RootRouteChildren {
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ApiNotesIndexRoute: typeof ApiNotesIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
+  ApiProfileIndexRoute: typeof ApiProfileIndexRoute
   ApiProjectsIndexRoute: typeof ApiProjectsIndexRoute
   ApiSearchIndexRoute: typeof ApiSearchIndexRoute
   ApiTagsIndexRoute: typeof ApiTagsIndexRoute
@@ -796,11 +905,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/projects': {
-      id: '/app/projects'
-      path: '/projects'
-      fullPath: '/app/projects'
-      preLoaderRoute: typeof AppProjectsRouteImport
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/notes': {
@@ -817,12 +926,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/projects': {
+      id: '/app/projects'
+      path: '/projects'
+      fullPath: '/app/projects'
+      preLoaderRoute: typeof AppProjectsRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/clients': {
       id: '/app/clients'
       path: '/clients'
       fullPath: '/app/clients'
-      preLoaderRoute: typeof AppClientsRouteImport
+      preLoaderRoute: typeof AppClientsRouteRouteImport
       parentRoute: typeof AppRouteRoute
+    }
+    '/app/projects/': {
+      id: '/app/projects/'
+      path: '/'
+      fullPath: '/app/projects/'
+      preLoaderRoute: typeof AppProjectsIndexRouteImport
+      parentRoute: typeof AppProjectsRouteRoute
+    }
+    '/app/clients/': {
+      id: '/app/clients/'
+      path: '/'
+      fullPath: '/app/clients/'
+      preLoaderRoute: typeof AppClientsIndexRouteImport
+      parentRoute: typeof AppClientsRouteRoute
     }
     '/api/users/': {
       id: '/api/users/'
@@ -857,6 +987,13 @@ declare module '@tanstack/react-router' {
       path: '/api/projects'
       fullPath: '/api/projects'
       preLoaderRoute: typeof ApiProjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile/': {
+      id: '/api/profile/'
+      path: '/api/profile'
+      fullPath: '/api/profile'
+      preLoaderRoute: typeof ApiProfileIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/notifications/': {
@@ -899,7 +1036,7 @@ declare module '@tanstack/react-router' {
       path: '/$clientId'
       fullPath: '/app/clients/$clientId'
       preLoaderRoute: typeof AppClientsClientIdRouteImport
-      parentRoute: typeof AppClientsRoute
+      parentRoute: typeof AppClientsRouteRoute
     }
     '/api/users/$userId': {
       id: '/api/users/$userId'
@@ -934,6 +1071,20 @@ declare module '@tanstack/react-router' {
       path: '/api/projects/$projectId'
       fullPath: '/api/projects/$projectId'
       preLoaderRoute: typeof ApiProjectsProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile/password': {
+      id: '/api/profile/password'
+      path: '/api/profile/password'
+      fullPath: '/api/profile/password'
+      preLoaderRoute: typeof ApiProfilePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile/avatar': {
+      id: '/api/profile/avatar'
+      path: '/api/profile/avatar'
+      fullPath: '/api/profile/avatar'
+      preLoaderRoute: typeof ApiProfileAvatarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/notes/$noteId': {
@@ -983,7 +1134,7 @@ declare module '@tanstack/react-router' {
       path: '/$projectId'
       fullPath: '/app/projects/$projectId'
       preLoaderRoute: typeof AppProjectsProjectIdRouteRouteImport
-      parentRoute: typeof AppProjectsRoute
+      parentRoute: typeof AppProjectsRouteRoute
     }
     '/app/projects/$projectId/': {
       id: '/app/projects/$projectId/'
@@ -1048,11 +1199,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUsersUserIdRoleRouteImport
       parentRoute: typeof ApiUsersUserIdRoute
     }
+    '/api/users/$userId/reset-password': {
+      id: '/api/users/$userId/reset-password'
+      path: '/reset-password'
+      fullPath: '/api/users/$userId/reset-password'
+      preLoaderRoute: typeof ApiUsersUserIdResetPasswordRouteImport
+      parentRoute: typeof ApiUsersUserIdRoute
+    }
     '/api/tasks/$taskId/move': {
       id: '/api/tasks/$taskId/move'
       path: '/move'
       fullPath: '/api/tasks/$taskId/move'
       preLoaderRoute: typeof ApiTasksTaskIdMoveRouteImport
+      parentRoute: typeof ApiTasksTaskIdRoute
+    }
+    '/api/tasks/$taskId/activity': {
+      id: '/api/tasks/$taskId/activity'
+      path: '/activity'
+      fullPath: '/api/tasks/$taskId/activity'
+      preLoaderRoute: typeof ApiTasksTaskIdActivityRouteImport
       parentRoute: typeof ApiTasksTaskIdRoute
     }
     '/api/tags/$tagId/detach': {
@@ -1118,6 +1283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFilesFileIdDownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/clients/$clientId/activity': {
+      id: '/api/clients/$clientId/activity'
+      path: '/activity'
+      fullPath: '/api/clients/$clientId/activity'
+      preLoaderRoute: typeof ApiClientsClientIdActivityRouteImport
+      parentRoute: typeof ApiClientsClientIdRoute
+    }
     '/api/tasks/$taskId/comments/': {
       id: '/api/tasks/$taskId/comments/'
       path: '/comments'
@@ -1142,16 +1314,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppClientsRouteChildren {
+interface AppClientsRouteRouteChildren {
   AppClientsClientIdRoute: typeof AppClientsClientIdRoute
+  AppClientsIndexRoute: typeof AppClientsIndexRoute
 }
 
-const AppClientsRouteChildren: AppClientsRouteChildren = {
+const AppClientsRouteRouteChildren: AppClientsRouteRouteChildren = {
   AppClientsClientIdRoute: AppClientsClientIdRoute,
+  AppClientsIndexRoute: AppClientsIndexRoute,
 }
 
-const AppClientsRouteWithChildren = AppClientsRoute._addFileChildren(
-  AppClientsRouteChildren,
+const AppClientsRouteRouteWithChildren = AppClientsRouteRoute._addFileChildren(
+  AppClientsRouteRouteChildren,
 )
 
 interface AppProjectsProjectIdRouteRouteChildren {
@@ -1176,33 +1350,36 @@ const AppProjectsProjectIdRouteRouteWithChildren =
     AppProjectsProjectIdRouteRouteChildren,
   )
 
-interface AppProjectsRouteChildren {
+interface AppProjectsRouteRouteChildren {
   AppProjectsProjectIdRouteRoute: typeof AppProjectsProjectIdRouteRouteWithChildren
+  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
 }
 
-const AppProjectsRouteChildren: AppProjectsRouteChildren = {
+const AppProjectsRouteRouteChildren: AppProjectsRouteRouteChildren = {
   AppProjectsProjectIdRouteRoute: AppProjectsProjectIdRouteRouteWithChildren,
+  AppProjectsIndexRoute: AppProjectsIndexRoute,
 }
 
-const AppProjectsRouteWithChildren = AppProjectsRoute._addFileChildren(
-  AppProjectsRouteChildren,
-)
+const AppProjectsRouteRouteWithChildren =
+  AppProjectsRouteRoute._addFileChildren(AppProjectsRouteRouteChildren)
 
 interface AppRouteRouteChildren {
-  AppClientsRoute: typeof AppClientsRouteWithChildren
+  AppClientsRouteRoute: typeof AppClientsRouteRouteWithChildren
+  AppProjectsRouteRoute: typeof AppProjectsRouteRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppNotesRoute: typeof AppNotesRoute
-  AppProjectsRoute: typeof AppProjectsRouteWithChildren
+  AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
   AppUsersRoute: typeof AppUsersRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppClientsRoute: AppClientsRouteWithChildren,
+  AppClientsRouteRoute: AppClientsRouteRouteWithChildren,
+  AppProjectsRouteRoute: AppProjectsRouteRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppNotesRoute: AppNotesRoute,
-  AppProjectsRoute: AppProjectsRouteWithChildren,
+  AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,
   AppUsersRoute: AppUsersRoute,
@@ -1223,6 +1400,17 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
+
+interface ApiClientsClientIdRouteChildren {
+  ApiClientsClientIdActivityRoute: typeof ApiClientsClientIdActivityRoute
+}
+
+const ApiClientsClientIdRouteChildren: ApiClientsClientIdRouteChildren = {
+  ApiClientsClientIdActivityRoute: ApiClientsClientIdActivityRoute,
+}
+
+const ApiClientsClientIdRouteWithChildren =
+  ApiClientsClientIdRoute._addFileChildren(ApiClientsClientIdRouteChildren)
 
 interface ApiNotesNoteIdRouteChildren {
   ApiNotesNoteIdSecretRoute: typeof ApiNotesNoteIdSecretRoute
@@ -1271,11 +1459,13 @@ const ApiTagsTagIdRouteWithChildren = ApiTagsTagIdRoute._addFileChildren(
 )
 
 interface ApiTasksTaskIdRouteChildren {
+  ApiTasksTaskIdActivityRoute: typeof ApiTasksTaskIdActivityRoute
   ApiTasksTaskIdMoveRoute: typeof ApiTasksTaskIdMoveRoute
   ApiTasksTaskIdCommentsIndexRoute: typeof ApiTasksTaskIdCommentsIndexRoute
 }
 
 const ApiTasksTaskIdRouteChildren: ApiTasksTaskIdRouteChildren = {
+  ApiTasksTaskIdActivityRoute: ApiTasksTaskIdActivityRoute,
   ApiTasksTaskIdMoveRoute: ApiTasksTaskIdMoveRoute,
   ApiTasksTaskIdCommentsIndexRoute: ApiTasksTaskIdCommentsIndexRoute,
 }
@@ -1285,10 +1475,12 @@ const ApiTasksTaskIdRouteWithChildren = ApiTasksTaskIdRoute._addFileChildren(
 )
 
 interface ApiUsersUserIdRouteChildren {
+  ApiUsersUserIdResetPasswordRoute: typeof ApiUsersUserIdResetPasswordRoute
   ApiUsersUserIdRoleRoute: typeof ApiUsersUserIdRoleRoute
 }
 
 const ApiUsersUserIdRouteChildren: ApiUsersUserIdRouteChildren = {
+  ApiUsersUserIdResetPasswordRoute: ApiUsersUserIdResetPasswordRoute,
   ApiUsersUserIdRoleRoute: ApiUsersUserIdRoleRoute,
 }
 
@@ -1303,9 +1495,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
-  ApiClientsClientIdRoute: ApiClientsClientIdRoute,
+  ApiClientsClientIdRoute: ApiClientsClientIdRouteWithChildren,
   ApiCommentsCommentIdRoute: ApiCommentsCommentIdRoute,
   ApiNotesNoteIdRoute: ApiNotesNoteIdRouteWithChildren,
+  ApiProfileAvatarRoute: ApiProfileAvatarRoute,
+  ApiProfilePasswordRoute: ApiProfilePasswordRoute,
   ApiProjectsProjectIdRoute: ApiProjectsProjectIdRouteWithChildren,
   ApiRealtimeNotificationsRoute: ApiRealtimeNotificationsRoute,
   ApiTagsTagIdRoute: ApiTagsTagIdRouteWithChildren,
@@ -1316,6 +1510,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ApiNotesIndexRoute: ApiNotesIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
+  ApiProfileIndexRoute: ApiProfileIndexRoute,
   ApiProjectsIndexRoute: ApiProjectsIndexRoute,
   ApiSearchIndexRoute: ApiSearchIndexRoute,
   ApiTagsIndexRoute: ApiTagsIndexRoute,

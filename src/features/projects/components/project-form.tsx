@@ -2,7 +2,7 @@
  * ProjectForm component for create/edit
  * Requirements: 1.1, 4.1, 4.3
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +62,20 @@ interface ProjectFormProps {
   isLoading?: boolean;
 }
 
+// Helper to create initial form data
+function getInitialFormData(project?: ProjectListItem | null): ProjectFormData {
+  return {
+    clientId: project?.clientId || '',
+    name: project?.name || '',
+    description: project?.description || '',
+    status: (project?.status as ProjectStatus) || 'PLANNING',
+    priority: (project?.priority as Priority) || 'MEDIUM',
+    startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
+    endDate: project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+    managerId: project?.managerId || '',
+  };
+}
+
 export function ProjectForm({
   open,
   onOpenChange,
@@ -73,44 +87,22 @@ export function ProjectForm({
 }: ProjectFormProps) {
   const isEditing = !!project;
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState<ProjectFormData>({
-    clientId: project?.clientId || '',
-    name: project?.name || '',
-    description: project?.description || '',
-    status: (project?.status as ProjectStatus) || 'PLANNING',
-    priority: (project?.priority as Priority) || 'MEDIUM',
-    startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-    endDate: project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
-    managerId: project?.managerId || '',
-  });
+  const [formData, setFormData] = useState<ProjectFormData>(() => getInitialFormData(project));
 
-  // Reset form when project changes
+  // Store project in ref to access latest value without adding to dependencies
+  const projectRef = useRef(project);
+  projectRef.current = project;
+
+  // Use primitive values ONLY for dependencies to prevent infinite loops
+  const projectId = project?.id ?? null;
+
+  // Reset form only when sheet opens OR when project ID changes
   useEffect(() => {
-    if (project) {
-      setFormData({
-        clientId: project.clientId,
-        name: project.name,
-        description: project.description || '',
-        status: project.status as ProjectStatus,
-        priority: project.priority as Priority,
-        startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-        endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
-        managerId: project.managerId,
-      });
-    } else {
-      setFormData({
-        clientId: '',
-        name: '',
-        description: '',
-        status: 'PLANNING',
-        priority: 'MEDIUM',
-        startDate: '',
-        endDate: '',
-        managerId: '',
-      });
+    if (open) {
+      setFormData(getInitialFormData(projectRef.current));
+      setErrors({});
     }
-    setErrors({});
-  }, [project, open]);
+  }, [open, projectId]);
 
   const handleChange = (field: keyof ProjectFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

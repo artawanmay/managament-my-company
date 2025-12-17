@@ -100,8 +100,8 @@ export const Route = createFileRoute('/api/search/')({
           // Determine accessible project IDs for the user
           let accessibleProjectIds: string[] | null = null; // null means all projects
 
-          if (auth.user.role !== 'SUPER_ADMIN' && auth.user.role !== 'ADMIN') {
-            // Non-admin users: filter by project membership or manager role
+          if (auth.user.role !== 'SUPER_ADMIN') {
+            // Non-SUPER_ADMIN users: filter by project membership or manager role
             const memberProjects = await db
               .select({ projectId: projectMembers.projectId })
               .from(projectMembers)
@@ -119,9 +119,9 @@ export const Route = createFileRoute('/api/search/')({
             accessibleProjectIds = [...new Set([...memberProjectIds, ...managedProjectIds])];
           }
 
-          // Search clients (only ADMIN+ can see clients)
+          // Search clients (only SUPER_ADMIN and MANAGER can see clients)
           let clientResults: ClientSearchResult[] = [];
-          if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN' || auth.user.role === 'MANAGER') {
+          if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'MANAGER') {
             const clientSearchResults = await db
               .select({
                 id: clients.id,

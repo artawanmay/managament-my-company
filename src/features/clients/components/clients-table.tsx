@@ -127,12 +127,12 @@ export function ClientsTable({ data, onEdit, onDelete, isLoading }: ClientsTable
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/app/clients/$clientId" params={{ clientId: client.id }}>
+                <Link to="/app/clients/$clientId" params={{ clientId: client.id }}>
+                  <DropdownMenuItem>
                     <Eye className="mr-2 h-4 w-4" />
                     View
-                  </Link>
-                </DropdownMenuItem>
+                  </DropdownMenuItem>
+                </Link>
                 {onEdit && (
                   <DropdownMenuItem onClick={() => onEdit(client)}>
                     <Pencil className="mr-2 h-4 w-4" />

@@ -80,9 +80,9 @@ const actionArbitrary = fc.constantFrom('CREATED', 'UPDATED', 'DELETED', 'MOVED'
   'CREATED' | 'UPDATED' | 'DELETED' | 'MOVED' | 'ARCHIVED'
 >;
 
-// Role arbitrary
-const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'GUEST') as fc.Arbitrary<
-  'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'GUEST'
+// Role arbitrary (ADMIN role removed)
+const roleArbitrary = fc.constantFrom('SUPER_ADMIN', 'MANAGER', 'MEMBER', 'GUEST') as fc.Arbitrary<
+  'SUPER_ADMIN' | 'MANAGER' | 'MEMBER' | 'GUEST'
 >;
 
 const PBT_RUNS = 100;

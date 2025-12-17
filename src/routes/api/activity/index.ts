@@ -38,7 +38,7 @@ export const Route = createFileRoute('/api/activity/')({
           // Other roles can only see activity for projects they have access to
           let activityList;
 
-          if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN') {
+          if (auth.user.role === 'SUPER_ADMIN') {
             // Build conditions for filtering
             const conditions = [];
             if (entityType) {

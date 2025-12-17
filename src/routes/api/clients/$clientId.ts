@@ -15,6 +15,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { clients, projects, clientStatusValues } from '@/lib/db/schema';
 import { requireAuth, requireAuthWithCsrf, requireRole, handleAuthError, handleRoleError } from '@/lib/auth/middleware';
+import { logClientUpdated, logClientDeleted } from '@/lib/activity';
 import { z } from 'zod';
 
 // Zod schema for updating a client
@@ -98,22 +99,23 @@ export const Route = createFileRoute('/api/clients/$clientId')({
         const authError = handleAuthError(auth);
         if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to update clients
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to update clients
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
         try {
           const { clientId } = params;
 
-          // Check if client exists
-          const existingClient = await db
-            .select({ id: clients.id })
+          // Check if client exists and get current values for logging
+          const existingClientResult = await db
+            .select()
             .from(clients)
             .where(eq(clients.id, clientId))
             .limit(1);
 
-          if (existingClient.length === 0) {
+          const existingClient = existingClientResult[0];
+          if (!existingClient) {
             return json({ error: 'Client not found' }, { status: 404 });
           }
 
@@ -149,6 +151,29 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           const updatedClient = result[0];
 
+          // Build changes for activity log
+          const changes: Record<string, { from: unknown; to: unknown }> = {};
+          if (parsed.data.name !== undefined && parsed.data.name !== existingClient.name) {
+            changes.name = { from: existingClient.name, to: parsed.data.name };
+          }
+          if (parsed.data.status !== undefined && parsed.data.status !== existingClient.status) {
+            changes.status = { from: existingClient.status, to: parsed.data.status };
+          }
+          if (parsed.data.picName !== undefined && parsed.data.picName !== existingClient.picName) {
+            changes.picName = { from: existingClient.picName, to: parsed.data.picName };
+          }
+          if (parsed.data.email !== undefined && (parsed.data.email || null) !== existingClient.email) {
+            changes.email = { from: existingClient.email, to: parsed.data.email || null };
+          }
+          if (parsed.data.phone !== undefined && parsed.data.phone !== existingClient.phone) {
+            changes.phone = { from: existingClient.phone, to: parsed.data.phone };
+          }
+
+          // Log activity if there are changes
+          if (Object.keys(changes).length > 0) {
+            await logClientUpdated(auth.user.id, clientId, changes);
+          }
+
           return json({ data: updatedClient });
         } catch (error) {
           console.error('[PUT /api/clients/:clientId] Error:', error);
@@ -166,8 +191,8 @@ export const Route = createFileRoute('/api/clients/$clientId')({
         const authError = handleAuthError(auth);
         if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to delete clients
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to delete clients
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -175,13 +200,14 @@ export const Route = createFileRoute('/api/clients/$clientId')({
           const { clientId } = params;
 
           // Check if client exists
-          const existingClient = await db
-            .select({ id: clients.id })
+          const existingClientResult = await db
+            .select({ id: clients.id, name: clients.name })
             .from(clients)
             .where(eq(clients.id, clientId))
             .limit(1);
 
-          if (existingClient.length === 0) {
+          const clientToDelete = existingClientResult[0];
+          if (!clientToDelete) {
             return json({ error: 'Client not found' }, { status: 404 });
           }
 
@@ -203,6 +229,9 @@ export const Route = createFileRoute('/api/clients/$clientId')({
 
           // Delete the client
           await db.delete(clients).where(eq(clients.id, clientId));
+
+          // Log activity
+          await logClientDeleted(auth.user.id, clientId, clientToDelete.name);
 
           return json({ success: true, message: 'Client deleted successfully' });
         } catch (error) {

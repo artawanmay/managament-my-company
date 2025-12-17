@@ -2,8 +2,9 @@
  * TaskForm component
  * Form for creating and editing tasks
  * Requirements: 1.1, 4.3, 5.1, 5.3
+ * Fix: Simplified to prevent infinite re-renders (Requirements 1.2, 2.3, 3.3)
  */
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +26,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
+import { useTaskActivity } from '../hooks/use-task-activity';
+import { ActivityHistory } from '@/features/activity';
 import type { Task, CreateTaskInput, UpdateTaskInput } from '../types';
 import { TASK_STATUS_VALUES, PRIORITY_VALUES, PRIORITY_CONFIG, KANBAN_COLUMNS, type TaskStatus, type Priority } from '../types';
 
@@ -51,6 +55,19 @@ interface TaskFormProps {
   isLoading?: boolean;
 }
 
+// Helper to create initial form data
+function getInitialFormData(task?: Task | null): TaskFormData {
+  return {
+    title: task?.title || '',
+    description: task?.description || '',
+    status: task?.status || 'BACKLOG',
+    priority: task?.priority || 'MEDIUM',
+    assigneeId: task?.assigneeId || '',
+    dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
+    estimatedHours: task?.estimatedHours?.toString() || '',
+  };
+}
+
 export function TaskForm({
   open,
   onOpenChange,
@@ -62,35 +79,27 @@ export function TaskForm({
 }: TaskFormProps) {
   const isEditing = !!task;
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState<TaskFormData>({
-    title: task?.title || '',
-    description: task?.description || '',
-    status: task?.status || 'BACKLOG',
-    priority: task?.priority || 'MEDIUM',
-    assigneeId: task?.assigneeId || '',
-    dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
-    estimatedHours: task?.estimatedHours?.toString() || '',
-  });
+  const [formData, setFormData] = useState<TaskFormData>(() => getInitialFormData(task));
+  
+  // Store task in ref to access latest value without adding to dependencies
+  const taskRef = useRef(task);
+  taskRef.current = task;
+  
+  // Use primitive values ONLY for dependencies to prevent infinite loops
+  const taskId = task?.id ?? null;
 
-  // Reset form state when sheet opens or task changes
+  // Reset form only when sheet opens OR when task ID changes
+  // Dependencies are ONLY primitives: open (boolean) and taskId (string|null)
   useEffect(() => {
     if (open) {
-      setFormData({
-        title: task?.title || '',
-        description: task?.description || '',
-        status: task?.status || 'BACKLOG',
-        priority: task?.priority || 'MEDIUM',
-        assigneeId: task?.assigneeId || '',
-        dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
-        estimatedHours: task?.estimatedHours?.toString() || '',
-      });
+      // Use ref to get latest task value
+      setFormData(getInitialFormData(taskRef.current));
       setErrors({});
     }
-  }, [open, task]);
+  }, [open, taskId]);
 
   const handleChange = (field: keyof TaskFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when field is modified
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -100,10 +109,14 @@ export function TaskForm({
     }
   };
 
+  const resetForm = () => {
+    setFormData(getInitialFormData(null));
+    setErrors({});
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form data
     const result = taskFormSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -133,29 +146,25 @@ export function TaskForm({
 
       await onSubmit(submitData);
       onOpenChange(false);
-      // Reset form
       resetForm();
     } catch (error) {
       console.error('Form submission error:', error);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      status: 'BACKLOG',
-      priority: 'MEDIUM',
-      assigneeId: '',
-      dueDate: '',
-      estimatedHours: '',
-    });
-    setErrors({});
-  };
+  // Fetch activity for existing tasks
+  const { data: activityData, isLoading: activityLoading } = useTaskActivity(
+    isEditing ? task?.id : undefined
+  );
+
+  // Don't render if not open
+  if (!open) {
+    return null;
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
+      <SheetContent className="sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>{isEditing ? 'Edit Task' : 'Create Task'}</SheetTitle>
           <SheetDescription>
@@ -164,145 +173,197 @@ export function TaskForm({
               : 'Fill in the details to create a new task.'}
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <SheetBody>
-            <div className="grid gap-4">
-            {/* Title */}
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                placeholder="Enter task title"
-              />
-              {errors.title && (
-                <p className="text-sm text-destructive">{errors.title}</p>
-              )}
-            </div>
 
-            {/* Description */}
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Enter task description"
-                rows={4}
-              />
-            </div>
+        {isEditing ? (
+          <Tabs defaultValue="details" className="flex flex-col flex-1 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
 
-            {/* Status and Priority */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleChange('status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TASK_STATUS_VALUES.map((s) => {
-                      const column = KANBAN_COLUMNS.find((c) => c.id === s);
-                      return (
-                        <SelectItem key={s} value={s}>
-                          {column?.title || s}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
+            <TabsContent value="details" className="flex-1 overflow-hidden mt-0">
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                <SheetBody>
+                  <TaskFormFields
+                    formData={formData}
+                    errors={errors}
+                    users={users}
+                    handleChange={handleChange}
+                  />
+                </SheetBody>
+                <SheetFooter>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading ? 'Saving...' : 'Update Task'}
+                  </Button>
+                </SheetFooter>
+              </form>
+            </TabsContent>
 
-              <div className="grid gap-2">
-                <Label>Priority</Label>
-                <Select
-                  value={formData.priority}
-                  onValueChange={(value) => handleChange('priority', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_VALUES.map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {PRIORITY_CONFIG[p].label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Assignee */}
-            <div className="grid gap-2">
-              <Label>Assignee</Label>
-              <Select
-                value={formData.assigneeId || 'unassigned'}
-                onValueChange={(value) =>
-                  handleChange('assigneeId', value === 'unassigned' ? '' : value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Due Date and Estimated Hours */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => handleChange('dueDate', e.target.value)}
+            <TabsContent value="history" className="flex-1 overflow-auto mt-0">
+              <div className="py-4">
+                <ActivityHistory
+                  activities={activityData?.data || []}
+                  isLoading={activityLoading}
+                  title="Task History"
                 />
               </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="estimatedHours">Estimated Hours</Label>
-                <Input
-                  id="estimatedHours"
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  value={formData.estimatedHours}
-                  onChange={(e) => handleChange('estimatedHours', e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-            </div>
-          </SheetBody>
-
-          <SheetFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Saving...' : isEditing ? 'Update Task' : 'Create Task'}
-            </Button>
-          </SheetFooter>
-        </form>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+            <SheetBody>
+              <TaskFormFields
+                formData={formData}
+                errors={errors}
+                users={users}
+                handleChange={handleChange}
+              />
+            </SheetBody>
+            <SheetFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Saving...' : 'Create Task'}
+              </Button>
+            </SheetFooter>
+          </form>
+        )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+// Extracted form fields component
+function TaskFormFields({
+  formData,
+  errors,
+  users,
+  handleChange,
+}: {
+  formData: TaskFormData;
+  errors: Record<string, string>;
+  users: Array<{ id: string; name: string }>;
+  handleChange: (field: keyof TaskFormData, value: string) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      {/* Title */}
+      <div className="grid gap-2">
+        <Label htmlFor="title">Title *</Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => handleChange('title', e.target.value)}
+          placeholder="Enter task title"
+        />
+        {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
+      </div>
+
+      {/* Description */}
+      <div className="grid gap-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => handleChange('description', e.target.value)}
+          placeholder="Enter task description"
+          rows={4}
+        />
+      </div>
+
+      {/* Status and Priority */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label>Status</Label>
+          <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TASK_STATUS_VALUES.map((s) => {
+                const column = KANBAN_COLUMNS.find((c) => c.id === s);
+                return (
+                  <SelectItem key={s} value={s}>
+                    {column?.title || s}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid gap-2">
+          <Label>Priority</Label>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) => handleChange('priority', value)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_VALUES.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {PRIORITY_CONFIG[p].label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Assignee */}
+      <div className="grid gap-2">
+        <Label>Assignee</Label>
+        <Select
+          value={formData.assigneeId || 'unassigned'}
+          onValueChange={(value) => handleChange('assigneeId', value === 'unassigned' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select assignee" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Due Date and Estimated Hours */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="dueDate">Due Date</Label>
+          <Input
+            id="dueDate"
+            type="date"
+            value={formData.dueDate}
+            onChange={(e) => handleChange('dueDate', e.target.value)}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="estimatedHours">Estimated Hours</Label>
+          <Input
+            id="estimatedHours"
+            type="number"
+            step="0.5"
+            min="0"
+            value={formData.estimatedHours}
+            onChange={(e) => handleChange('estimatedHours', e.target.value)}
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -191,8 +191,8 @@ interface SearchResults {
 }
 
 function getAccessibleProjectIds(user: SearchUser): string[] | null {
-  // SUPER_ADMIN and ADMIN can access all projects
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  // SUPER_ADMIN can access all projects
+  if (user.role === 'SUPER_ADMIN') {
     return null; // null means all projects
   }
 
@@ -216,9 +216,9 @@ function searchWithPermissions(query: string, user: SearchUser): SearchResults {
   const pattern = `%${query}%`;
   const accessibleProjectIds = getAccessibleProjectIds(user);
 
-  // Search clients (SUPER_ADMIN and ADMIN only)
+  // Search clients (SUPER_ADMIN and MANAGER only)
   let clients: { id: string; name: string }[] = [];
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  if (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER') {
     clients = db.all(sql`
       SELECT id, name FROM clients WHERE name LIKE ${pattern}
     `) as { id: string; name: string }[];
@@ -327,10 +327,10 @@ describe('Search Permission Integration Tests', () => {
     });
 
     /**
-     * Requirement 11.2: ADMIN can search all entities
+     * Requirement 11.2: SUPER_ADMIN can search all entities
      */
-    it('should return all matching entities for ADMIN', () => {
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
+    it('should return all matching entities for SUPER_ADMIN', () => {
+      const superAdmin = createUser('super-admin', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('manager', 'manager@example.com', 'MANAGER');
 
       createClient('client-1', 'Test Client');
@@ -338,7 +338,7 @@ describe('Search Permission Integration Tests', () => {
       createTask('task-1', 'project-1', manager.id, 'Test Task');
       createNote('note-1', 'Test System', manager.id, 'project-1');
 
-      const user: SearchUser = { id: admin.id, role: 'ADMIN' };
+      const user: SearchUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       const results = searchWithPermissions('Test', user);
 
       expect(results.clients.length).toBe(1);
@@ -490,13 +490,13 @@ describe('Search Permission Integration Tests', () => {
      * Requirement 11.2: Search should match partial strings
      */
     it('should match partial search terms', () => {
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
+      const superAdmin = createUser('super-admin', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('manager', 'manager@example.com', 'MANAGER');
 
       createClient('client-1', 'International Corporation');
       createProject('project-1', 'client-1', manager.id, 'International Project');
 
-      const user: SearchUser = { id: admin.id, role: 'ADMIN' };
+      const user: SearchUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       const results = searchWithPermissions('Inter', user);
 
       expect(results.clients.length).toBe(1);
@@ -507,13 +507,13 @@ describe('Search Permission Integration Tests', () => {
      * Requirement 11.2: Search should be case-insensitive
      */
     it('should match case-insensitively', () => {
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
+      const superAdmin = createUser('super-admin', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('manager', 'manager@example.com', 'MANAGER');
 
       createClient('client-1', 'UPPERCASE Client');
       createProject('project-1', 'client-1', manager.id, 'lowercase project');
 
-      const user: SearchUser = { id: admin.id, role: 'ADMIN' };
+      const user: SearchUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
 
       // Search with lowercase
       const results1 = searchWithPermissions('uppercase', user);
@@ -528,13 +528,13 @@ describe('Search Permission Integration Tests', () => {
      * Requirement 11.2: Search should match description fields
      */
     it('should match project descriptions', () => {
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
+      const superAdmin = createUser('super-admin', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('manager', 'manager@example.com', 'MANAGER');
 
       createClient('client-1', 'Client');
       createProject('project-1', 'client-1', manager.id, 'Project Name', 'Contains searchable keyword');
 
-      const user: SearchUser = { id: admin.id, role: 'ADMIN' };
+      const user: SearchUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       const results = searchWithPermissions('searchable', user);
 
       expect(results.projects.length).toBe(1);
@@ -549,7 +549,6 @@ describe('Search Permission Integration Tests', () => {
     it('should correctly filter results for different user roles', () => {
       // Setup users
       const superAdmin = createUser('super-admin', 'super@example.com', 'SUPER_ADMIN');
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
       const manager = createUser('manager', 'manager@example.com', 'MANAGER');
       const member = createUser('member', 'member@example.com', 'MEMBER');
       const guest = createUser('guest', 'guest@example.com', 'GUEST');
@@ -569,16 +568,9 @@ describe('Search Permission Integration Tests', () => {
       expect(superAdminResults.tasks.length).toBe(1);
       expect(superAdminResults.notes.length).toBe(1);
 
-      // ADMIN sees everything
-      const adminResults = searchWithPermissions('Test', { id: admin.id, role: 'ADMIN' });
-      expect(adminResults.clients.length).toBe(1);
-      expect(adminResults.projects.length).toBe(1);
-      expect(adminResults.tasks.length).toBe(1);
-      expect(adminResults.notes.length).toBe(1);
-
-      // MANAGER sees their managed project
+      // MANAGER sees their managed project and clients
       const managerResults = searchWithPermissions('Test', { id: manager.id, role: 'MANAGER' });
-      expect(managerResults.clients.length).toBe(0); // No client access
+      expect(managerResults.clients.length).toBe(1); // MANAGER can see clients
       expect(managerResults.projects.length).toBe(1);
       expect(managerResults.tasks.length).toBe(1);
       expect(managerResults.notes.length).toBe(1);

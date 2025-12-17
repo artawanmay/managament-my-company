@@ -292,16 +292,16 @@ describe('Credential Access Integration Tests', () => {
     });
 
     /**
-     * Requirement 7.3: ADMIN can view secrets
+     * Requirement 7.3: SUPER_ADMIN can view secrets
      */
-    it('should allow ADMIN to view any secret', async () => {
-      const admin = createUser('admin', 'admin@example.com', 'ADMIN');
+    it('should allow SUPER_ADMIN to view any secret', async () => {
+      const superAdmin = createUser('super-admin', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('note-manager2', 'manager2@example.com', 'MANAGER');
       createClient('client-2', 'Test Client 2');
       createProject('project-2', 'client-2', manager.id, 'Test Project 2');
       createNote('note-2', 'DB System', 'db-password', manager.id, 'project-2');
 
-      const user: PermissionUser = { id: admin.id, role: 'ADMIN' };
+      const user: PermissionUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       expect(await canAccessNote(user, 'note-2')).toBe(true);
       expect(await canViewNoteSecret(user, 'note-2')).toBe(true);
     });
@@ -461,7 +461,7 @@ describe('Credential Access Integration Tests', () => {
      */
     it('should complete full credential access flow', async () => {
       // Step 1: Create users
-      const admin = createUser('flow-admin', 'flow-admin@example.com', 'ADMIN');
+      const superAdmin = createUser('flow-superadmin', 'flow-superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('flow-manager', 'flow-manager@example.com', 'MANAGER');
       const member = createUser('flow-member', 'flow-member@example.com', 'MEMBER');
       const guest = createUser('flow-guest', 'flow-guest@example.com', 'GUEST');
@@ -482,12 +482,12 @@ describe('Credential Access Integration Tests', () => {
       expect(storedSecret).not.toBe(plainSecret);
 
       // Step 5: Authorized users can view
-      const adminUser: PermissionUser = { id: admin.id, role: 'ADMIN' };
+      const superAdminUser: PermissionUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       const managerUser: PermissionUser = { id: manager.id, role: 'MANAGER' };
       const memberUser: PermissionUser = { id: member.id, role: 'MEMBER' };
       const guestUser: PermissionUser = { id: guest.id, role: 'GUEST' };
 
-      expect(await canViewNoteSecret(adminUser, 'flow-note')).toBe(true);
+      expect(await canViewNoteSecret(superAdminUser, 'flow-note')).toBe(true);
       expect(await canViewNoteSecret(managerUser, 'flow-note')).toBe(true);
       expect(await canViewNoteSecret(memberUser, 'flow-note')).toBe(true);
       expect(await canViewNoteSecret(guestUser, 'flow-note')).toBe(false);
@@ -497,7 +497,7 @@ describe('Credential Access Integration Tests', () => {
       expect(decrypted).toBe(plainSecret);
 
       // Step 7: Log access
-      logNoteAccess('flow-log-1', 'flow-note', admin.id, '10.0.0.1', 'Admin Browser');
+      logNoteAccess('flow-log-1', 'flow-note', superAdmin.id, '10.0.0.1', 'SuperAdmin Browser');
       logNoteAccess('flow-log-2', 'flow-note', manager.id, '10.0.0.2', 'Manager Browser');
       logNoteAccess('flow-log-3', 'flow-note', member.id, '10.0.0.3', 'Member Browser');
 
@@ -506,7 +506,7 @@ describe('Credential Access Integration Tests', () => {
       expect(logs.length).toBe(3);
 
       const userIds = (logs as { user_id: string }[]).map((l) => l.user_id);
-      expect(userIds).toContain(admin.id);
+      expect(userIds).toContain(superAdmin.id);
       expect(userIds).toContain(manager.id);
       expect(userIds).toContain(member.id);
     });

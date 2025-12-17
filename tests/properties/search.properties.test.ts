@@ -180,8 +180,8 @@ function getAccessibleProjectIds(
   projects: SearchableProject[],
   memberships: ProjectMembership[]
 ): string[] | null {
-  // SUPER_ADMIN and ADMIN can access all projects
-  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+  // SUPER_ADMIN can access all projects
+  if (user.role === 'SUPER_ADMIN') {
     return null; // null means all projects
   }
 
@@ -354,10 +354,10 @@ describe('Search Permission Filtering Properties', () => {
         ),
         fc.string({ minLength: 1, maxLength: 20 }),
         (userId, projects, _searchTerm) => {
-          const user: SearchUser = { id: userId, role: 'ADMIN' };
+          const user: SearchUser = { id: userId, role: 'SUPER_ADMIN' };
           const accessibleIds = getAccessibleProjectIds(user, projects, []);
 
-          // ADMIN should have access to all projects (null means all)
+          // SUPER_ADMIN should have access to all projects (null means all)
           expect(accessibleIds).toBeNull();
 
           return true;

@@ -12,7 +12,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Shield } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Shield, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -40,12 +40,12 @@ interface UsersTableProps {
   onEdit?: (user: User) => void;
   onDelete?: (user: User) => void;
   onChangeRole?: (user: User) => void;
+  onResetPassword?: (user: User) => void;
   isLoading?: boolean;
 }
 
 const roleColors: Record<Role, string> = {
   SUPER_ADMIN: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  ADMIN: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
   MANAGER: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
   MEMBER: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
   GUEST: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
@@ -67,6 +67,7 @@ export function UsersTable({
   onEdit,
   onDelete,
   onChangeRole,
+  onResetPassword,
   isLoading,
 }: UsersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -79,10 +80,10 @@ export function UsersTable({
   }, [data, roleFilter]);
 
   // Check if current user can manage a target user based on role hierarchy
-  const canManageUser = (targetRole: Role): boolean => {
+  // Only SUPER_ADMIN can manage users (ADMIN role removed)
+  const canManageUser = (_targetRole: Role): boolean => {
     if (!currentUserRole) return false;
     if (currentUserRole === 'SUPER_ADMIN') return true;
-    if (currentUserRole === 'ADMIN') return targetRole !== 'SUPER_ADMIN';
     return false;
   };
 
@@ -192,6 +193,12 @@ export function UsersTable({
                     Change Role
                   </DropdownMenuItem>
                 )}
+                {onResetPassword && currentUserRole === 'SUPER_ADMIN' && !isSelf && (
+                  <DropdownMenuItem onClick={() => onResetPassword(user)}>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    Reset Password
+                  </DropdownMenuItem>
+                )}
                 {onDelete && canManage && !isSelf && (
                   <DropdownMenuItem
                     onClick={() => onDelete(user)}
@@ -207,7 +214,7 @@ export function UsersTable({
         },
       },
     ],
-    [currentUserId, currentUserRole, onEdit, onDelete, onChangeRole]
+    [currentUserId, currentUserRole, onEdit, onDelete, onChangeRole, onResetPassword]
   );
 
   const table = useReactTable({

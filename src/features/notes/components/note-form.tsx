@@ -2,7 +2,7 @@
  * NoteForm component for create/edit
  * Requirements: 7.1, 1.1, 4.3
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +56,18 @@ interface NoteFormProps {
   isLoading?: boolean;
 }
 
+// Helper to create initial form data
+function getInitialFormData(note?: Note | null): NoteFormData {
+  return {
+    type: (note?.type as NoteType) || 'OTHER',
+    systemName: note?.systemName || '',
+    host: note?.host || '',
+    port: note?.port?.toString() || '',
+    username: note?.username || '',
+    secret: '', // Never pre-fill secret for security
+  };
+}
+
 export function NoteForm({
   open,
   onOpenChange,
@@ -67,38 +79,22 @@ export function NoteForm({
 }: NoteFormProps) {
   const isEditing = !!note;
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState<NoteFormData>({
-    type: (note?.type as NoteType) || 'OTHER',
-    systemName: note?.systemName || '',
-    host: note?.host || '',
-    port: note?.port?.toString() || '',
-    username: note?.username || '',
-    secret: '', // Never pre-fill secret for security
-  });
+  const [formData, setFormData] = useState<NoteFormData>(() => getInitialFormData(note));
 
-  // Reset form when note changes
+  // Store note in ref to access latest value without adding to dependencies
+  const noteRef = useRef(note);
+  noteRef.current = note;
+
+  // Use primitive values ONLY for dependencies to prevent infinite loops
+  const noteId = note?.id ?? null;
+
+  // Reset form only when sheet opens OR when note ID changes
   useEffect(() => {
-    if (note) {
-      setFormData({
-        type: note.type as NoteType,
-        systemName: note.systemName,
-        host: note.host || '',
-        port: note.port?.toString() || '',
-        username: note.username || '',
-        secret: '', // Never pre-fill secret
-      });
-    } else {
-      setFormData({
-        type: 'OTHER',
-        systemName: '',
-        host: '',
-        port: '',
-        username: '',
-        secret: '',
-      });
+    if (open) {
+      setFormData(getInitialFormData(noteRef.current));
+      setErrors({});
     }
-    setErrors({});
-  }, [note, open]);
+  }, [open, noteId]);
 
   const handleChange = (field: keyof NoteFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

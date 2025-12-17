@@ -22,6 +22,7 @@ import {
   type UpdateTaskInput,
 } from '@/features/tasks';
 import { useProject } from '@/features/projects';
+import { useUsers } from '@/features/users';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,12 +38,7 @@ export const Route = createFileRoute('/app/projects/$projectId/board')({
   component: ProjectBoardPage,
 });
 
-// Temporary mock users until user management is implemented
-const mockUsers = [
-  { id: 'user-1', name: 'Admin User' },
-  { id: 'user-2', name: 'Manager User' },
-  { id: 'user-3', name: 'Member User' },
-];
+
 
 function ProjectBoardPage() {
   const { projectId } = Route.useParams();
@@ -63,6 +59,10 @@ function ProjectBoardPage() {
 
   const project = projectData?.data;
   const tasks = tasksData?.data || [];
+
+  // Get real users from database
+  const { data: usersData } = useUsers();
+  const users = usersData?.data?.map((u) => ({ id: u.id, name: u.name })) || [];
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
@@ -204,7 +204,7 @@ function ProjectBoardPage() {
         open={isCreateFormOpen}
         onOpenChange={setIsCreateFormOpen}
         projectId={projectId}
-        users={mockUsers}
+        users={users}
         onSubmit={handleCreateSubmit}
         isLoading={createMutation.isPending}
       />
@@ -215,7 +215,7 @@ function ProjectBoardPage() {
         onOpenChange={setIsEditFormOpen}
         task={selectedTask}
         projectId={projectId}
-        users={mockUsers}
+        users={users}
         onSubmit={handleEditSubmit}
         isLoading={updateMutation.isPending}
       />

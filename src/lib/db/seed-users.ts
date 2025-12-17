@@ -22,12 +22,6 @@ const seedUsers: SeedUser[] = [
     role: 'SUPER_ADMIN',
   },
   {
-    email: 'admin@test.com',
-    password: 'password123',
-    name: 'Admin User',
-    role: 'ADMIN',
-  },
-  {
     email: 'manager@test.com',
     password: 'password123',
     name: 'Manager User',

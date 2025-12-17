@@ -125,8 +125,7 @@ export const Route = createFileRoute('/api/files/$fileId/')({
             accessCheck.success &&
             (accessCheck.canManage ||
               file.uploadedBy === auth.user.id ||
-              auth.user.role === 'SUPER_ADMIN' ||
-              auth.user.role === 'ADMIN');
+              auth.user.role === 'SUPER_ADMIN');
 
           if (!canDelete) {
             return json({ error: 'You do not have permission to delete this file' }, { status: 403 });

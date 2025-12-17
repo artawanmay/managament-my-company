@@ -194,10 +194,10 @@ describe('Notes and Credentials Properties', () => {
           userAgentArbitrary,
           fc.string({ minLength: 1, maxLength: 100 }),
           async (userId, noteId, logId, projectId, ip, userAgent, secretValue) => {
-            // Create a test user with ADMIN role (can view secrets)
+            // Create a test user with SUPER_ADMIN role (can view secrets)
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
-              VALUES (${userId}, ${`test-${userId}@example.com`}, 'hash', 'Test User', 'ADMIN')
+              VALUES (${userId}, ${`test-${userId}@example.com`}, 'hash', 'Test User', 'SUPER_ADMIN')
             `);
 
             // Create a project
@@ -270,7 +270,7 @@ describe('Notes and Credentials Properties', () => {
             // Create a test user
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
-              VALUES (${userId}, ${`test-${userId}@example.com`}, 'hash', 'Test User', 'ADMIN')
+              VALUES (${userId}, ${`test-${userId}@example.com`}, 'hash', 'Test User', 'SUPER_ADMIN')
             `);
 
             // Create a project
@@ -325,10 +325,10 @@ describe('Notes and Credentials Properties', () => {
           uuidArbitrary,
           uuidArbitrary,
           async (guestUserId, adminUserId, noteId, projectId) => {
-            // Create an admin user (to create the note)
+            // Create a SUPER_ADMIN user (to create the note)
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
-              VALUES (${adminUserId}, ${`admin-${adminUserId}@example.com`}, 'hash', 'Admin User', 'ADMIN')
+              VALUES (${adminUserId}, ${`admin-${adminUserId}@example.com`}, 'hash', 'Admin User', 'SUPER_ADMIN')
             `);
 
             // Create a GUEST user
@@ -444,18 +444,17 @@ describe('Notes and Credentials Properties', () => {
           uuidArbitrary,
           uuidArbitrary,
           uuidArbitrary,
-          fc.constantFrom('SUPER_ADMIN', 'ADMIN') as fc.Arbitrary<'SUPER_ADMIN' | 'ADMIN'>,
-          async (adminUserId, creatorUserId, noteId, projectId, adminRole) => {
+          async (adminUserId, creatorUserId, noteId, projectId) => {
             // Create the note creator
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
               VALUES (${creatorUserId}, ${`creator-${creatorUserId}@example.com`}, 'hash', 'Creator User', 'MANAGER')
             `);
 
-            // Create an admin user
+            // Create a SUPER_ADMIN user
             db.run(sql`
               INSERT INTO users (id, email, password_hash, name, role)
-              VALUES (${adminUserId}, ${`admin-${adminUserId}@example.com`}, 'hash', 'Admin User', ${adminRole})
+              VALUES (${adminUserId}, ${`admin-${adminUserId}@example.com`}, 'hash', 'Admin User', 'SUPER_ADMIN')
             `);
 
             // Create a project
@@ -471,11 +470,11 @@ describe('Notes and Credentials Properties', () => {
               VALUES (${noteId}, 'API', 'Test System', ${projectId}, ${encryptedSecret}, ${creatorUserId}, ${creatorUserId})
             `);
 
-            // Check if admin can view the secret
-            const adminUser: PermissionUser = { id: adminUserId, role: adminRole };
+            // Check if SUPER_ADMIN can view the secret
+            const adminUser: PermissionUser = { id: adminUserId, role: 'SUPER_ADMIN' };
             const canView = await canViewNoteSecret(adminUser, noteId);
 
-            // Admins should ALWAYS be able to view secrets
+            // SUPER_ADMIN should ALWAYS be able to view secrets
             return canView === true;
           }
         ),

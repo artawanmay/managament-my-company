@@ -418,15 +418,15 @@ describe('Client-Project-Task Workflow Integration Tests', () => {
     });
 
     /**
-     * Requirement 25.6: ADMIN can access all projects
+     * Requirement 25.6: SUPER_ADMIN can access all projects (ADMIN role removed)
      */
-    it('should allow ADMIN to access any project', async () => {
-      const admin = createUser('admin-user', 'admin@example.com', 'ADMIN');
+    it('should allow SUPER_ADMIN to access any project', async () => {
+      const superAdmin = createUser('super-admin-user', 'superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('perm2-manager', 'perm2-manager@example.com', 'MANAGER');
       createClient('client-perm2', 'Perm2 Client');
       createProject('project-perm2', 'client-perm2', manager.id, 'Perm2 Project');
 
-      const user: PermissionUser = { id: admin.id, role: 'ADMIN' };
+      const user: PermissionUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       expect(await canAccessProject(user, 'project-perm2')).toBe(true);
       expect(await canManageProject(user, 'project-perm2')).toBe(true);
     });
@@ -515,7 +515,7 @@ describe('Client-Project-Task Workflow Integration Tests', () => {
      */
     it('should complete full client-project-task workflow', async () => {
       // Step 1: Create users
-      const admin = createUser('wf-admin', 'wf-admin@example.com', 'ADMIN');
+      const superAdmin = createUser('wf-superadmin', 'wf-superadmin@example.com', 'SUPER_ADMIN');
       const manager = createUser('wf-manager', 'wf-manager@example.com', 'MANAGER');
       const member = createUser('wf-member', 'wf-member@example.com', 'MEMBER');
 
@@ -534,11 +534,11 @@ describe('Client-Project-Task Workflow Integration Tests', () => {
       expect(await isProjectMember(member.id, project.id)).toBe(true);
 
       // Step 5: Verify permissions
-      const adminUser: PermissionUser = { id: admin.id, role: 'ADMIN' };
+      const superAdminUser: PermissionUser = { id: superAdmin.id, role: 'SUPER_ADMIN' };
       const managerUser: PermissionUser = { id: manager.id, role: 'MANAGER' };
       const memberUser: PermissionUser = { id: member.id, role: 'MEMBER' };
 
-      expect(await canAccessProject(adminUser, project.id)).toBe(true);
+      expect(await canAccessProject(superAdminUser, project.id)).toBe(true);
       expect(await canAccessProject(managerUser, project.id)).toBe(true);
       expect(await canAccessProject(memberUser, project.id)).toBe(true);
 

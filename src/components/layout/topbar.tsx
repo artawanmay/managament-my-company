@@ -9,6 +9,7 @@ import {
   User,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useSidebar } from "./sidebar-context";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { NotificationDropdown } from "@/features/notifications";
 import { useCommandPalette } from "@/features/search";
+import { useLogout, useSession } from "@/features/auth";
 
 // TopbarProps removed - search is now handled by useCommandPalette
 
@@ -99,12 +101,41 @@ function ThemeToggle() {
 }
 
 function UserMenu() {
-  // TODO: Replace with actual user data from useSession hook
+  const navigate = useNavigate();
+  const { user: sessionUser } = useSession();
+  const logout = useLogout({
+    onSuccess: () => {
+      navigate({ to: '/' });
+    },
+  });
+
+  // Get user initials from name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatarUrl: "",
-    initials: "JD",
+    name: sessionUser?.name || "User",
+    email: sessionUser?.email || "",
+    avatarUrl: sessionUser?.avatarUrl || "",
+    initials: sessionUser?.name ? getInitials(sessionUser.name) : "U",
+  };
+
+  const handleProfileClick = () => {
+    navigate({ to: '/app/profile' });
+  };
+
+  const handleSettingsClick = () => {
+    navigate({ to: '/app/settings' });
+  };
+
+  const handleLogout = () => {
+    logout.mutate();
   };
 
   return (
@@ -127,16 +158,16 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSettingsClick}>
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>

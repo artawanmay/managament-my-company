@@ -18,17 +18,13 @@ import {
   type UpdateProjectInput,
 } from '@/features/projects';
 import { useClients } from '@/features/clients';
+import { useUsers } from '@/features/users';
 
 export const Route = createFileRoute('/app/projects/$projectId/')({
   component: ProjectDetailPage,
 });
 
-// Temporary mock users until user management is implemented
-const mockUsers = [
-  { id: 'user-1', name: 'Admin User', email: 'admin@test.com' },
-  { id: 'user-2', name: 'Manager User', email: 'manager@test.com' },
-  { id: 'user-3', name: 'Member User', email: 'member@test.com' },
-];
+
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
@@ -40,6 +36,10 @@ function ProjectDetailPage() {
   const updateMutation = useUpdateProject(projectId);
   const addMemberMutation = useAddProjectMember(projectId);
   const removeMemberMutation = useRemoveProjectMember(projectId);
+
+  // Get real users from database
+  const { data: usersData } = useUsers();
+  const users = usersData?.data?.map((u) => ({ id: u.id, name: u.name, email: u.email })) || [];
 
   const handleEditSubmit = async (formData: UpdateProjectInput) => {
     try {
@@ -145,7 +145,7 @@ function ProjectDetailPage() {
 
       <ProjectDetail
         project={project}
-        availableUsers={mockUsers}
+        availableUsers={users}
         onAddMember={handleAddMember}
         onRemoveMember={handleRemoveMember}
         isLoading={isLoading}
@@ -157,7 +157,7 @@ function ProjectDetailPage() {
           onOpenChange={setIsEditFormOpen}
           project={projectForForm}
           clients={clients}
-          users={mockUsers}
+          users={users}
           onSubmit={handleEditSubmit}
           isLoading={updateMutation.isPending}
         />

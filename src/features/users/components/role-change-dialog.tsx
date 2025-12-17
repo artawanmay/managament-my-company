@@ -53,9 +53,9 @@ export function RoleChangeDialog({
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Get available roles based on current user's role
-  const availableRoles = roleValues.filter((role) => {
+  // Only SUPER_ADMIN can manage users (ADMIN role removed)
+  const availableRoles = roleValues.filter(() => {
     if (currentUserRole === 'SUPER_ADMIN') return true;
-    if (currentUserRole === 'ADMIN') return role !== 'SUPER_ADMIN' && role !== 'ADMIN';
     return false;
   });
 

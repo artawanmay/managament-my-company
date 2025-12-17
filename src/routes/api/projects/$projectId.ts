@@ -27,6 +27,7 @@ import {
   requireProjectManagement,
   handleProjectAccessError,
 } from '@/lib/auth/middleware';
+import { logProjectUpdated } from '@/lib/activity';
 import { z } from 'zod';
 
 // Zod schema for updating a project
@@ -138,14 +139,15 @@ export const Route = createFileRoute('/api/projects/$projectId')({
           const accessError = handleProjectAccessError(accessCheck);
           if (accessError) return accessError;
 
-          // Check if project exists
-          const existingProject = await db
-            .select({ id: projects.id })
+          // Check if project exists and get current values for logging
+          const existingProjectResult = await db
+            .select()
             .from(projects)
             .where(eq(projects.id, projectId))
             .limit(1);
 
-          if (existingProject.length === 0) {
+          const existingProject = existingProjectResult[0];
+          if (!existingProject) {
             return json({ error: 'Project not found' }, { status: 404 });
           }
 
@@ -210,6 +212,23 @@ export const Route = createFileRoute('/api/projects/$projectId')({
             .returning();
 
           const updatedProject = result[0];
+
+          // Build changes for activity log
+          const changes: Record<string, { from: unknown; to: unknown }> = {};
+          if (parsed.data.name !== undefined && parsed.data.name !== existingProject.name) {
+            changes.name = { from: existingProject.name, to: parsed.data.name };
+          }
+          if (parsed.data.status !== undefined && parsed.data.status !== existingProject.status) {
+            changes.status = { from: existingProject.status, to: parsed.data.status };
+          }
+          if (parsed.data.priority !== undefined && parsed.data.priority !== existingProject.priority) {
+            changes.priority = { from: existingProject.priority, to: parsed.data.priority };
+          }
+
+          // Log activity if there are changes
+          if (Object.keys(changes).length > 0) {
+            await logProjectUpdated(auth.user.id, projectId, changes);
+          }
 
           return json({ data: updatedProject });
         } catch (error) {

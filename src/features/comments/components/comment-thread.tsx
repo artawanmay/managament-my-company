@@ -36,7 +36,7 @@ export function CommentThread({
   const updateComment = useUpdateComment(taskId);
   const deleteComment = useDeleteComment(taskId);
 
-  const isAdmin = currentUserRole === 'SUPER_ADMIN' || currentUserRole === 'ADMIN';
+  const isAdmin = currentUserRole === 'SUPER_ADMIN';
   const canComment = currentUserRole !== 'GUEST';
 
   const handleCreateComment = async (message: string) => {

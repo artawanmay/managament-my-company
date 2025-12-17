@@ -138,7 +138,7 @@ export function LoginForm({
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-foreground/50 dark:text-foreground/60" />
               <Input
                 id="email"
                 name="email"
@@ -162,7 +162,7 @@ export function LoginForm({
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-foreground/50 dark:text-foreground/60" />
               <Input
                 id="password"
                 name="password"

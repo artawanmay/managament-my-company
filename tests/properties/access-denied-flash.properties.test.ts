@@ -14,7 +14,7 @@ const TEST_TIMEOUT = 30000;
 /**
  * Types representing the session state and user roles
  */
-type Role = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'GUEST';
+type Role = 'SUPER_ADMIN' | 'MANAGER' | 'MEMBER' | 'GUEST';
 
 interface SessionState {
   isLoading: boolean;
@@ -55,9 +55,9 @@ function determineRenderState(
   return 'access-denied';
 }
 
-// Arbitrary generators
-const roleArb = fc.constantFrom<Role>('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'GUEST');
-const adminRoles: Role[] = ['SUPER_ADMIN', 'ADMIN'];
+// Arbitrary generators (ADMIN role removed)
+const roleArb = fc.constantFrom<Role>('SUPER_ADMIN', 'MANAGER', 'MEMBER', 'GUEST');
+const adminRoles: Role[] = ['SUPER_ADMIN'];
 
 const userArb = fc.record({
   id: fc.uuid(),
@@ -148,9 +148,9 @@ describe('Access Denied Flash Fix Properties', () => {
     () => {
       fc.assert(
         fc.property(
-          fc.constantFrom<Role>('SUPER_ADMIN', 'ADMIN'), // Admin roles
+          fc.constantFrom<Role>('SUPER_ADMIN'), // Admin roles (ADMIN removed)
           (role) => {
-            // After loading completes, admin users should see content
+            // After loading completes, SUPER_ADMIN users should see content
             const loadedSessionState: SessionState = {
               isLoading: false,
               user: { id: 'test-user', role },

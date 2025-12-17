@@ -31,7 +31,7 @@ import {
 import { useClients } from '@/features/clients';
 import { useUsers } from '@/features/users';
 
-export const Route = createFileRoute('/app/projects')({
+export const Route = createFileRoute('/app/projects/')({
   component: ProjectsPage,
 });
 

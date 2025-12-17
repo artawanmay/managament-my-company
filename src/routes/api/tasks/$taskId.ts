@@ -29,6 +29,7 @@ import {
   handleAuthError,
 } from '@/lib/auth/middleware';
 import { logError } from '@/lib/logger';
+import { logTaskUpdated, logTaskDeleted } from '@/lib/activity';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
@@ -53,7 +54,7 @@ async function hasTaskAccess(
   userRole: string,
   projectId: string
 ): Promise<boolean> {
-  if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+  if (userRole === 'SUPER_ADMIN') {
     return true;
   }
 
@@ -188,23 +189,18 @@ export const Route = createFileRoute('/api/tasks/$taskId')({
         try {
           const { taskId } = params;
 
-          // Fetch existing task
-          const existingTask = await db
-            .select({
-              id: tasks.id,
-              projectId: tasks.projectId,
-              assigneeId: tasks.assigneeId,
-              title: tasks.title,
-            })
+          // Fetch existing task with all fields for change tracking
+          const existingTaskResult = await db
+            .select()
             .from(tasks)
             .where(eq(tasks.id, taskId))
             .limit(1);
 
-          if (existingTask.length === 0) {
+          if (existingTaskResult.length === 0) {
             return json({ error: 'Task not found' }, { status: 404 });
           }
 
-          const task = existingTask[0]!;
+          const task = existingTaskResult[0]!;
 
           // Check project access
           const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
@@ -260,6 +256,26 @@ export const Route = createFileRoute('/api/tasks/$taskId')({
 
           const updatedTask = result[0]!;
 
+          // Build changes for activity log
+          const changes: Record<string, { from: unknown; to: unknown }> = {};
+          if (parsed.data.title !== undefined && parsed.data.title !== task.title) {
+            changes.title = { from: task.title, to: parsed.data.title };
+          }
+          if (parsed.data.status !== undefined && parsed.data.status !== task.status) {
+            changes.status = { from: task.status, to: parsed.data.status };
+          }
+          if (parsed.data.priority !== undefined && parsed.data.priority !== task.priority) {
+            changes.priority = { from: task.priority, to: parsed.data.priority };
+          }
+          if (parsed.data.assigneeId !== undefined && parsed.data.assigneeId !== task.assigneeId) {
+            changes.assigneeId = { from: task.assigneeId, to: parsed.data.assigneeId };
+          }
+
+          // Log activity if there are changes
+          if (Object.keys(changes).length > 0) {
+            await logTaskUpdated(auth.user.id, taskId, task.projectId, changes);
+          }
+
           // Create notification if assignee changed (Requirement 5.4)
           if (
             parsed.data.assigneeId &&
@@ -304,25 +320,28 @@ export const Route = createFileRoute('/api/tasks/$taskId')({
           const { taskId } = params;
 
           // Fetch existing task
-          const existingTask = await db
-            .select({ id: tasks.id, projectId: tasks.projectId })
+          const existingTaskResult = await db
+            .select({ id: tasks.id, projectId: tasks.projectId, title: tasks.title })
             .from(tasks)
             .where(eq(tasks.id, taskId))
             .limit(1);
 
-          if (existingTask.length === 0) {
+          if (existingTaskResult.length === 0) {
             return json({ error: 'Task not found' }, { status: 404 });
           }
 
-          const task = existingTask[0]!;
+          const taskToDelete = existingTaskResult[0]!;
 
           // Check project access
-          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, task.projectId);
+          const hasAccess = await hasTaskAccess(auth.user.id, auth.user.role, taskToDelete.projectId);
           if (!hasAccess) {
             return json({ error: 'Access denied' }, { status: 403 });
           }
 
           await db.delete(tasks).where(eq(tasks.id, taskId));
+
+          // Log activity
+          await logTaskDeleted(auth.user.id, taskId, taskToDelete.title, taskToDelete.projectId);
 
           return json({ success: true });
         } catch (error) {

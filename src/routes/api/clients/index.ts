@@ -15,6 +15,7 @@ import { db } from '@/lib/db';
 import { clients, clientStatusValues, type NewClient } from '@/lib/db/schema';
 import { requireAuth, requireAuthWithCsrf, requireRole, handleAuthError, handleRoleError } from '@/lib/auth/middleware';
 import { logError } from '@/lib/logger';
+import { logClientCreated } from '@/lib/activity';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
@@ -164,8 +165,8 @@ export const Route = createFileRoute('/api/clients/')({
         const authError = handleAuthError(auth);
         if (authError || !auth.success) return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to create clients
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to create clients
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -193,7 +194,10 @@ export const Route = createFileRoute('/api/clients/')({
           };
 
           const result = await db.insert(clients).values(clientData).returning();
-          const newClient = result[0];
+          const newClient = result[0]!;
+
+          // Log activity
+          await logClientCreated(auth.user.id, newClient.id, newClient.name);
 
           return json({ data: newClient }, { status: 201 });
         } catch (error) {

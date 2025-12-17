@@ -27,7 +27,7 @@ import {
   type UpdateClientInput,
 } from '@/features/clients';
 
-export const Route = createFileRoute('/app/clients')({
+export const Route = createFileRoute('/app/clients/')({
   component: ClientsPage,
 });
 

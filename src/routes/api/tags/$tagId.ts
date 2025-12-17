@@ -80,8 +80,8 @@ export const Route = createFileRoute('/api/tags/$tagId')({
         if (authError || !auth.success)
           return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to update tags
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to update tags
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 
@@ -141,8 +141,8 @@ export const Route = createFileRoute('/api/tags/$tagId')({
         if (authError || !auth.success)
           return authError ?? new Response('Unauthorized', { status: 401 });
 
-        // Require at least ADMIN role to delete tags
-        const roleCheck = requireRole(auth.user, 'ADMIN');
+        // Require at least MANAGER role to delete tags
+        const roleCheck = requireRole(auth.user, 'MANAGER');
         const roleError = handleRoleError(roleCheck);
         if (roleError) return roleError;
 

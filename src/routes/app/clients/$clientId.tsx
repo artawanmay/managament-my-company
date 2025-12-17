@@ -20,7 +20,9 @@ import {
   useClient,
   useUpdateClient,
   useDeleteClient,
+  useClientActivity,
 } from '@/features/clients';
+import { ActivityHistory } from '@/features/activity';
 
 export const Route = createFileRoute('/app/clients/$clientId')({
   component: ClientDetailPage,
@@ -35,6 +37,7 @@ function ClientDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { data, isLoading, error } = useClient(clientId);
+  const { data: activityData, isLoading: activityLoading } = useClientActivity(clientId);
   const updateMutation = useUpdateClient(clientId);
   const deleteMutation = useDeleteClient();
 
@@ -91,13 +94,22 @@ function ClientDetailPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <ClientDetail
         client={client}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
+
+      {/* Activity History */}
+      {client && (
+        <ActivityHistory
+          activities={activityData?.data || []}
+          isLoading={activityLoading}
+          title="Client History"
+        />
+      )}
 
       {client && (
         <ClientForm
@@ -132,6 +144,6 @@ function ClientDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

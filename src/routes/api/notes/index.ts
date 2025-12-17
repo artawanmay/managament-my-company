@@ -103,15 +103,15 @@ export const Route = createFileRoute('/api/notes/')({
             }
             conditions.push(eq(notes.projectId, projectId));
           } else if (clientId) {
-            // Client-level notes - only SUPER_ADMIN and ADMIN can access
-            if (auth.user.role !== 'SUPER_ADMIN' && auth.user.role !== 'ADMIN') {
+            // Client-level notes - only SUPER_ADMIN can access
+            if (auth.user.role !== 'SUPER_ADMIN') {
               return json({ error: 'Access denied to client notes' }, { status: 403 });
             }
             conditions.push(eq(notes.clientId, clientId));
           } else {
             // No specific filter - get notes from accessible projects
-            if (auth.user.role === 'SUPER_ADMIN' || auth.user.role === 'ADMIN') {
-              // Admin users can see all notes
+            if (auth.user.role === 'SUPER_ADMIN') {
+              // SUPER_ADMIN users can see all notes
             } else {
               // Non-admin users: filter by project membership or manager role
               const memberProjects = await db
@@ -275,8 +275,8 @@ export const Route = createFileRoute('/api/notes/')({
               return json({ error: 'Client not found' }, { status: 404 });
             }
 
-            // Only SUPER_ADMIN and ADMIN can create client-level notes
-            if (auth.user.role !== 'SUPER_ADMIN' && auth.user.role !== 'ADMIN') {
+            // Only SUPER_ADMIN can create client-level notes
+            if (auth.user.role !== 'SUPER_ADMIN') {
               return json({ error: 'Access denied to create client notes' }, { status: 403 });
             }
           }

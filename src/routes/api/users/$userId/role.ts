@@ -12,7 +12,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { usersSqlite, roleValues, type Role } from '@/lib/db/schema/users';
 import { requireAuthWithCsrf, handleAuthError } from '@/lib/auth/middleware';
-import { canManageUsers, canManageUser, ROLE_HIERARCHY } from '@/lib/auth/permissions';
+import { canManageUsers, canManageUser } from '@/lib/auth/permissions';
 import { z } from 'zod';
 
 // Zod schema for updating user role
@@ -89,10 +89,10 @@ export const Route = createFileRoute('/api/users/$userId/role')({
             );
           }
 
-          // ADMIN cannot assign a role higher than their own
-          if (auth.user.role === 'ADMIN' && ROLE_HIERARCHY[newRole] >= ROLE_HIERARCHY['ADMIN']) {
+          // Only SUPER_ADMIN can assign MANAGER role
+          if (auth.user.role !== 'SUPER_ADMIN' && newRole === 'MANAGER') {
             return json(
-              { error: 'You cannot assign a role equal to or higher than your own' },
+              { error: 'Only SUPER_ADMIN can assign MANAGER role' },
               { status: 403 }
             );
           }

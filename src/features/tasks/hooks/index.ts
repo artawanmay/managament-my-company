@@ -5,3 +5,5 @@ export * from './use-update-task';
 export * from './use-delete-task';
 export * from './use-move-task';
 export * from './use-project-sse';
+export * from './use-view-mode';
+export * from './use-task-activity';

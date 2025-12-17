@@ -1,8 +1,8 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
-// Role enum values
-export const roleValues = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'GUEST'] as const;
+// Role enum values - 4 roles: SUPER_ADMIN, MANAGER, MEMBER, GUEST (ADMIN removed)
+export const roleValues = ['SUPER_ADMIN', 'MANAGER', 'MEMBER', 'GUEST'] as const;
 export type Role = (typeof roleValues)[number];
 
 // Theme preference values
