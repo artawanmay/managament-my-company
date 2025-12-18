@@ -149,7 +149,7 @@ export const Route = createFileRoute("/api/clients/$clientId")({
 
           // Build update data, only including provided fields
           const updateData: Record<string, unknown> = {
-            updatedAt: new Date(),
+            updatedAt: Math.floor(Date.now() / 1000),
           };
 
           if (parsed.data.name !== undefined)

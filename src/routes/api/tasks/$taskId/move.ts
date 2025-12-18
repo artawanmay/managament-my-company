@@ -164,7 +164,7 @@ export const Route = createFileRoute("/api/tasks/$taskId/move")({
               .set({
                 status: newStatus,
                 order: newOrder,
-                updatedAt: new Date(),
+                updatedAt: Math.floor(Date.now() / 1000),
               })
               .where(eq(tasks.id, taskId))
               .returning();
@@ -271,7 +271,7 @@ export const Route = createFileRoute("/api/tasks/$taskId/move")({
               .update(tasks)
               .set({
                 order: newOrder,
-                updatedAt: new Date(),
+                updatedAt: Math.floor(Date.now() / 1000),
               })
               .where(eq(tasks.id, taskId))
               .returning();

@@ -30,7 +30,6 @@ import {
   validateNginxCacheHeaders,
   meetsMinimumCacheAge,
   MIN_CACHE_MAX_AGE_SECONDS,
-  STATIC_ASSET_PATH,
 } from "@/lib/config/nginx-validator";
 import {
   parseDockerCompose,
@@ -39,8 +38,6 @@ import {
   hasDependencyWithHealthCheck,
   hasHealthcheck,
   hasNamedVolumesForPersistence,
-  REQUIRED_SERVICES,
-  REQUIRED_VOLUMES,
 } from "@/lib/config/docker-compose-validator";
 
 /**

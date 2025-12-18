@@ -138,7 +138,7 @@ export const Route = createFileRoute("/api/comments/$commentId")({
             .set({
               message: parsed.data.message,
               isEdited: true,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(comments.id, commentId))
             .returning();

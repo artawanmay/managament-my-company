@@ -113,7 +113,7 @@ export const Route = createFileRoute("/api/users/$userId/role")({
             .update(usersSqlite)
             .set({
               role: newRole,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(usersSqlite.id, userId))
             .returning({
@@ -138,8 +138,8 @@ export const Route = createFileRoute("/api/users/$userId/role")({
           return json({
             data: {
               ...updatedUser,
-              createdAt: updatedUser.createdAt.toISOString(),
-              updatedAt: updatedUser.updatedAt.toISOString(),
+              createdAt: updatedUser.createdAt,
+              updatedAt: updatedUser.updatedAt,
             },
             message: `User role changed from ${targetCurrentRole} to ${newRole}`,
           });

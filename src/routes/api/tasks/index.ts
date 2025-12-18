@@ -245,7 +245,7 @@ export const Route = createFileRoute("/api/tasks/")({
             .offset(offset);
 
           // Add isOverdue flag to each task (Requirement 5.5)
-          const now = new Date();
+          const now = Math.floor(Date.now() / 1000);
           const tasksWithOverdue = taskList.map((task) => ({
             ...task,
             isOverdue:
@@ -366,7 +366,9 @@ export const Route = createFileRoute("/api/tasks/")({
             priority: parsed.data.priority,
             assigneeId: parsed.data.assigneeId || null,
             reporterId: auth.user.id,
-            dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
+            dueDate: parsed.data.dueDate
+              ? Math.floor(new Date(parsed.data.dueDate).getTime() / 1000)
+              : null,
             estimatedHours: parsed.data.estimatedHours || null,
             linkedNoteId: parsed.data.linkedNoteId || null,
             order: nextOrder,

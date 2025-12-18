@@ -174,7 +174,7 @@ export const Route = createFileRoute("/api/tasks/$taskId")({
           reporter = reporterResult[0] || null;
 
           // Add isOverdue flag
-          const now = new Date();
+          const now = Math.floor(Date.now() / 1000);
           const isOverdue =
             task.dueDate && task.dueDate < now && task.status !== "DONE";
 
@@ -256,7 +256,7 @@ export const Route = createFileRoute("/api/tasks/$taskId")({
 
           // Build update data
           const updateData: Record<string, unknown> = {
-            updatedAt: new Date(),
+            updatedAt: Math.floor(Date.now() / 1000),
           };
 
           if (parsed.data.title !== undefined)

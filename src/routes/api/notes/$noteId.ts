@@ -211,7 +211,7 @@ export const Route = createFileRoute("/api/notes/$noteId")({
 
           // Build update data
           const updateData: Record<string, unknown> = {
-            updatedAt: new Date(),
+            updatedAt: Math.floor(Date.now() / 1000),
             updatedBy: auth.user.id,
           };
 

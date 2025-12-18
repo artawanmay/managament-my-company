@@ -121,7 +121,7 @@ async function checkDatabaseHealth(): Promise<DatabaseHealthDetails> {
   try {
     // Execute a simple query to check database connectivity
     await withTimeout(async () => {
-      await db.run(sql`SELECT 1`);
+      await db.execute(sql`SELECT 1`);
     }, HEALTH_CHECK_TIMEOUT_MS);
 
     const latencyMs = Date.now() - startTime;

@@ -378,9 +378,11 @@ export const Route = createFileRoute("/api/projects/")({
             status: parsed.data.status,
             priority: parsed.data.priority,
             startDate: parsed.data.startDate
-              ? new Date(parsed.data.startDate)
+              ? Math.floor(new Date(parsed.data.startDate).getTime() / 1000)
               : null,
-            endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : null,
+            endDate: parsed.data.endDate
+              ? Math.floor(new Date(parsed.data.endDate).getTime() / 1000)
+              : null,
             managerId: parsed.data.managerId,
           };
 

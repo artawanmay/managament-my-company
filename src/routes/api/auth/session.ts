@@ -90,10 +90,9 @@ export const Route = createFileRoute("/api/auth/session")({
           const headers: Record<string, string> = {};
 
           // If session was refreshed, update the cookie
-          if (
-            session.expiresAt.getTime() >
-            Date.now() + 6 * 24 * 60 * 60 * 1000
-          ) {
+          const nowMs = Date.now();
+          const expiresAtMs = session.expiresAt * 1000;
+          if (expiresAtMs > nowMs + 6 * 24 * 60 * 60 * 1000) {
             // Session was refreshed (more than 6 days remaining means it was extended)
             headers["Set-Cookie"] = createSessionCookie(
               session.id,
@@ -114,7 +113,7 @@ export const Route = createFileRoute("/api/auth/session")({
                 themePreference: user.themePreference,
               },
               csrfToken: session.csrfToken,
-              expiresAt: session.expiresAt.toISOString(),
+              expiresAt: new Date(session.expiresAt * 1000).toISOString(),
             },
             Object.keys(headers).length > 0 ? { headers } : undefined
           );
@@ -130,13 +129,14 @@ export const Route = createFileRoute("/api/auth/session")({
 /**
  * Create a session cookie string
  */
-function createSessionCookie(sessionId: string, expiresAt: Date): string {
+function createSessionCookie(sessionId: string, expiresAt: number): string {
+  const expiresDate = new Date(expiresAt * 1000);
   const cookieOptions = [
     `session_id=${sessionId}`,
     `Path=/`,
     `HttpOnly`,
     `SameSite=Strict`,
-    `Expires=${expiresAt.toUTCString()}`,
+    `Expires=${expiresDate.toUTCString()}`,
   ];
 
   // Add Secure flag in production

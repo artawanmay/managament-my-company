@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/notifications/$notificationId/read")(
             if (!notification.readAt) {
               await db
                 .update(notifications)
-                .set({ readAt: new Date() })
+                .set({ readAt: Math.floor(Date.now() / 1000) })
                 .where(eq(notifications.id, notificationId));
             }
 

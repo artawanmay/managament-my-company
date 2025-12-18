@@ -32,11 +32,11 @@ export interface ProjectListItem {
   description: string | null;
   status: ProjectStatus;
   priority: Priority;
-  startDate: Date | null;
-  endDate: Date | null;
+  startDate: number | null;
+  endDate: number | null;
   managerId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
   clientName: string | null;
   managerName: string | null;
 }
@@ -45,7 +45,7 @@ export interface ProjectMemberWithUser {
   id: string;
   userId: string;
   role: ProjectMemberRole;
-  joinedAt: Date;
+  joinedAt: number;
   userName: string | null;
   userEmail: string | null;
   userAvatarUrl: string | null;

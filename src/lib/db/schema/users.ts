@@ -1,4 +1,4 @@
-import { pgTable, text, integer, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // Role enum values - 4 roles: SUPER_ADMIN, MANAGER, MEMBER, GUEST (ADMIN removed)

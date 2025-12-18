@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/users/me/theme")({
             .update(usersSqlite)
             .set({
               themePreference: theme,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(usersSqlite.id, auth.user.id));
 

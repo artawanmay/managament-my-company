@@ -96,7 +96,7 @@ export const Route = createFileRoute("/api/profile/avatar")({
             .update(usersSqlite)
             .set({
               avatarUrl,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(usersSqlite.id, auth.user.id));
 
@@ -143,7 +143,7 @@ export const Route = createFileRoute("/api/profile/avatar")({
             .update(usersSqlite)
             .set({
               avatarUrl: null,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(usersSqlite.id, auth.user.id));
 

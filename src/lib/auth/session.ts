@@ -22,8 +22,8 @@ export interface SessionData {
   id: string;
   userId: string;
   csrfToken: string;
-  expiresAt: Date;
-  createdAt: Date;
+  expiresAt: number;
+  createdAt: number;
 }
 
 /**
@@ -60,8 +60,8 @@ export async function createSession(
 ): Promise<SessionData> {
   const id = generateSessionId();
   const csrfToken = generateCsrfToken();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
+  const now = Math.floor(Date.now() / 1000);
+  const expiresAt = now + Math.floor(SESSION_DURATION_MS / 1000);
 
   await db.insert(sessionsSqlite).values({
     id,
@@ -90,7 +90,7 @@ export async function validateSession(
   sessionId: string,
   db: DbInstance = defaultDb
 ): Promise<SessionData | null> {
-  const now = new Date();
+  const now = Math.floor(Date.now() / 1000);
 
   const sessions = await db
     .select()
@@ -154,8 +154,8 @@ export async function refreshSession(
     return null;
   }
 
-  const now = new Date();
-  const timeUntilExpiry = session.expiresAt.getTime() - now.getTime();
+  const now = Math.floor(Date.now() / 1000);
+  const timeUntilExpiry = (session.expiresAt - now) * 1000;
 
   // Only refresh if close to expiring
   if (timeUntilExpiry > SESSION_REFRESH_THRESHOLD_MS) {
@@ -163,7 +163,7 @@ export async function refreshSession(
   }
 
   // Extend the session
-  const newExpiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
+  const newExpiresAt = now + Math.floor(SESSION_DURATION_MS / 1000);
 
   await db
     .update(sessionsSqlite)

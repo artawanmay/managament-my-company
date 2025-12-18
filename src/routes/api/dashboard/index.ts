@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/dashboard/")({
         if (roleError) return roleError;
 
         try {
-          const now = new Date();
+          const now = Math.floor(Date.now() / 1000);
 
           // Get accessible project IDs for the user
           let accessibleProjectIds: string[] = [];

@@ -171,8 +171,8 @@ export const Route = createFileRoute("/api/users/")({
           return json({
             data: userList.map((user) => ({
               ...user,
-              createdAt: user.createdAt.toISOString(),
-              updatedAt: user.updatedAt.toISOString(),
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
             })),
             pagination: {
               page,
@@ -274,8 +274,8 @@ export const Route = createFileRoute("/api/users/")({
             {
               data: {
                 ...newUser,
-                createdAt: newUser.createdAt.toISOString(),
-                updatedAt: newUser.updatedAt.toISOString(),
+                createdAt: newUser.createdAt,
+                updatedAt: newUser.updatedAt,
               },
             },
             { status: 201 }

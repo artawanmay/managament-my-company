@@ -183,13 +183,14 @@ export const Route = createFileRoute("/api/auth/login")({
 /**
  * Create a session cookie string
  */
-function createSessionCookie(sessionId: string, expiresAt: Date): string {
+function createSessionCookie(sessionId: string, expiresAt: number): string {
+  const expiresDate = new Date(expiresAt * 1000);
   const cookieOptions = [
     `session_id=${sessionId}`,
     `Path=/`,
     `HttpOnly`,
     `SameSite=Strict`,
-    `Expires=${expiresAt.toUTCString()}`,
+    `Expires=${expiresDate.toUTCString()}`,
   ];
 
   // Add Secure flag in production

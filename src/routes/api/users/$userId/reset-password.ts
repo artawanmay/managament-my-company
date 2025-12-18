@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/users/$userId/reset-password")({
             .update(usersSqlite)
             .set({
               passwordHash: newPasswordHash,
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(usersSqlite.id, userId));
 

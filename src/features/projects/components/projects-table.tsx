@@ -63,9 +63,9 @@ const priorityColors: Record<Priority, string> = {
   URGENT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
-function formatDate(date: Date | null): string {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString();
+function formatDate(timestamp: number | null): string {
+  if (!timestamp) return "-";
+  return new Date(timestamp * 1000).toLocaleDateString();
 }
 
 export function ProjectsTable({

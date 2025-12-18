@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/notifications/")({
           // Mark all unread notifications as read
           const result = await db
             .update(notifications)
-            .set({ readAt: new Date() })
+            .set({ readAt: Math.floor(Date.now() / 1000) })
             .where(
               and(
                 eq(notifications.userId, auth.user.id),

@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/projects/$projectId/archive")({
             .update(projects)
             .set({
               status: "ARCHIVED",
-              updatedAt: new Date(),
+              updatedAt: Math.floor(Date.now() / 1000),
             })
             .where(eq(projects.id, projectId))
             .returning();

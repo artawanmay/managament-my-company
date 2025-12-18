@@ -83,8 +83,8 @@ export const Route = createFileRoute("/api/users/$userId")({
           return json({
             data: {
               ...user,
-              createdAt: user.createdAt.toISOString(),
-              updatedAt: user.updatedAt.toISOString(),
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
             },
           });
         } catch (error) {
@@ -168,7 +168,7 @@ export const Route = createFileRoute("/api/users/$userId")({
 
           // Build update data, only including provided fields
           const updateData: Record<string, unknown> = {
-            updatedAt: new Date(),
+            updatedAt: Math.floor(Date.now() / 1000),
           };
 
           if (parsed.data.email !== undefined)
@@ -201,8 +201,8 @@ export const Route = createFileRoute("/api/users/$userId")({
           return json({
             data: {
               ...updatedUser,
-              createdAt: updatedUser.createdAt.toISOString(),
-              updatedAt: updatedUser.updatedAt.toISOString(),
+              createdAt: updatedUser.createdAt,
+              updatedAt: updatedUser.updatedAt,
             },
           });
         } catch (error) {

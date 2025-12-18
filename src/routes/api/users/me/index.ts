@@ -82,8 +82,8 @@ export const Route = createFileRoute("/api/users/me/")({
             role: user.role,
             avatarUrl: user.avatarUrl,
             themePreference: user.themePreference,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
+            createdAt: new Date(user.createdAt * 1000).toISOString(),
+            updatedAt: new Date(user.updatedAt * 1000).toISOString(),
           };
 
           return json(response);
@@ -149,7 +149,7 @@ export const Route = createFileRoute("/api/users/me/")({
 
           // Build update object
           const updateData: Record<string, unknown> = {
-            updatedAt: new Date(),
+            updatedAt: Math.floor(Date.now() / 1000),
           };
 
           if (name) updateData.name = name;
@@ -193,8 +193,8 @@ export const Route = createFileRoute("/api/users/me/")({
             role: user.role,
             avatarUrl: user.avatarUrl,
             themePreference: user.themePreference,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
+            createdAt: new Date(user.createdAt * 1000).toISOString(),
+            updatedAt: new Date(user.updatedAt * 1000).toISOString(),
           };
 
           return json(response);
