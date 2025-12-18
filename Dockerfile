@@ -30,8 +30,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Prune dev dependencies but keep drizzle-kit for migrations
-RUN npm prune --production && npm install drizzle-kit
+# Prune dev dependencies but keep drizzle-kit and tsx for migrations/seed
+RUN npm prune --production && npm install drizzle-kit tsx
 
 # =============================================================================
 # Stage 3: runner - Minimal runtime with built assets
