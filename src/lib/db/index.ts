@@ -1,34 +1,45 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
+import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
 import Database from "better-sqlite3";
+import postgres from "postgres";
 import * as schema from "./schema/index";
 
 /**
- * Database client for SQLite.
- * For production PostgreSQL support, this file can be extended
- * with dialect detection and PostgreSQL client initialization.
+ * Database client with support for both SQLite (development) and PostgreSQL (production).
+ * Automatically detects database type from DATABASE_URL.
  */
 
 const databaseUrl = process.env.DATABASE_URL || "file:./dev.db";
 
-// Extract file path from SQLite URL
-const filePath = databaseUrl.startsWith("file:")
-  ? databaseUrl.slice(5)
-  : databaseUrl;
+/**
+ * Check if the database URL is for PostgreSQL
+ */
+function isPostgresUrl(url: string): boolean {
+  return url.startsWith("postgresql://") || url.startsWith("postgres://");
+}
 
-// Create SQLite database connection
-const sqlite = new Database(filePath);
+// Create database connection based on URL type
+let db: ReturnType<typeof drizzleSqlite> | ReturnType<typeof drizzlePg>;
+let client: Database.Database | ReturnType<typeof postgres>;
 
-// Enable WAL mode for better concurrent access
-sqlite.pragma("journal_mode = WAL");
+if (isPostgresUrl(databaseUrl)) {
+  // PostgreSQL configuration for production
+  const pgClient = postgres(databaseUrl);
+  db = drizzlePg(pgClient, { schema });
+  client = pgClient;
+} else {
+  // SQLite configuration for development
+  const filePath = databaseUrl.startsWith("file:")
+    ? databaseUrl.slice(5)
+    : databaseUrl;
 
-// Create Drizzle ORM instance
-export const db = drizzle(sqlite, { schema });
+  const sqlite = new Database(filePath);
+  sqlite.pragma("journal_mode = WAL");
+  db = drizzleSqlite(sqlite, { schema });
+  client = sqlite;
+}
 
-// Export the raw SQLite client for advanced operations
-export const client = sqlite;
-
-// Re-export schema for convenience
-export { schema };
+export { db, client, schema };
 
 // Type for the database instance
-export type Database = typeof db;
+export type DatabaseInstance = typeof db;
