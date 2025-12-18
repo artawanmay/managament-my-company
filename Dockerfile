@@ -30,8 +30,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Prune dev dependencies after build
-RUN npm prune --production
+# Prune dev dependencies but keep drizzle-kit for migrations
+RUN npm prune --production && npm install drizzle-kit
 
 # =============================================================================
 # Stage 3: runner - Minimal runtime with built assets
@@ -59,6 +59,10 @@ COPY --from=builder --chown=appuser:nodejs /app/package.json ./package.json
 # Copy drizzle migrations for database setup
 COPY --from=builder --chown=appuser:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=appuser:nodejs /app/drizzle.config.ts ./drizzle.config.ts
+
+# Copy source files needed for seed script
+COPY --from=builder --chown=appuser:nodejs /app/src ./src
+COPY --from=builder --chown=appuser:nodejs /app/tsconfig.json ./tsconfig.json
 
 # Copy entrypoint script
 COPY --chown=appuser:nodejs docker/entrypoint.sh /app/entrypoint.sh
