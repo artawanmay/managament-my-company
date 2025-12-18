@@ -164,9 +164,14 @@ wait_for_postgres() {
 # Database Migrations
 # -----------------------------------------------------------------------------
 # Runs Drizzle database migrations
-# Exits with code 1 if migrations fail
+# Can be skipped by setting SKIP_MIGRATIONS=true
 # -----------------------------------------------------------------------------
 run_migrations() {
+    if [ "$SKIP_MIGRATIONS" = "true" ]; then
+        log_warn "Skipping database migrations (SKIP_MIGRATIONS=true)"
+        return 0
+    fi
+    
     log_info "Running database migrations..."
     
     if ! npm run db:migrate; then
