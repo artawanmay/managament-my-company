@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { usersSqlite } from "./users";
 
@@ -24,8 +24,8 @@ export const actionValues = [
 ] as const;
 export type Action = (typeof actionValues)[number];
 
-// Activity Logs Table
-export const activityLogsSqlite = sqliteTable(
+// Activity Logs Table (PostgreSQL)
+export const activityLogsSqlite = pgTable(
   "activity_logs",
   {
     id: text("id").primaryKey(),
@@ -35,10 +35,10 @@ export const activityLogsSqlite = sqliteTable(
     entityType: text("entity_type", { enum: entityTypeValues }).notNull(),
     entityId: text("entity_id").notNull(),
     action: text("action", { enum: actionValues }).notNull(),
-    metadata: text("metadata", { mode: "json" }), // JSON with additional context
-    createdAt: integer("created_at", { mode: "timestamp" })
+    metadata: jsonb("metadata"), // JSON with additional context
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("activity_logs_actor_id_idx").on(table.actorId),

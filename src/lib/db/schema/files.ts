@@ -1,10 +1,10 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { projectsSqlite } from "./projects";
 import { usersSqlite } from "./users";
 
-// Files Table
-export const filesSqlite = sqliteTable(
+// Files Table (PostgreSQL)
+export const filesSqlite = pgTable(
   "files",
   {
     id: text("id").primaryKey(),
@@ -18,9 +18,9 @@ export const filesSqlite = sqliteTable(
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => usersSqlite.id, { onDelete: "restrict" }),
-    uploadedAt: integer("uploaded_at", { mode: "timestamp" })
+    uploadedAt: integer("uploaded_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("files_project_id_idx").on(table.projectId),

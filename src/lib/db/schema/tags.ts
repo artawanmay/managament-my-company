@@ -1,14 +1,14 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-// Tags Table
-export const tagsSqlite = sqliteTable("tags", {
+// Tags Table (PostgreSQL)
+export const tagsSqlite = pgTable("tags", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   color: text("color").notNull(), // Hex color
-  createdAt: integer("created_at", { mode: "timestamp" })
+  createdAt: integer("created_at")
     .notNull()
-    .default(sql`(unixepoch())`),
+    .default(sql`extract(epoch from now())::integer`),
 });
 
 // Export types

@@ -1,45 +1,26 @@
-import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
-import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema/index";
 
 /**
- * Database client with support for both SQLite (development) and PostgreSQL (production).
- * Automatically detects database type from DATABASE_URL.
+ * Database client for PostgreSQL.
+ * Used for both development and production.
  */
 
-const databaseUrl = process.env.DATABASE_URL || "file:./dev.db";
+const databaseUrl = process.env.DATABASE_URL;
 
-/**
- * Check if the database URL is for PostgreSQL
- */
-function isPostgresUrl(url: string): boolean {
-  return url.startsWith("postgresql://") || url.startsWith("postgres://");
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL environment variable is required");
 }
 
-// Create database connection based on URL type
-let db: ReturnType<typeof drizzleSqlite> | ReturnType<typeof drizzlePg>;
-let client: Database.Database | ReturnType<typeof postgres>;
+// Create PostgreSQL connection
+const client = postgres(databaseUrl);
 
-if (isPostgresUrl(databaseUrl)) {
-  // PostgreSQL configuration for production
-  const pgClient = postgres(databaseUrl);
-  db = drizzlePg(pgClient, { schema });
-  client = pgClient;
-} else {
-  // SQLite configuration for development
-  const filePath = databaseUrl.startsWith("file:")
-    ? databaseUrl.slice(5)
-    : databaseUrl;
+// Create Drizzle ORM instance
+export const db = drizzle(client, { schema });
 
-  const sqlite = new Database(filePath);
-  sqlite.pragma("journal_mode = WAL");
-  db = drizzleSqlite(sqlite, { schema });
-  client = sqlite;
-}
-
-export { db, client, schema };
+// Export the raw PostgreSQL client for advanced operations
+export { client, schema };
 
 // Type for the database instance
-export type DatabaseInstance = typeof db;
+export type Database = typeof db;

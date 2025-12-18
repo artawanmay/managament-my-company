@@ -1,12 +1,12 @@
-import { sqliteTable, text, index, unique } from "drizzle-orm/sqlite-core";
+import { pgTable, text, index, unique } from "drizzle-orm/pg-core";
 import { tagsSqlite } from "./tags";
 
 // Taggable type values
 export const taggableTypeValues = ["TASK", "PROJECT", "NOTE"] as const;
 export type TaggableType = (typeof taggableTypeValues)[number];
 
-// Taggables Table (Polymorphic Join)
-export const taggablesSqlite = sqliteTable(
+// Taggables Table (Polymorphic Join) - PostgreSQL
+export const taggablesSqlite = pgTable(
   "taggables",
   {
     id: text("id").primaryKey(),

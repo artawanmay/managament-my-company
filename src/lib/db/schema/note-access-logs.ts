@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { notesSqlite } from "./notes";
 import { usersSqlite } from "./users";
@@ -7,8 +7,8 @@ import { usersSqlite } from "./users";
 export const noteAccessActionValues = ["VIEW_SECRET"] as const;
 export type NoteAccessAction = (typeof noteAccessActionValues)[number];
 
-// Note Access Logs Table
-export const noteAccessLogsSqlite = sqliteTable(
+// Note Access Logs Table (PostgreSQL)
+export const noteAccessLogsSqlite = pgTable(
   "note_access_logs",
   {
     id: text("id").primaryKey(),
@@ -21,9 +21,9 @@ export const noteAccessLogsSqlite = sqliteTable(
     action: text("action", { enum: noteAccessActionValues }).notNull(),
     ip: text("ip").notNull(),
     userAgent: text("user_agent").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("note_access_logs_note_id_idx").on(table.noteId),

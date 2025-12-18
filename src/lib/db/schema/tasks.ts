@@ -1,10 +1,4 @@
-import {
-  sqliteTable,
-  text,
-  integer,
-  real,
-  index,
-} from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, real, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { projectsSqlite, priorityValues } from "./projects";
 import { usersSqlite } from "./users";
@@ -20,8 +14,8 @@ export const taskStatusValues = [
 ] as const;
 export type TaskStatus = (typeof taskStatusValues)[number];
 
-// Tasks Table
-export const tasksSqlite = sqliteTable(
+// Tasks Table (PostgreSQL)
+export const tasksSqlite = pgTable(
   "tasks",
   {
     id: text("id").primaryKey(),
@@ -42,17 +36,17 @@ export const tasksSqlite = sqliteTable(
     reporterId: text("reporter_id")
       .notNull()
       .references(() => usersSqlite.id, { onDelete: "restrict" }),
-    dueDate: integer("due_date", { mode: "timestamp" }),
+    dueDate: integer("due_date"),
     estimatedHours: real("estimated_hours"),
     actualHours: real("actual_hours"),
     linkedNoteId: text("linked_note_id"),
     order: integer("order").notNull().default(0),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`extract(epoch from now())::integer`),
+    updatedAt: integer("updated_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("tasks_project_id_idx").on(table.projectId),

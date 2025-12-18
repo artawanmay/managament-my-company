@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { usersSqlite } from "./users";
 
@@ -12,8 +12,8 @@ export const notificationTypeValues = [
 ] as const;
 export type NotificationType = (typeof notificationTypeValues)[number];
 
-// Notifications Table
-export const notificationsSqlite = sqliteTable(
+// Notifications Table (PostgreSQL)
+export const notificationsSqlite = pgTable(
   "notifications",
   {
     id: text("id").primaryKey(),
@@ -23,11 +23,11 @@ export const notificationsSqlite = sqliteTable(
     type: text("type", { enum: notificationTypeValues }).notNull(),
     title: text("title").notNull(),
     message: text("message").notNull(),
-    data: text("data", { mode: "json" }), // JSON with entityType, entityId, etc.
-    readAt: integer("read_at", { mode: "timestamp" }),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    data: jsonb("data"), // JSON with entityType, entityId, etc.
+    readAt: integer("read_at"),
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("notifications_user_id_idx").on(table.userId),

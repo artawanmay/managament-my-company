@@ -1,10 +1,4 @@
-import {
-  sqliteTable,
-  text,
-  integer,
-  index,
-  unique,
-} from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index, unique } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { projectsSqlite } from "./projects";
 import { usersSqlite } from "./users";
@@ -13,8 +7,8 @@ import { usersSqlite } from "./users";
 export const projectMemberRoleValues = ["MANAGER", "MEMBER", "VIEWER"] as const;
 export type ProjectMemberRole = (typeof projectMemberRoleValues)[number];
 
-// Project Members Table
-export const projectMembersSqlite = sqliteTable(
+// Project Members Table (PostgreSQL)
+export const projectMembersSqlite = pgTable(
   "project_members",
   {
     id: text("id").primaryKey(),
@@ -27,9 +21,9 @@ export const projectMembersSqlite = sqliteTable(
     role: text("role", { enum: projectMemberRoleValues })
       .notNull()
       .default("MEMBER"),
-    joinedAt: integer("joined_at", { mode: "timestamp" })
+    joinedAt: integer("joined_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("project_members_project_id_idx").on(table.projectId),

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, varchar, timestamp } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // Role enum values - 4 roles: SUPER_ADMIN, MANAGER, MEMBER, GUEST (ADMIN removed)
@@ -14,8 +14,8 @@ export type Role = (typeof roleValues)[number];
 export const themeValues = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof themeValues)[number];
 
-// Users Table
-export const usersSqlite = sqliteTable("users", {
+// Users Table (PostgreSQL)
+export const usersSqlite = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
@@ -25,12 +25,12 @@ export const usersSqlite = sqliteTable("users", {
   themePreference: text("theme_preference", { enum: themeValues })
     .notNull()
     .default("system"),
-  createdAt: integer("created_at", { mode: "timestamp" })
+  createdAt: integer("created_at")
     .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .default(sql`extract(epoch from now())::integer`),
+  updatedAt: integer("updated_at")
     .notNull()
-    .default(sql`(unixepoch())`),
+    .default(sql`extract(epoch from now())::integer`),
 });
 
 // Export types

@@ -1,12 +1,12 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // Client status values
 export const clientStatusValues = ["ACTIVE", "INACTIVE", "PROSPECT"] as const;
 export type ClientStatus = (typeof clientStatusValues)[number];
 
-// Clients Table
-export const clientsSqlite = sqliteTable(
+// Clients Table (PostgreSQL)
+export const clientsSqlite = pgTable(
   "clients",
   {
     id: text("id").primaryKey(),
@@ -20,12 +20,12 @@ export const clientsSqlite = sqliteTable(
       .notNull()
       .default("PROSPECT"),
     notes: text("notes"),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`extract(epoch from now())::integer`),
+    updatedAt: integer("updated_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [index("clients_status_idx").on(table.status)]
 );

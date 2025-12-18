@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, index, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { clientsSqlite } from "./clients";
 import { projectsSqlite } from "./projects";
@@ -8,8 +8,8 @@ import { usersSqlite } from "./users";
 export const noteTypeValues = ["API", "RDP", "SSH", "DB", "OTHER"] as const;
 export type NoteType = (typeof noteTypeValues)[number];
 
-// Notes Table
-export const notesSqlite = sqliteTable(
+// Notes Table (PostgreSQL)
+export const notesSqlite = pgTable(
   "notes",
   {
     id: text("id").primaryKey(),
@@ -25,19 +25,19 @@ export const notesSqlite = sqliteTable(
     port: integer("port"),
     username: text("username"),
     secret: text("secret").notNull(), // Encrypted with AES-256-GCM
-    metadata: text("metadata", { mode: "json" }), // JSON for extra fields
+    metadata: jsonb("metadata"), // JSON for extra fields
     createdBy: text("created_by")
       .notNull()
       .references(() => usersSqlite.id, { onDelete: "restrict" }),
     updatedBy: text("updated_by")
       .notNull()
       .references(() => usersSqlite.id, { onDelete: "restrict" }),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at")
       .notNull()
-      .default(sql`(unixepoch())`),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`extract(epoch from now())::integer`),
+    updatedAt: integer("updated_at")
       .notNull()
-      .default(sql`(unixepoch())`),
+      .default(sql`extract(epoch from now())::integer`),
   },
   (table) => [
     index("notes_client_id_idx").on(table.clientId),
